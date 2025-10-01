@@ -15,12 +15,24 @@ class Ticket extends Model
         'status',
         'priority',
         'user_id',
+        'solution',
+        'solved_by',
+        'started_at',
+        'solved_at',
+        'duration',
+        'category',
+        'location',
 
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function solver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'solved_by');
     }
     
 }
