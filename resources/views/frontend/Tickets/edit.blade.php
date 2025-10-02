@@ -38,16 +38,43 @@
                         </select>
                     </div>
 
-                    <div class="mt-4">
+                    {{-- <div class="mt-4">
                         <x-input-label for="category" :value="__('Category')" />
                         <x-text-input id="category" class="block mt-1 w-full" type="text" 
                                       name="category" value="{{ old('category', $ticket->category) }}" />
+                    </div> --}}
+                    <div class="mt-4">
+                        <x-input-label for="category_id" :value="__('Category')" />
+                        <select name="category_id" id="category_id" 
+                                class="block mt-1 w-full border-gray-300 rounded-md shadow-sm">
+                            <option value="">-- Select Category --</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}" {{ $ticket->category_id == $cat->id ? 'selected' : '' }}>
+                                    {{ $cat->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <x-input-error :messages="$errors->get('category_id')" class="mt-2" />
                     </div>
 
-                    <div class="mt-4">
+                    {{-- <div class="mt-4">
                         <x-input-label for="location" :value="__('Location')" />
                         <x-text-input id="location" class="block mt-1 w-full" type="text" 
                                       name="location" value="{{ old('location', $ticket->location) }}" />
+                    </div> --}}
+
+                    <div class="mt-4">
+                        <x-input-label for="location_id" :value="__('Location')" />
+                        <select name="location_id" id="location_id" 
+                                class="block mt-1 w-full border-gray-300 rounded-md shadow-sm">
+                            <option value="">-- Select Location --</option>
+                            @foreach($locations as $loc)
+                                <option value="{{ $loc->id }}" {{ $ticket->location_id == $loc->id ? 'selected' : '' }}>
+                                    {{ $loc->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <x-input-error :messages="$errors->get('location_id')" class="mt-2" />
                     </div>
 
                     <div class="flex items-center justify-end mt-4">

@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\User;
+use App\Models\TicketCategory;
+use App\Models\TicketLocation;
 
 class Ticket extends Model
 {
@@ -20,8 +23,8 @@ class Ticket extends Model
         'started_at',
         'solved_at',
         'duration',
-        'category',
-        'location',
+        'category_id',
+        'location_id',
 
     ];
 
@@ -33,6 +36,16 @@ class Ticket extends Model
     public function solver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'solved_by');
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(TicketCategory::class, 'category_id');
+    }
+
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(TicketLocation::class, 'location_id');
     }
     
 }

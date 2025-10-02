@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\TicketCategory;
+use App\Models\TicketLocation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -10,13 +12,15 @@ class TicketController extends Controller
 {
     public function index()
     {
-        $tickets = Ticket::with('user')->latest()->get();
+        $tickets = Ticket::with('user', 'category', 'location')->latest()->get();
         return view('frontend.Tickets.tickets', ['tickets' => $tickets]);
     }
 
     public function create()
     {
-        return view('frontend.Tickets.create');
+        $categories = TicketCategory::where('is_active', true)->get();
+        $locations = TicketLocation::where('is_active', true)->get();
+        return view('frontend.Tickets.create' , compact('categories', 'locations'));
     }
 
     public function store(Request $request) :RedirectResponse
@@ -28,8 +32,8 @@ class TicketController extends Controller
             'description' => 'required|string',
             'priority' => 'required|string|in:Low,Medium,High',
             'status' => 'nullable|string|in:Open,Closed,In Progress',
-            'category' => 'nullable|string|max:255',
-            'location' => 'nullable|string|max:255',
+            'category_id' => 'required|exists:ticket_categories,id',
+            'location_id' => 'required|exists:ticket_locations,id',
 
         ]);
 
@@ -38,8 +42,8 @@ class TicketController extends Controller
             'title' => $validated['title'],
             'description' => $validated['description'],
             'priority' => $validated['priority'],
-            'category' => $validated['category'] ?? null,
-            'location' => $validated['location'] ?? null,
+            'category_id' => $validated['category_id'],
+            'location_id' => $validated['location_id'],
             'status' => 'Open',
         ]);
 
@@ -82,7 +86,10 @@ class TicketController extends Controller
         abort(403, 'Unauthorized action.');
     }
 
-    return view('frontend.Tickets.edit', compact('ticket'));
+        $categories = TicketCategory::where('is_active', true)->get();
+        $locations = TicketLocation::where('is_active', true)->get();
+
+        return view('frontend.Tickets.edit', compact('ticket', 'categories', 'locations'));
     }
 
     public function update(Request $request, Ticket $ticket): RedirectResponse
@@ -96,8 +103,8 @@ class TicketController extends Controller
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
                 'priority' => 'required|string|in:Low,Medium,High',
-                'category' => 'nullable|string|max:255',
-                'location' => 'nullable|string|max:255',
+                'category_id' => 'required|exists:ticket_categories,id',
+                'location_id' => 'required|exists:ticket_locations,id',
             ]);
 
             $ticket->update($validated);

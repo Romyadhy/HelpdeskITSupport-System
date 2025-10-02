@@ -45,11 +45,11 @@
                                     </td>
 
                                     <td class="px-6 py-4 text-sm text-gray-700 hidden md:table-cell">
-                                        {{ $ticket->category ?? '-' }}
+                                        {{ $ticket->category->name ?? '-' }}
                                     </td>
 
                                     <td class="px-6 py-4 text-sm text-gray-700 hidden lg:table-cell">
-                                        {{ $ticket->location ?? '-' }}
+                                        {{ $ticket->location->name ?? '-' }}
                                     </td>
 
                                     <td class="px-6 py-4">
