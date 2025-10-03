@@ -35,40 +35,35 @@ class TicketPolicy
     }
 
     /**
-     * User biasa atau admin bisa create tiket
+     * User biasa bisa create tiket
      */
     public function create(User $user): bool
     {
-        return $user->isUser() || $user->isAdmin();
+        return $user->isUser();
     }
 
     /**
-     * Update tiket hanya boleh oleh owner tiket
+     * Update tiket boleh oleh owner tiket atau support
      */
     public function update(User $user, Ticket $ticket): bool
     {
-        return $user->id === $ticket->user_id;
+        return $user->id === $ticket->user_id || $user->isSupport();
     }
 
     /**
-     * Delete tiket hanya boleh oleh owner tiket
+     * Delete tiket: owner boleh hapus tiket miliknya,
+     * support juga boleh hapus (misalnya setelah closed).
      */
     public function delete(User $user, Ticket $ticket): bool
     {
-        return $user->id === $ticket->user_id;
+        return $user->id === $ticket->user_id || $user->isSupport();
     }
 
-    /**
-     * Restore (opsional, bisa false saja)
-     */
     public function restore(User $user, Ticket $ticket): bool
     {
         return false;
     }
 
-    /**
-     * Force delete (opsional, bisa false saja)
-     */
     public function forceDelete(User $user, Ticket $ticket): bool
     {
         return false;
@@ -91,9 +86,7 @@ class TicketPolicy
      */
     public function start(User $user, Ticket $ticket): bool
     {
-        return $user->isSupport() 
-            && $ticket->assigned_to === $user->id 
-            && $ticket->status !== 'Closed';
+        return $user->isSupport() && $ticket->status === 'In Progress';
     }
 
     /**
@@ -101,17 +94,7 @@ class TicketPolicy
      */
     public function close(User $user, Ticket $ticket): bool
     {
-        return $user->isSupport() 
-            && $ticket->assigned_to === $user->id 
-            && $ticket->status !== 'Closed';
-    }
-
-    /**
-     * Reopen tiket → khusus admin (sudah dihandle di before)
-     */
-    public function reopen(User $user, Ticket $ticket): bool
-    {
-        return false;
+        return $user->isSupport() && $ticket->status !== 'Closed';
     }
 
     /**

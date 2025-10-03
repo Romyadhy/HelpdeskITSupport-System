@@ -7,6 +7,7 @@ use App\Models\TicketCategory;
 use App\Models\TicketLocation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Policies\TicketPolicy;
 
 class TicketController extends Controller
 {
@@ -56,35 +57,12 @@ class TicketController extends Controller
         return back()->withErrors('error','Something went wrong while creating the ticket.');        
     }
 
-    public function close(Request $reqest, Ticket $ticket): RedirectResponse
-    {
-        try {
-            $data = $reqest->validate([
-                'solution' => 'required|string|min:1',
-            ]);
-
-            $ticket->update([
-                'solution' => $data['solution'],
-                'status' => 'Closed',
-                'solved_by' => auth()->id(),
-                'solved_at' => now(),
-                'duration' => $ticket->started_at 
-                                ? now()->diffInMinutes($ticket->started_at) 
-                                : now()->diffInMinutes($ticket->created_at),
-            ]);
-            return redirect()->route('tickets.index')->with('success', 'Ticket closed successfully.');
-
-        } catch (\Exception $e) {
-            \Log::error('Error closing ticket: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
-            return back()->withErrors('Error', 'An error occurred while closing the ticket.');
-        }
-    }
-
     public function edit(Ticket $ticket)
     {
         if (!auth()->user()->isAdmin() && $ticket->user_id !== auth()->id()) {
         abort(403, 'Unauthorized action.');
-    }
+        }
+        // $this->authorize('update', $ticket);
 
         $categories = TicketCategory::where('is_active', true)->get();
         $locations = TicketLocation::where('is_active', true)->get();
@@ -94,9 +72,10 @@ class TicketController extends Controller
 
     public function update(Request $request, Ticket $ticket): RedirectResponse
     {
-         if (!auth()->user()->isAdmin() && $ticket->user_id !== auth()->id()) {
+        if (!auth()->user()->isAdmin() && $ticket->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
+        // $this->authorize('update', $ticket);
 
         try {
             $validated = $request->validate([
@@ -122,8 +101,57 @@ class TicketController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        // $this->authorize('delete', $ticket);
+
         $ticket->delete();
 
         return redirect()->route('tickets.index')->with('success', 'Ticket deleted successfully.');
+    }
+
+    // POV IT Support
+    public function start(Request $request, Ticket $ticket): RedirectResponse
+    {
+        if (!auth()->user()->isSupport()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        try {
+            $ticket->update([
+                'status' => 'In Progress',
+                'started_at' => now(),
+                'assigned_to' => auth()->id(),
+            ]);
+            return redirect()->route('tickets.index')->with('success', 'Ticket started successfully.');
+        } catch (\Exception $e) {
+            \Log::error('Error starting ticket: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
+            return back()->withErrors('error', 'An error occurred while starting the ticket.');
+        }
+    }
+
+    public function close(Request $request, Ticket $ticket): RedirectResponse
+    {
+        if (!auth()->user()->isSupport()) {
+            abort(403, 'Unauthorized action.');
+        }
+        try {
+            $data = $request->validate([
+                'solution' => 'required|string|min:1',
+            ]);
+
+            $ticket->update([
+                'solution' => $data['solution'],
+                'status' => 'Closed',
+                'solved_by' => auth()->id(),
+                'solved_at' => now(),
+                'duration' => $ticket->started_at 
+                                ? now()->diffInMinutes($ticket->started_at) 
+                                : now()->diffInMinutes($ticket->created_at),
+            ]);
+            return redirect()->route('tickets.index')->with('success', 'Ticket closed successfully.');
+
+        } catch (\Exception $e) {
+            \Log::error('Error closing ticket: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
+            return back()->withErrors('Error', 'An error occurred while closing the ticket.');
+        }
     }
 }

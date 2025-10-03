@@ -22,6 +22,7 @@ class Ticket extends Model
         'solved_by',
         'started_at',
         'solved_at',
+        'assigned_to',
         'duration',
         'category_id',
         'location_id',

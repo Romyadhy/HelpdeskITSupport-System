@@ -29,8 +29,8 @@
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden lg:table-cell">Location</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Priority</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Created By</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden lg:table-cell">Solved By</th>
+                                {{-- <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Created By</th> --}}
+                                {{-- <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden lg:table-cell">Solved By</th> --}}
                                 {{-- <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden xl:table-cell">Duration</th> --}}
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden xl:table-cell">Created At</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Action</th>
@@ -74,48 +74,61 @@
                                         </span>
                                     </td>
 
-                                    <td class="px-6 py-4 text-sm text-gray-700 hidden md:table-cell">
+                                    {{-- <td class="px-6 py-4 text-sm text-gray-700 hidden md:table-cell">
                                         {{ $ticket->user->name ?? '-' }}
-                                    </td>
+                                    </td> --}}
 
-                                    <td class="px-6 py-4 text-sm text-gray-700 hidden lg:table-cell">
+                                    {{-- <td class="px-6 py-4 text-sm text-gray-700 hidden lg:table-cell">
                                         {{ $ticket->solver->name ?? '-' }}
-                                    </td>
+                                    </td> --}}
 
                                     {{-- <td class="px-6 py-4 text-sm text-gray-700 hidden xl:table-cell">
                                         {{ $ticket->duration ? $ticket->duration.' min' : '-' }}
                                     </td> --}}
 
-                                    <td class="px-6 py-4 text-sm text-gray-500 hidden xl:table-cell">
+                                    {{-- <td class="px-6 py-4 text-sm text-gray-500 hidden xl:table-cell">
                                         {{ $ticket->created_at->format('d M Y, H:i') }}
+                                    </td> --}}
+                                    <td class="px-6 py-4 text-sm text-gray-500 hidden xl:table-cell">
+                                        {{ $ticket->created_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') }} WITA
                                     </td>
 
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        @if(auth()->user()->isAdmin() || $ticket->user_id === auth()->id())
-                                        <a href="{{ route('tickets.edit', $ticket) }}" 
-                                            class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                        @auth
+                                            @if(auth()->user()->isAdmin() || $ticket->user_id === auth()->id())
+                                                <a href="{{ route('tickets.edit', $ticket) }}" 
+                                                class="text-indigo-600 hover:text-indigo-900">Edit</a>
 
-                                            <form action="{{ route('tickets.destroy', $ticket) }}" 
-                                                method="POST" class="inline"
-                                                onsubmit="return confirm('Are you sure you want to delete this ticket?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
-                                            </form>
-                                        @endif
-                                        {{-- @if($ticket->status !== 'Closed')
-                                            <form action="{{ route('tickets.close', $ticket) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="hidden" name="solution" value="Fixed by IT Support">
-                                                <button type="submit"
-                                                        class="text-teal-600 hover:text-teal-900 underline decoration-dotted">
-                                                    Close
-                                                </button>
-                                            </form>
-                                        @else
-                                            <span class="text-green-600">Closed</span>
-                                        @endif --}}
+                                                <form action="{{ route('tickets.destroy', $ticket) }}" 
+                                                    method="POST" class="inline"
+                                                    onsubmit="return confirm('Are you sure you want to delete this ticket?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                                </form>
+                                            @endif
+
+                                        
+                                                @if(auth()->user()->isSupport())
+                                                    {{-- Kondisi jika belum di-assign --}}
+                                                    @if(!$ticket->assigned_to && $ticket->status === 'Open')
+                                                        <form action="{{ route('tickets.start', $ticket->id) }}" method="POST" style="display:inline;">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-sm btn-warning">Assign</button>
+                                                        </form>
+                                                    {{-- Kondisi jika sudah di-assign tapi belum closed --}}
+                                                    @elseif($ticket->assigned_to == auth()->id() && $ticket->status === 'In Progress')
+                                                        <form action="{{ route('tickets.close', $ticket->id) }}" method="POST" style="display:inline;">
+                                                            @csrf
+                                                            <input type="text" name="solution" placeholder="Enter solution..." required>
+                                                            <button type="submit" class="btn btn-sm btn-success">Close</button>
+                                                        </form>
+                                                    {{-- Kondisi jika sudah closed --}}
+                                                    @elseif($ticket->status === 'Closed')
+                                                        <span class="text-green-600 font-semibold">Closed</span>
+                                                    @endif
+                                                @endif
+                                        @endauth
                                     </td>
                                 </tr>
                             @empty
