@@ -22,6 +22,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/tickets/{ticket}', [TicketController::class, 'destroy'])->name('tickets.destroy');
     Route::post('/tickets/{ticket}/start', [TicketController::class, 'start'])->name('tickets.start');
     Route::post('/tickets/{ticket}/close', [TicketController::class, 'close'])->name('tickets.close');
+    Route::post('tickets/{ticket}/escalate', [TicketController::class, 'escalate'])->name('tickets.escalate');
 });
 
 require __DIR__.'/auth.php';

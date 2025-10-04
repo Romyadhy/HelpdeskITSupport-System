@@ -94,40 +94,56 @@
                                     </td>
 
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        @auth
-                                            @if(auth()->user()->isAdmin() || $ticket->user_id === auth()->id())
-                                                <a href="{{ route('tickets.edit', $ticket) }}" 
+                                         @if(auth()->user()->isAdmin() || $ticket->user_id === auth()->id())
+                                            <a href="{{ route('tickets.edit', $ticket) }}" 
                                                 class="text-indigo-600 hover:text-indigo-900">Edit</a>
 
-                                                <form action="{{ route('tickets.destroy', $ticket) }}" 
-                                                    method="POST" class="inline"
-                                                    onsubmit="return confirm('Are you sure you want to delete this ticket?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
-                                                </form>
+                                            <form action="{{ route('tickets.destroy', $ticket) }}" 
+                                                method="POST" class="inline"
+                                                onsubmit="return confirm('Are you sure you want to delete this ticket?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                            </form>
+                                        @endif
+
+                                        @auth
+                                            {{-- IT Support Actions --}}
+                                            @if(auth()->user()->isSupport())
+                                                @if(!$ticket->assigned_to && !$ticket->is_escalation)
+                                                    <form action="{{ route('tickets.start', $ticket->id) }}" method="POST" style="display:inline;">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-warning">Assign</button>
+                                                    </form>
+
+                                                    <form action="{{ route('tickets.escalate', $ticket->id) }}" method="POST" style="display:inline;">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-danger">Escalate to Admin</button>
+                                                    </form>
+                                                @elseif($ticket->assigned_to == auth()->id() && $ticket->status !== 'Closed')
+                                                    <form action="{{ route('tickets.close', $ticket->id) }}" method="POST" style="display:inline;">
+                                                        @csrf
+                                                        <input type="text" name="solution" placeholder="Enter solution..." required>
+                                                        <button type="submit" class="btn btn-sm btn-success">Close</button>
+                                                    </form>
+                                                @endif
                                             @endif
 
-                                        
-                                                @if(auth()->user()->isSupport())
-                                                    {{-- Kondisi jika belum di-assign --}}
-                                                    @if(!$ticket->assigned_to && $ticket->status === 'Open')
-                                                        <form action="{{ route('tickets.start', $ticket->id) }}" method="POST" style="display:inline;">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-sm btn-warning">Assign</button>
-                                                        </form>
-                                                    {{-- Kondisi jika sudah di-assign tapi belum closed --}}
-                                                    @elseif($ticket->assigned_to == auth()->id() && $ticket->status === 'In Progress')
-                                                        <form action="{{ route('tickets.close', $ticket->id) }}" method="POST" style="display:inline;">
-                                                            @csrf
-                                                            <input type="text" name="solution" placeholder="Enter solution..." required>
-                                                            <button type="submit" class="btn btn-sm btn-success">Close</button>
-                                                        </form>
-                                                    {{-- Kondisi jika sudah closed --}}
-                                                    @elseif($ticket->status === 'Closed')
-                                                        <span class="text-green-600 font-semibold">Closed</span>
-                                                    @endif
-                                                @endif
+                                            {{-- Admin Actions (jika tiket di-escalate) --}}
+                                            @if(auth()->user()->isAdmin() && $ticket->is_escalation && $ticket->status !== 'Closed')
+                                                @if(!$ticket->assigned_to)
+                                                    <form action="{{ route('tickets.start', $ticket->id) }}" method="POST" style="display:inline;">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-warning">Assign</button>
+                                                    </form>
+                                                @elseif($ticket->assigned_to == auth()->id())
+                                                    <form action="{{ route('tickets.close', $ticket->id) }}" method="POST" style="display:inline;">
+                                                        @csrf
+                                                        <input type="text" name="solution" placeholder="Admin solution..." required>
+                                                        <button type="submit" class="btn btn-sm btn-success">Close as Admin</button>
+                                                    </form>
+                                                @endif   
+                                            @endif
                                         @endauth
                                     </td>
                                 </tr>

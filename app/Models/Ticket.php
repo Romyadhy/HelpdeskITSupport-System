@@ -26,7 +26,16 @@ class Ticket extends Model
         'duration',
         'category_id',
         'location_id',
+        'is_escalation',
+        'escalated_at',
 
+    ];
+
+    protected $casts = [
+        'started_at' => 'datetime',
+        'solved_at' => 'datetime',
+        'escalated_at' => 'datetime',
+        'is_escalation' => 'boolean',
     ];
 
     public function user(): BelongsTo
