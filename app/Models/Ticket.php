@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\User;
 use App\Models\TicketCategory;
 use App\Models\TicketLocation;
+use Carbon\CarbonInterval;
+use Carbon\Interval;
 
 class Ticket extends Model
 {
@@ -37,6 +39,19 @@ class Ticket extends Model
         'escalated_at' => 'datetime',
         'is_escalation' => 'boolean',
     ];
+
+    public function getDurationHumanAttribute(): string
+    {
+        if (is_null($this->duration) || $this->duration < 0) {
+            return '-';
+        }
+        $ci = CarbonInterval::minutes($this->duration)->cascade();
+        $parts = [];
+        if ($ci->d) $parts[] = $ci->d.'d';
+        if ($ci->h) $parts[] = $ci->h.'h';
+        $parts[] = ($ci->i ?: 0).'m';
+        return implode(' ', $parts);
+    }
 
     public function user(): BelongsTo
     {

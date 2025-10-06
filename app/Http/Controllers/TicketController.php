@@ -7,6 +7,7 @@ use App\Models\TicketCategory;
 use App\Models\TicketLocation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use App\Policies\TicketPolicy;
 
 class TicketController extends Controller
@@ -94,6 +95,16 @@ class TicketController extends Controller
                 return back()->withErrors('error', 'An error occurred while updating the ticket.');
             }
         }
+    
+    public function show(Ticket $ticket)
+        {
+            if (!auth()->user()->isAdmin() && $ticket->user_id !== auth()->id() && !auth()->user()->isSupport()) {
+                abort(403, 'Unauthorized action.');
+            }
+            // $this->authorize('view', $ticket);
+
+            return view('frontend.Tickets.show', compact('ticket'));
+        }
 
     public function destroy(Ticket $ticket)
         {
@@ -118,7 +129,7 @@ class TicketController extends Controller
             try {
                 $ticket->update([
                     'status' => 'In Progress',
-                    'started_at' => now(),
+                    'started_at' => $ticket->started_at ?? now(),
                     'assigned_to' => auth()->id(),
                 ]);
                 return redirect()->route('tickets.index')->with('success', 'Ticket started successfully.');
@@ -138,14 +149,18 @@ class TicketController extends Controller
                     'solution' => 'required|string|min:1',
                 ]);
 
+                $start    = $ticket->started_at ?: $ticket->created_at; // fallback ke created_at
+                $closedAt = now();
+
+                // gunakan $start->diffInMinutes($closedAt) agar hasil pasti positif
+                $duration = $start->diffInMinutes($closedAt);
+
                 $ticket->update([
                     'solution' => $data['solution'],
                     'status' => 'Closed',
                     'solved_by' => auth()->id(),
                     'solved_at' => now(),
-                    'duration' => $ticket->started_at 
-                                    ? now()->diffInMinutes($ticket->started_at) 
-                                    : now()->diffInMinutes($ticket->created_at),
+                    'duration' => $duration,
                 ]);
                 return redirect()->route('tickets.index')->with('success', 'Ticket closed successfully.');
 
@@ -156,27 +171,19 @@ class TicketController extends Controller
         }
 
     public function escalate(Request $request, Ticket $ticket): RedirectResponse
-        {
-            // dd("Escalated!", $ticket);
-
-            if (!auth()->user()->isSupport()) {
-                abort(403, 'Unauthorized action.');
-            }
-
-            try {
-                $ticket->update([
-                    'is_escalation' => true,
-                    'escalated_at' => now(),
-                ]);
-
-                return redirect()->route('tickets.index')->with('success', 'Ticket escalated to Admin');
-
-            } catch (\Exception $e) {
-                \Log::error('Error fetching escalation tickets: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
-                return back()->withErrors('Error', 'An error occurred while fetching escalation tickets.');
-            }
+    {
+        if (auth()->user()->isSupport() && $ticket->assigned_to === auth()->id()) {
+            $ticket->update([
+                'is_escalation' => true,
+                'escalated_at'  => now(),
+                'status'        => 'In Progress',
+                'assigned_to'   => null, // Kosongkan assignee agar Admin bisa mengambilnya
+            ]);
+            return redirect()->route('tickets.index')->with('success', 'Ticket has been escalated to Admin.');
         }
-        
+
+        return back()->with('error', 'You cannot escalate this ticket.');
+    }
 }
 
 
