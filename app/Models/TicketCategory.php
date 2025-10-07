@@ -9,6 +9,7 @@ use App\Models\Ticket;
 class TicketCategory extends Model
 {
     use HasFactory;
+    protected $table = 'ticket_categories';
     protected $fillable = [
         'name', 
         'is_active'

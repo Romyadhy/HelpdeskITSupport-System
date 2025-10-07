@@ -24,6 +24,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/tickets/{ticket}/start', [TicketController::class, 'start'])->name('tickets.start');
     Route::post('/tickets/{ticket}/close', [TicketController::class, 'close'])->name('tickets.close');
     Route::post('tickets/{ticket}/escalate', [TicketController::class, 'escalate'])->name('tickets.escalate');
+    Route::post('/tickets/{ticket}/handle-escalated', [TicketController::class, 'handleEscalated'])->name('tickets.handleEscalated');
 });
 
 require __DIR__.'/auth.php';

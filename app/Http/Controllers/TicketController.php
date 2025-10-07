@@ -9,12 +9,21 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Policies\TicketPolicy;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class TicketController extends Controller
 {
     public function index()
         {
-            $tickets = Ticket::with('user', 'category', 'location')->latest()->get();
+            $users = Auth::user();
+            $ticketsQuery = Ticket::with('user')->latest();
+
+            if ($users->can('view-any-tickets')) {
+                $tickets = $ticketsQuery->paginate(10);
+            } else {
+                $tickets = $ticketsQuery->where('user_id', $users->id)->paginate(10);
+            }
             return view('frontend.Tickets.tickets', ['tickets' => $tickets]);
         }
 
@@ -60,10 +69,11 @@ class TicketController extends Controller
 
     public function edit(Ticket $ticket)
         {
-            if (!auth()->user()->isAdmin() && $ticket->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized action.');
+            $user = Auth::user();
+
+           if($ticket->user_id !== $user->id && !$user->can('edit-own-ticket')) {
+                abort(403, 'Unauthorized action.');
             }
-            // $this->authorize('update', $ticket);
 
             $categories = TicketCategory::where('is_active', true)->get();
             $locations = TicketLocation::where('is_active', true)->get();
@@ -73,10 +83,11 @@ class TicketController extends Controller
 
     public function update(Request $request, Ticket $ticket): RedirectResponse
         {
-            if (!auth()->user()->isAdmin() && $ticket->user_id !== auth()->id()) {
+            $user = Auth::user();
+            
+            if($ticket->user_id !== $user->id && !$user->can('edit-own-ticket')) {
                 abort(403, 'Unauthorized action.');
             }
-            // $this->authorize('update', $ticket);
 
             try {
                 $validated = $request->validate([
@@ -98,34 +109,40 @@ class TicketController extends Controller
     
     public function show(Ticket $ticket)
         {
-            if (!auth()->user()->isAdmin() && $ticket->user_id !== auth()->id() && !auth()->user()->isSupport()) {
+            $user = Auth::user();
+
+            if (!$user->can('view-any-tickets') && $ticket->user_id !== $user->id) {
                 abort(403, 'Unauthorized action.');
             }
-            // $this->authorize('view', $ticket);
+            // dd($ticket);
+            // dd($ticket->category->name);
+            // dd($ticket->location->name);
+            // $tes = $ticket->load(['category', 'location', 'user', 'solver']);
+            // dd($tes);
 
             return view('frontend.Tickets.show', compact('ticket'));
         }
 
     public function destroy(Ticket $ticket)
         {
-            if (!auth()->user()->isAdmin() && $ticket->user_id !== auth()->id()) {
+            $user = Auth::user();
+
+            if ($ticket->user_id !== $user->id && !$user->can('delete-own-ticket')) {
                 abort(403, 'Unauthorized action.');
             }
 
-            // $this->authorize('delete', $ticket);
-
             $ticket->delete();
-
             return redirect()->route('tickets.index')->with('success', 'Ticket deleted successfully.');
         }
 
     // POV IT Support
     public function start(Request $request, Ticket $ticket): RedirectResponse
         {
-            if (!auth()->user()->isSupport() && !auth()->user()->isAdmin()) {
+            $user = Auth::user();
+
+            if(!$user->can('handle-ticket')){
                 abort(403, 'Unauthorized action.');
             }
-
             try {
                 $ticket->update([
                     'status' => 'In Progress',
@@ -141,9 +158,12 @@ class TicketController extends Controller
 
     public function close(Request $request, Ticket $ticket): RedirectResponse
         {
-            if (!auth()->user()->isSupport() && !auth()->user()->isAdmin()) {
+            $user = Auth::user();
+
+            if (!$user->can('close-ticket')) {
                 abort(403, 'Unauthorized action.');
             }
+
             try {
                 $data = $request->validate([
                     'solution' => 'required|string|min:1',
@@ -172,17 +192,47 @@ class TicketController extends Controller
 
     public function escalate(Request $request, Ticket $ticket): RedirectResponse
     {
-        if (auth()->user()->isSupport() && $ticket->assigned_to === auth()->id()) {
+        $user = Auth::user();
+
+        if (!$user->can('escalate-ticket')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($ticket->assigned_to === $user->id) {
             $ticket->update([
                 'is_escalation' => true,
                 'escalated_at'  => now(),
                 'status'        => 'In Progress',
-                'assigned_to'   => null, // Kosongkan assignee agar Admin bisa mengambilnya
+                'assigned_to'   => null,
             ]);
             return redirect()->route('tickets.index')->with('success', 'Ticket has been escalated to Admin.');
         }
 
         return back()->with('error', 'You cannot escalate this ticket.');
+    }
+
+
+    // Admin menangani tiket yang di-escalate
+    public function handleEscalated(Ticket $ticket): RedirectResponse
+    {
+        $user = Auth::user();
+
+        if (!$user->can('handle-escalated-ticket')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        try {
+            $ticket->update([
+                'status' => 'In Progress',
+                'assigned_to' => $user->id,
+                'is_escalation' => false,
+            ]);
+
+            return redirect()->route('tickets.index')->with('success', 'Escalated ticket now handled by Admin.');
+        } catch (\Exception $e) {
+            Log::error('Error handling escalated ticket: ' . $e->getMessage());
+            return back()->withErrors('An error occurred while handling the escalated ticket.');
+        }
     }
 }
 

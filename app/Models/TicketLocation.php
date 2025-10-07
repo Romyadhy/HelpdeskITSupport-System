@@ -10,6 +10,7 @@ use App\Models\Ticket;
 class TicketLocation extends Model
 {
     use HasFactory;
+    protected $table = 'ticket_locations';
     protected $fillable = [
         'name', 
         'is_active'

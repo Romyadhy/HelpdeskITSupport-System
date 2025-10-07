@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash as Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,12 +14,48 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call(RolesAndPermissionsSeeder::class);
+        // admin
+        $admin = User::updateOrCreate(
+            ['email' => 'admin2@gmail.com'],
+            [
+                'name' => 'Admin IT',
+                'password' => Hash::make('admin123'),
+                'role' => 'admin',
+            ]
+        );
+        $admin->assignRole('admin');
+        // support
+        $support = User::updateOrCreate(
+            ['email' => 'support2@gmail.com'],
+            [
+                'name' => 'IT Support',
+                'password' => Hash::make('support123'),
+                'role' => 'support',
+            ]
+        );
+        $support->assignRole('support');
+        // manager
+        $manager = User::updateOrCreate(
+            ['email' => 'manager@gmail.com'],
+            [
+                'name' => 'Manager IT',
+                'password' => Hash::make('manager123'),
+                'role' => 'manager',
+            ]
+        );
+        $manager->assignRole('manager');
+        // user
+         $user = User::updateOrCreate(
+            ['email' => 'john@gmail.com'],
+            [
+                'name' => 'John Dole',
+                'password' => Hash::make('john123'),
+                'role' => 'user',
+            ]
+        );
+        $user->assignRole('user');
 
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
-        $this->call(AdminUserSeeder::class);
+
     }
 }
