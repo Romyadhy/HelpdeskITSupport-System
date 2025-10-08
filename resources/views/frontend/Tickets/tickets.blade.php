@@ -12,8 +12,6 @@
                     <h1 class="text-3xl font-bold text-teal-600">All Tickets</h1>
                     <p class="text-gray-500 mt-1">Manage and track all support requests.</p>
                 </div>
-                
-                {{-- Tombol "New Ticket" hanya muncul untuk role yang punya izin --}}
                 @can('create-ticket')
                     <a href="{{ route('tickets.create') }}" 
                         class="mt-4 sm:mt-0 inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
@@ -37,7 +35,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             @forelse($tickets as $ticket)
-                                <tr class="hover:bg-gray-50 transition">
+                                <tr class="hover:bg-gray-50 transition text-left">
                                     {{-- Kolom Ticket ID --}}
                                     <td class="px-6 py-4 font-semibold text-gray-800">
                                         #{{ str_pad($ticket->id, 4, '0', STR_PAD_LEFT) }}
@@ -93,14 +91,18 @@
 
                                         {{-- Tombol Edit & Delete untuk User Biasa (pemilik tiket) --}}
                                         @can('edit-own-ticket', $ticket)
-                                            <a href="{{ route('tickets.edit', $ticket->id) }}" title="Edit Ticket" class="text-gray-400 hover:text-blue-600 p-2 rounded-lg transition"><i class="fas fa-edit"></i></a>
+                                            @if (in_array($ticket->status, ['Open']))
+                                                <a href="{{ route('tickets.edit', $ticket->id) }}" title="Edit Ticket" class="text-gray-400 hover:text-blue-600 p-2 rounded-lg transition"><i class="fas fa-edit"></i></a>
+                                            @endif
                                         @endcan
                                         @can('delete-own-ticket', $ticket)
-                                            <form action="{{ route('tickets.destroy', $ticket->id) }}" method="POST" onsubmit="return confirm('Are you sure?');" class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" title="Delete Ticket" class="text-gray-400 hover:text-red-600 p-2 rounded-lg transition"><i class="fas fa-trash-alt"></i></button>
-                                            </form>
+                                            @if (in_array($ticket->status, ['Open', 'Closed']))    
+                                                <form action="{{ route('tickets.destroy', $ticket->id) }}" method="POST" onsubmit="return confirm('Are you sure?');" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" title="Delete Ticket" class="text-gray-400 hover:text-red-600 p-2 rounded-lg transition"><i class="fas fa-trash-alt"></i></button>
+                                                </form>
+                                            @endif
                                         @endcan
                                         
                                         {{-- Tombol Handle untuk IT Support --}}

@@ -119,8 +119,12 @@ class TicketController extends Controller
             // dd($ticket->location->name);
             // $tes = $ticket->load(['category', 'location', 'user', 'solver']);
             // dd($tes);
+            
+            // calling manually
+            $categoryName = TicketCategory::find($ticket->category_id)->name;
+            $locationName = TicketLocation::find($ticket->location_id)->name;
 
-            return view('frontend.Tickets.show', compact('ticket'));
+            return view('frontend.Tickets.show', compact('ticket', 'categoryName', 'locationName'));
         }
 
     public function destroy(Ticket $ticket)

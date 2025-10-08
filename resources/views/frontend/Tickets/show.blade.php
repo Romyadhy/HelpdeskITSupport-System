@@ -35,11 +35,11 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-gray-700">
                 <div class="flex items-center space-x-2">
                     <i class="fas fa-layer-group text-teal-500"></i>
-                    <span><strong>Category:</strong> {{ \App\Models\TicketCategory::find($ticket->category_id)->name ?? '-' }}<br></span>
+                    <span><strong>Category:</strong> {{ $categoryName ?? '-' }}<br></span>
                 </div>
                 <div class="flex items-center space-x-2">
                     <i class="fas fa-map-marker-alt text-teal-500"></i>
-                    <span><strong>Location:</strong> {{ \App\Models\TicketLocation::find($ticket->location_id)->name ?? '-' }}<br></span>
+                    <span><strong>Location:</strong> {{ $locationName ?? '-' }}<br></span>
                 </div>
                 <div class="flex items-center space-x-2">
                     <i class="fas fa-user text-teal-500"></i>

@@ -59,16 +59,6 @@
                 </svg>
                 <span class="text-sm">Tickets</span>
             </a>
-
-            <!-- Placeholder menu (optional future items) -->
-            
-            <a href="#" class="flex items-center px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" stroke-width="2" 
-                     viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M3 12h18M3 17h18" />
-                </svg>
-                <span class="text-sm">Reports</span>
-            </a>
            
         </nav>
 
