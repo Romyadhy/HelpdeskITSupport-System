@@ -16,7 +16,19 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Dashboard Route
-    Route::get('/dashboard', function () {return view('frontend.dashboard'); })->name('dashboard');
+    Route::get('/dashboard', function () {
+        $user = auth()->user();
+        if ($user->hasRole('admin')) {
+            return view('frontend.Dashbord.admindashboard');
+        } elseif ($user->hasRole('manager')) {
+            return view('frontend.Dashbord.menagerdashboard');
+        } elseif ($user->hasRole('support')) {
+            return view('frontend.Dashbord.supportdashboard');
+        } else {
+            return view('frontend.Dashbord.userdahboard');
+        }
+    })->name('dashboard');
+    // Route::get('/dashboard', function () {return view('frontend.dashboard'); })->name('dashboard');
 
     // Tickets Route
     Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');

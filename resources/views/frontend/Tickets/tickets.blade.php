@@ -107,7 +107,7 @@
                                         
                                         {{-- Tombol Handle untuk IT Support --}}
                                         @can('handle-ticket')
-                                            @if($ticket->status === 'Open')
+                                            @if($ticket->status === 'Open' || $ticket->assigned_to === auth()->id())
                                                 <form action="{{ route('tickets.start', $ticket->id) }}" method="POST" class="inline">
                                                     @csrf
                                                     <button type="submit" title="Handle Ticket" class="text-gray-400 hover:text-yellow-600 p-2 rounded-lg transition"><i class="fas fa-wrench"></i></button>

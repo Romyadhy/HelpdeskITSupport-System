@@ -2,13 +2,23 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\TicketResource\Pages\ListTickets;
+use App\Filament\Resources\TicketResource\Pages\CreateTicket;
+use App\Filament\Resources\TicketResource\Pages\EditTicket;
 use App\Filament\Resources\TicketResource\Pages;
 use App\Filament\Resources\TicketResource\RelationManagers;
 use App\Models\Ticket;
 use App\Models\TicketCategory;
 use App\Models\TicketLocation;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -18,37 +28,37 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class TicketResource extends Resource
 {
     protected static ?string $model = Ticket::class;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('title')
+        return $schema
+            ->components([
+                TextInput::make('title')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Textarea::make('description')
+                Textarea::make('description')
                     ->required(),
-                Forms\Components\Select::make('priority')
+                Select::make('priority')
                     ->options([
                         'Low' => 'Low',
                         'Medium' => 'Medium',
                         'High' => 'High',
                     ])
                     ->required(),
-                Forms\Components\Select::make('status')
+                Select::make('status')
                     ->options([
                         'Open' => 'Open',
                         'In Progress' => 'In Progress',
                         'Closed' => 'Closed',
                     ])
                     ->required(),
-                Forms\Components\Select::make('category_id')
+                Select::make('category_id')
                     ->label('Category')
                     ->options(TicketCategory::where('is_active', true)->pluck('name', 'id'))
                     ->searchable()
                     ->required(),
-                Forms\Components\Select::make('location_id')
+                Select::make('location_id')
                     ->label('Location')
                     ->options(TicketLocation::where('is_active', true)->pluck('name', 'id'))
                     ->searchable()
@@ -60,14 +70,14 @@ class TicketResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->label('Ticket ID')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('user.name')->label('User')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('title')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('priority')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('status')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('category.name')->label('Category')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('location.name')->label('Location')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('id')->label('Ticket ID')->sortable()->searchable(),
+                TextColumn::make('user.name')->label('User')->sortable()->searchable(),
+                TextColumn::make('title')->sortable()->searchable(),
+                TextColumn::make('priority')->sortable()->searchable(),
+                TextColumn::make('status')->sortable()->searchable(),
+                TextColumn::make('category.name')->label('Category')->sortable()->searchable(),
+                TextColumn::make('location.name')->label('Location')->sortable()->searchable(),
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->label('Created At')
                     ->sortable()
@@ -76,12 +86,12 @@ class TicketResource extends Resource
             ->filters([
                 
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -96,9 +106,9 @@ class TicketResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTickets::route('/tickets'),
-            'create' => Pages\CreateTicket::route('/tickets/create'),
-            'edit' => Pages\EditTicket::route('/tickets/{record}/edit'),
+            'index' => ListTickets::route('/tickets'),
+            'create' => CreateTicket::route('/tickets/create'),
+            'edit' => EditTicket::route('/tickets/{record}/edit'),
         ];
     }
 }

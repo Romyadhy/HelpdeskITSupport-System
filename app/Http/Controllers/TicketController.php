@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use App\Models\Ticket;
 use App\Models\TicketCategory;
 use App\Models\TicketLocation;
@@ -60,7 +61,7 @@ class TicketController extends Controller
 
             return redirect()->route('tickets.index')->with('success', 'Ticket created successfully.');
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 \Log::error('Error creating ticket: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
                 return back()->withErrors('An error occurred while creating the ticket. Please try again.');
             }
@@ -101,7 +102,7 @@ class TicketController extends Controller
                 $ticket->update($validated);
 
                 return redirect()->route('tickets.index')->with('success', 'Ticket updated successfully.');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 \Log::error('Error updating ticket: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
                 return back()->withErrors('error', 'An error occurred while updating the ticket.');
             }
@@ -154,7 +155,7 @@ class TicketController extends Controller
                     'assigned_to' => auth()->id(),
                 ]);
                 return redirect()->route('tickets.index')->with('success', 'Ticket started successfully.');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 \Log::error('Error starting ticket: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
                 return back()->withErrors('error', 'An error occurred while starting the ticket.');
             }
@@ -188,7 +189,7 @@ class TicketController extends Controller
                 ]);
                 return redirect()->route('tickets.index')->with('success', 'Ticket closed successfully.');
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 \Log::error('Error closing ticket: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
                 return back()->withErrors('Error', 'An error occurred while closing the ticket.');
             }
@@ -233,7 +234,7 @@ class TicketController extends Controller
             ]);
 
             return redirect()->route('tickets.index')->with('success', 'Escalated ticket now handled by Admin.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error handling escalated ticket: ' . $e->getMessage());
             return back()->withErrors('An error occurred while handling the escalated ticket.');
         }
