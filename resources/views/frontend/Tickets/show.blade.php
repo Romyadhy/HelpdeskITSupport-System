@@ -112,7 +112,7 @@
                         <i class="fas fa-user-cog mr-2"></i> Ditangani Oleh
                     </h4>
                     <p class="text-gray-700">
-                        {{ $ticket->solver->name ?? 'IT Support' }}
+                        {{ $ticket->assignee->name ?? 'Unknown' }}
                     </p>
                 </div>
             @endif

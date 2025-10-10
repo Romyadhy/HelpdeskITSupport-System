@@ -39,6 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
     Route::delete('/tickets/{ticket}', [TicketController::class, 'destroy'])->name('tickets.destroy');
     Route::post('/tickets/{ticket}/start', [TicketController::class, 'start'])->name('tickets.start');
+    Route::post('/tickets/{ticket}/take-over', [TicketController::class, 'takeOver'])->name('tickets.takeOver');
     Route::post('/tickets/{ticket}/close', [TicketController::class, 'close'])->name('tickets.close');
     Route::post('tickets/{ticket}/escalate', [TicketController::class, 'escalate'])->name('tickets.escalate');
     Route::post('/tickets/{ticket}/handle-escalated', [TicketController::class, 'handleEscalated'])->name('tickets.handleEscalated');

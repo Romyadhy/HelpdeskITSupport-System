@@ -120,6 +120,7 @@ class TicketController extends Controller
             // dd($ticket->location->name);
             // $tes = $ticket->load(['category', 'location', 'user', 'solver']);
             // dd($tes);
+            // dd($ticket->assignee->name);
             
             // calling manually
             $categoryName = TicketCategory::find($ticket->category_id)->name;
@@ -160,6 +161,22 @@ class TicketController extends Controller
                 return back()->withErrors('error', 'An error occurred while starting the ticket.');
             }
         }
+
+    public function takeOver($id)
+    {
+        $ticket = Ticket::findOrFail($id);
+
+        // check ticket status
+        if ($ticket->status === 'In Progress' && $ticket->assigned_to !== auth()->id()){
+            if (auth()->user()->can('take-over')) {
+                $ticket->save();
+                $ticket->update([
+                    'assigned_to' => auth()->id(),
+                ]);
+                return redirect()->route('tickets.index')->with('success', 'You have taken over the ticket.');
+            }
+        }
+    }
 
     public function close(Request $request, Ticket $ticket): RedirectResponse
         {

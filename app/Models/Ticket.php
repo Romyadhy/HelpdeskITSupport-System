@@ -63,6 +63,11 @@ class Ticket extends Model
         return $this->belongsTo(User::class, 'solved_by');
     }
 
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(TicketCategory::class, 'category_id');
