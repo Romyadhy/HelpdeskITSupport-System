@@ -2,11 +2,11 @@ app-layout>
 
 <x-slot name="header">
 
-<h2 class="font-semibold text-xl text-gray-800 leading-tight">
+    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
 
-Support Tickets
+        Support Tickets
 
-</h2>
+    </h2>
 
 </x-slot>
 
@@ -14,388 +14,343 @@ Support Tickets
 
 <div class="py-10 bg-gray-50 min-h-screen">
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
 
-<div>
+            <div>
 
-<h1 class="text-3xl font-bold text-teal-600">All Tickets</h1>
+                <h1 class="text-3xl font-bold text-teal-600">All Tickets</h1>
 
-<p class="text-gray-500 mt-1">Manage and track all support requests.</p>
+                <p class="text-gray-500 mt-1">Manage and track all support requests.</p>
 
-</div>
+            </div>
 
-<a href="{{ route('tickets.create') }}"
+            <a href="{{ route('tickets.create') }}"
+                class="mt-4 sm:mt-0 inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
 
-class="mt-4 sm:mt-0 inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
+                + New Ticket
 
-+ New Ticket
+            </a>
 
-</a>
+        </div>
 
-</div>
 
 
+        <div class="bg-white rounded-2xl shadow overflow-hidden">
 
-<div class="bg-white rounded-2xl shadow overflow-hidden">
+            <div class="overflow-x-auto">
 
-<div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-gray-700">
 
-<table class="min-w-full text-sm text-gray-700">
+                    <thead class="bg-gray-100">
 
-<thead class="bg-gray-100">
+                        <tr>
 
-<tr>
+                            <th class="px-6 py-3 text-left font-semibold">Ticket ID</th>
 
-<th class="px-6 py-3 text-left font-semibold">Ticket ID</th>
+                            <th class="px-6 py-3 text-left font-semibold">Subject</th>
 
-<th class="px-6 py-3 text-left font-semibold">Subject</th>
+                            <th class="px-6 py-3 text-left font-semibold hidden md:table-cell">User</th>
 
-<th class="px-6 py-3 text-left font-semibold hidden md:table-cell">User</th>
+                            <th class="px-6 py-3 text-left font-semibold">Status</th>
 
-<th class="px-6 py-3 text-left font-semibold">Status</th>
+                            <th class="px-6 py-3 text-left font-semibold">Priority</th>
 
-<th class="px-6 py-3 text-left font-semibold">Priority</th>
+                            <th class="px-6 py-3 text-left font-semibold">Actions</th>
 
-<th class="px-6 py-3 text-left font-semibold">Actions</th>
+                        </tr>
 
-</tr>
+                    </thead>
 
-</thead>
+                    <tbody class="divide-y divide-gray-100">
 
-<tbody class="divide-y divide-gray-100">
+                        @forelse($tickets as $ticket)
 
-@forelse($tickets as $ticket)
+                            <tr class="hover:bg-gray-50 transition">
 
-<tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 font-semibold text-gray-800">
 
-<td class="px-6 py-4 font-semibold text-gray-800">
+                                    #{{ str_pad($ticket->id, 4, '0', STR_PAD_LEFT) }}
 
-#{{ str_pad($ticket->id, 4, '0', STR_PAD_LEFT) }}
+                                </td>
 
-</td>
 
+                                <td class="px-6 py-4">
 
-<td class="px-6 py-4">
+                                    <div class="font-medium text-gray-900">{{ $ticket->title }}</div>
 
-<div class="font-medium text-gray-900">{{ $ticket->title }}</div>
+                                    <p class="text-xs text-gray-500 mt-1">
 
-<p class="text-xs text-gray-500 mt-1">
+                                        Created: {{ $ticket->created_at->format('Y-m-d') }}
 
-Created: {{ $ticket->created_at->format('Y-m-d') }}
+                                    </p>
 
-</p>
+                                </td>
 
-</td>
 
 
+                                <td class="px-6 py-4 hidden md:table-cell">
 
-<td class="px-6 py-4 hidden md:table-cell">
+                                    <div class="flex items-center">
 
-<div class="flex items-center">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center font-bold text-teal-600 mr-2">
 
-<div class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center font-bold text-teal-600 mr-2">
+                                            {{ strtoupper(substr($ticket->user->name ?? 'U', 0, 2)) }}
 
-{{ strtoupper(substr($ticket->user->name ?? 'U', 0, 2)) }}
+                                        </div>
 
-</div>
+                                        <span>{{ $ticket->user->name ?? 'Unknown' }}</span>
 
-<span>{{ $ticket->user->name ?? 'Unknown' }}</span>
+                                    </div>
 
-</div>
+                                </td>
 
-</td>
 
 
+                                <td class="px-6 py-4">
 
-<td class="px-6 py-4">
+                                    <span @class([
+                                        'px-3 py-1 text-xs font-semibold rounded-full',
+                                    
+                                        'bg-red-100 text-red-600' => $ticket->status === 'Open',
+                                    
+                                        'bg-yellow-100 text-yellow-700' => $ticket->status === 'In Progress',
+                                    
+                                        'bg-green-100 text-green-700' => $ticket->status === 'Closed',
+                                    
+                                        'bg-purple-100 text-purple-700' => $ticket->status === 'Escalated',
+                                    ])>
 
-<span @class([
+                                        {{ $ticket->status }}
 
-'px-3 py-1 text-xs font-semibold rounded-full',
+                                    </span>
 
-'bg-red-100 text-red-600' => $ticket->status === 'Open',
+                                </td>
 
-'bg-yellow-100 text-yellow-700' => $ticket->status === 'In Progress',
 
-'bg-green-100 text-green-700' => $ticket->status === 'Closed',
 
-'bg-purple-100 text-purple-700' => $ticket->status === 'Escalated',
+                                <td class="px-6 py-4">
 
-])>
+                                    <span @class([
+                                        'px-3 py-1 text-xs font-semibold rounded-full',
+                                    
+                                        'bg-red-100 text-red-600' => $ticket->priority === 'High',
+                                    
+                                        'bg-orange-100 text-orange-600' => $ticket->priority === 'Medium',
+                                    
+                                        'bg-green-100 text-green-700' => $ticket->priority === 'Low',
+                                    ])>
 
-{{ $ticket->status }}
+                                        {{ $ticket->priority }}
 
-</span>
+                                    </span>
 
-</td>
+                                </td>
 
 
 
-<td class="px-6 py-4">
+                                {{-- ACTION BUTTONS --}}
 
-<span @class([
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2">
 
-'px-3 py-1 text-xs font-semibold rounded-full',
+                                    {{-- View Detail --}}
 
-'bg-red-100 text-red-600' => $ticket->priority === 'High',
+                                    <a href="{{ route('tickets.show', $ticket->id) }}"
+                                        class="bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded-lg transition"
+                                        title="View Ticket">
 
-'bg-orange-100 text-orange-600' => $ticket->priority === 'Medium',
+                                        <i class="fas fa-eye"></i>
 
-'bg-green-100 text-green-700' => $ticket->priority === 'Low',
+                                    </a>
 
-])>
 
-{{ $ticket->priority }}
 
-</span>
+                                    {{-- Edit & Delete --}}
 
-</td>
+                                    @if ($ticket->status !== 'Closed' && (auth()->user()->isAdmin() || $ticket->user_id === auth()->id()))
+                                        <a href="{{ route('tickets.edit', $ticket->id) }}"
+                                            class="bg-blue-100 hover:bg-blue-200 text-blue-700 p-2 rounded-lg transition"
+                                            title="Edit Ticket">
 
+                                            <i class="fas fa-edit"></i>
 
+                                        </a>
 
-{{-- ACTION BUTTONS --}}
 
-<td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2">
 
-{{-- View Detail --}}
+                                        <form action="{{ route('tickets.destroy', $ticket->id) }}" method="POST"
+                                            class="inline"
+                                            onsubmit="return confirm('Are you sure you want to delete this ticket?');">
 
-<a href="{{ route('tickets.show', $ticket->id) }}"
+                                            @csrf
 
-class="bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded-lg transition"
+                                            @method('DELETE')
 
-title="View Ticket">
+                                            <button type="submit"
+                                                class="bg-red-100 hover:bg-red-200 text-red-700 p-2 rounded-lg transition"
+                                                title="Delete Ticket">
 
-<i class="fas fa-eye"></i>
+                                                <i class="fas fa-trash-alt"></i>
 
-</a>
+                                            </button>
 
+                                        </form>
+                                    @endif
 
 
-{{-- Edit & Delete --}}
 
-@if($ticket->status !== 'Closed' && (auth()->user()->isAdmin() || $ticket->user_id === auth()->id()))
 
-<a href="{{ route('tickets.edit', $ticket->id) }}"
 
-class="bg-blue-100 hover:bg-blue-200 text-blue-700 p-2 rounded-lg transition"
+                                    {{-- ===================== IT SUPPORT ACTIONS ===================== --}}
 
-title="Edit Ticket">
+                                    {{-- ===================== IT SUPPORT ACTIONS ===================== --}}
 
-<i class="fas fa-edit"></i>
+                                    @if (auth()->user()->isSupport() && $ticket->status !== 'Closed')
+                                        {{-- Jika tiket belum di-escalate --}}
 
-</a>
+                                        @if (!$ticket->is_escalation)
+                                            {{-- Tombol Assign selalu muncul (baik sudah diassign atau belum) --}}
 
+                                            <form action="{{ route('tickets.start', $ticket->id) }}" method="POST"
+                                                class="inline">
 
+                                                @csrf
 
-<form action="{{ route('tickets.destroy', $ticket->id) }}"
+                                                <button type="submit"
+                                                    class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 p-2 rounded-lg transition"
+                                                    title="Assign Ticket">
 
-method="POST" class="inline"
+                                                    <i class="fas fa-wrench"></i>
 
-onsubmit="return confirm('Are you sure you want to delete this ticket?');">
+                                                </button>
 
-@csrf
+                                            </form>
 
-@method('DELETE')
 
-<button type="submit"
 
-class="bg-red-100 hover:bg-red-200 text-red-700 p-2 rounded-lg transition"
+                                            {{-- Jika tiket sudah diassign ke support yang login --}}
 
-title="Delete Ticket">
+                                            @if ($ticket->assigned_to == auth()->id())
+                                                {{-- Tombol Escalate ke Admin --}}
 
-<i class="fas fa-trash-alt"></i>
+                                                <form action="{{ route('tickets.escalate', $ticket->id) }}"
+                                                    method="POST" class="inline">
 
-</button>
+                                                    @csrf
 
-</form>
+                                                    <button type="submit"
+                                                        class="bg-purple-100 hover:bg-purple-200 text-purple-700 p-2 rounded-lg transition"
+                                                        title="Escalate to Admin">
 
-@endif
+                                                        <i class="fas fa-level-up-alt"></i>
 
+                                                    </button>
 
+                                                </form>
 
 
 
-{{-- ===================== IT SUPPORT ACTIONS ===================== --}}
+                                                {{-- Form Close Ticket --}}
 
-{{-- ===================== IT SUPPORT ACTIONS ===================== --}}
+                                                <form action="{{ route('tickets.close', $ticket->id) }}" method="POST"
+                                                    class="inline-flex space-x-2">
 
-@if(auth()->user()->isSupport() && $ticket->status !== 'Closed')
+                                                    @csrf
 
-{{-- Jika tiket belum di-escalate --}}
+                                                    <input type="text" name="solution" placeholder="Solution..."
+                                                        class="border rounded px-2 text-xs" required>
 
-@if(!$ticket->is_escalation)
+                                                    <button type="submit"
+                                                        class="bg-green-100 hover:bg-green-200 text-green-700 p-2 rounded-lg transition"
+                                                        title="Close Ticket">
 
-{{-- Tombol Assign selalu muncul (baik sudah diassign atau belum) --}}
+                                                        <i class="fas fa-check"></i>
 
-<form action="{{ route('tickets.start', $ticket->id) }}" method="POST" class="inline">
+                                                    </button>
 
-@csrf
+                                                </form>
+                                            @endif
+                                        @endif
+                                    @endif
 
-<button type="submit"
 
-class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 p-2 rounded-lg transition"
 
-title="Assign Ticket">
 
-<i class="fas fa-wrench"></i>
 
-</button>
 
-</form>
 
+                                    {{-- ===================== ADMIN ACTIONS ===================== --}}
 
+                                    @if (auth()->user()->isAdmin() && $ticket->is_escalation && $ticket->status !== 'Closed')
+                                        {{-- Jika tiket belum diassign ke siapapun --}}
 
-{{-- Jika tiket sudah diassign ke support yang login --}}
+                                        @if (!$ticket->assigned_to)
+                                            {{-- Tombol Assign (replace semua tombol lainnya) --}}
 
-@if($ticket->assigned_to == auth()->id())
+                                            <form action="{{ route('tickets.start', $ticket->id) }}" method="POST"
+                                                class="inline">
 
-{{-- Tombol Escalate ke Admin --}}
+                                                @csrf
 
-<form action="{{ route('tickets.escalate', $ticket->id) }}" method="POST" class="inline">
+                                                <button type="submit"
+                                                    class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 p-2 rounded-lg transition"
+                                                    title="Assign Ticket">
 
-@csrf
+                                                    <i class="fas fa-user-check"></i>
 
-<button type="submit"
+                                                </button>
 
-class="bg-purple-100 hover:bg-purple-200 text-purple-700 p-2 rounded-lg transition"
+                                            </form>
+                                        @elseif($ticket->assigned_to == auth()->id())
+                                            {{-- Setelah diassign, tampilkan input solusi --}}
 
-title="Escalate to Admin">
+                                            <form action="{{ route('tickets.close', $ticket->id) }}" method="POST"
+                                                class="inline-flex space-x-2">
 
-<i class="fas fa-level-up-alt"></i>
+                                                @csrf
 
-</button>
+                                                <input type="text" name="solution" placeholder="Admin Solution..."
+                                                    class="border rounded px-2 text-xs" required>
 
-</form>
+                                                <button type="submit"
+                                                    class="bg-green-100 hover:bg-green-200 text-green-700 p-2 rounded-lg transition"
+                                                    title="Close as Admin">
 
+                                                    <i class="fas fa-check"></i>
 
+                                                </button>
 
-{{-- Form Close Ticket --}}
+                                            </form>
+                                        @endif
+                                    @endif
 
-<form action="{{ route('tickets.close', $ticket->id) }}" method="POST" class="inline-flex space-x-2">
+                                </td>
 
-@csrf
 
-<input type="text"
 
-name="solution"
+                            </tr>
 
-placeholder="Solution..."
+                        @empty
 
-class="border rounded px-2 text-xs"
+                            <tr>
 
-required>
+                                <td colspan="6" class="px-6 py-8 text-center text-gray-500">No tickets found.</td>
 
-<button type="submit"
+                            </tr>
 
-class="bg-green-100 hover:bg-green-200 text-green-700 p-2 rounded-lg transition"
+                        @endforelse
 
-title="Close Ticket">
+                    </tbody>
 
-<i class="fas fa-check"></i>
+                </table>
 
-</button>
+            </div>
 
-</form>
+        </div>
 
-@endif
-
-@endif
-
-@endif
-
-
-
-
-
-
-
-{{-- ===================== ADMIN ACTIONS ===================== --}}
-
-@if(auth()->user()->isAdmin() && $ticket->is_escalation && $ticket->status !== 'Closed')
-
-{{-- Jika tiket belum diassign ke siapapun --}}
-
-@if(!$ticket->assigned_to)
-
-{{-- Tombol Assign (replace semua tombol lainnya) --}}
-
-<form action="{{ route('tickets.start', $ticket->id) }}" method="POST" class="inline">
-
-@csrf
-
-<button type="submit"
-
-class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 p-2 rounded-lg transition"
-
-title="Assign Ticket">
-
-<i class="fas fa-user-check"></i>
-
-</button>
-
-</form>
-
-@elseif($ticket->assigned_to == auth()->id())
-
-{{-- Setelah diassign, tampilkan input solusi --}}
-
-<form action="{{ route('tickets.close', $ticket->id) }}" method="POST" class="inline-flex space-x-2">
-
-@csrf
-
-<input type="text"
-
-name="solution"
-
-placeholder="Admin Solution..."
-
-class="border rounded px-2 text-xs"
-
-required>
-
-<button type="submit"
-
-class="bg-green-100 hover:bg-green-200 text-green-700 p-2 rounded-lg transition"
-
-title="Close as Admin">
-
-<i class="fas fa-check"></i>
-
-</button>
-
-</form>
-
-@endif
-
-@endif
-
-</td>
-
-
-
-</tr>
-
-@empty
-
-<tr>
-
-<td colspan="6" class="px-6 py-8 text-center text-gray-500">No tickets found.</td>
-
-</tr>
-
-@endforelse
-
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
-</div>
+    </div>
 
 </div>
 

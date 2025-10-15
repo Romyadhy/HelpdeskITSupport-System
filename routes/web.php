@@ -53,6 +53,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/tasks/{ticket}', [TaskController::class, 'update'])->name('tasks.update');
     Route::get('/tasks/{ticket}', [TaskController::class, 'show'])->name('tasks.show');
     Route::delete('/tasks/{ticket}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+    Route::post('/tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
+    
 });
 
 require __DIR__.'/auth.php';

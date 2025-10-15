@@ -24,159 +24,176 @@
 
                 {{-- Daily Tasks --}}
                 <div id="daily" class="p-6">
-                    <h3 class="text-lg font-semibold mb-4 text-gray-700">
-                        📅 Daily Tasks
-                    </h3>
-                    @can('create-task')    
-                        <a href="{{ route('tasks.create') }}" 
-                            class="mt-4 mb-4 sm:mt-0 inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
-                            + New Tasks
-                        </a>
-                    @endcan
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-700">📅 Daily Tasks</h3>
+                        @can('create-task')
+                            <a href="{{ route('tasks.create') }}"
+                                class="inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
+                                <i class="fas fa-plus mr-2"></i> New Task
+                            </a>
+                        @endcan
+                    </div>
 
-                    @if($dailyTasks->isEmpty())
-                        <p class="text-gray-500 italic">Belum ada tugas harian yang terdaftar.</p>
-                    @else
-                        <div class="overflow-x-auto">
-                             @if (session('success'))
-                                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                                    <strong class="font-bold">Success!</strong>
-                                    <span class="block sm:inline">{{ session('success') }}</span>
-                                </div>
-                            @endif
-
-                            @if (session('error'))
-                                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                                    <strong class="font-bold">Error!</strong>
-                                    <span class="block sm:inline">{{ session('error') }}</span>
-                                </div>
-                            @endif
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Title</th>
-                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Description</th>
-                                        <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Status</th>
-                                        <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Frequency</th>
-                                        <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100">
-                                    @foreach($dailyTasks as $task)
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-4 py-2 text-gray-800 font-semibold">{{ $task->title }}</td>
-                                            <td class="px-4 py-2 text-gray-600">{{ $task->description ?? '-' }}</td>
-                                            <td class="px-4 py-2 text-center">
-                                                @if($task->is_active)
-                                                    <span class="px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">
-                                                        Active
-                                                    </span>
-                                                @else
-                                                    <span class="px-2 py-1 text-xs font-semibold text-gray-700 bg-gray-200 rounded-full">
-                                                        Inactive
-                                                    </span>
-                                                @endif
-                                            </td>
-                                            <td class="px-4 py-2 text-center capitalize text-gray-700">
-                                                {{ $task->frequency }}
-                                            </td>
-                                            <td class="px-4 py-2 text-center">
-                                                
-                                                <a href="{{ route('tasks.show', $task->id) }}"
-                                                    class="inline-block px-3 py-1 text-sm text-teal-600 hover:text-teal-800">
-                                                    Show
-                                                </a>
-                                                @can('edit-task', $task)    
-                                                <a href="{{ route('tasks.edit', $task->id) }}"
-                                                    class="inline-block px-3 py-1 text-sm text-teal-600 hover:text-teal-800">
-                                                    Edit
-                                                </a>
-                                                @endcan
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                    @if (session('success'))
+                        <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
+                            role="alert">
+                            <span class="block sm:inline">{{ session('success') }}</span>
                         </div>
                     @endif
+                    @if (session('error'))
+                        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+                            role="alert">
+                            <span class="block sm:inline">{{ session('error') }}</span>
+                        </div>
+                    @endif
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th
+                                        class="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                                        Title</th>
+                                    <th
+                                        class="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                                        Status</th>
+                                    <th
+                                        class="px-4 py-2 text-center text-sm font-medium text-gray-700">
+                                        Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @forelse($dailyTasks as $task)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 text-gray-800 font-semibold">
+                                            {{ $task->title }}</td>
+
+                                        <td class="px-4 py-3 text-left">
+                                            @if (in_array($task->id, $completedTodayIds))
+                                                <span
+                                                    class="px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">Completed</span>
+                                            @else
+                                                <span
+                                                    class="px-2 py-1 text-xs font-semibold text-yellow-700 bg-yellow-100 rounded-full">Pending</span>
+                                            @endif
+                                        </td>
+
+                                        <td class="px-4 py-3 text-center">
+                                            {{-- Aksi untuk Admin (CRUD) --}}
+                                            <a href="{{ route('tasks.show', $task->id) }}" title="Show"
+                                                class="inline-block px-2 py-1 text-sm text-gray-500 hover:text-gray-800"><i
+                                                class="fas fa-eye"></i>
+                                            </a>
+                                            @can('edit-task')
+                                                <a href="{{ route('tasks.edit', $task->id) }}" title="Edit"
+                                                    class="inline-block px-2 py-1 text-sm text-teal-600 hover:text-teal-800"><i
+                                                        class="fas fa-edit"></i></a>
+                                            @endcan
+
+                                            {{-- Aksi untuk IT Support (Checklist) --}}
+                                            @can('checked-task')
+                                                @if (!in_array($task->id, $completedTodayIds))
+                                                    <form action="{{ route('tasks.complete', $task) }}" method="POST"
+                                                        class="inline">
+                                                        @csrf
+                                                        <button type="submit" title="Mark as Complete"
+                                                            class="px-3 py-1 text-sm text-green-600 hover:text-green-800">
+                                                            <i class="fas fa-check-circle"></i> Mark Complete
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            @endcan
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4 text-gray-500">No daily tasks found.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                {{-- Monthly Tasks --}}
+                {{-- Monthly Tasks (Logika Serupa) --}}
                 <div id="monthly" class="p-6 hidden">
-                    <h3 class="text-lg font-semibold mb-4 text-gray-700">
-                        🗓️ Monthly Tasks
-                    </h3>
-                    @can('create-task')    
-                    <a href="{{ route('tasks.create') }}" 
-                       class="mt-4 mb-4 sm:mt-0 inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
-                       + New Tasks
-                   </a>
-                    @endcan
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-700">🗓️ Monthly Tasks</h3>
+                        @can('manage-tasks')
+                            <a href="{{ route('tasks.create') }}"
+                                class="inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
+                                <i class="fas fa-plus mr-2"></i> New Task
+                            </a>
+                        @endcan
+                    </div>
+                    <div class="overflow-x-auto">
+                         <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th
+                                        class="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                                        Title</th>
+                                    <th
+                                        class="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                                        Status</th>
+                                    <th
+                                        class="px-4 py-2 text-center text-sm font-medium text-gray-700">
+                                        Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @forelse($monthlyTasks as $task)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 text-gray-800 font-semibold">
+                                            {{ $task->title }}</td>
 
-                    @if($monthlyTasks->isEmpty())
-                        <p class="text-gray-500 italic">Belum ada tugas bulanan yang terdaftar.</p>
-                    @else
-                        <div class="overflow-x-auto">
-                             @if (session('success'))
-                                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                                    <strong class="font-bold">Success!</strong>
-                                    <span class="block sm:inline">{{ session('success') }}</span>
-                                </div>
-                            @endif
+                                        <td class="px-4 py-3 text-left">
+                                            @if (in_array($task->id, $completedTodayIds))
+                                                <span
+                                                    class="px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">Completed</span>
+                                            @else
+                                                <span
+                                                    class="px-2 py-1 text-xs font-semibold text-yellow-700 bg-yellow-100 rounded-full">Pending</span>
+                                            @endif
+                                        </td>
 
-                            @if (session('error'))
-                                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                                    <strong class="font-bold">Error!</strong>
-                                    <span class="block sm:inline">{{ session('error') }}</span>
-                                </div>
-                            @endif
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Title</th>
-                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Description</th>
-                                        <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Status</th>
-                                        <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Frequency</th>
-                                        <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100">
-                                    @foreach($monthlyTasks as $task)
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-4 py-2 text-gray-800 font-semibold">{{ $task->title }}</td>
-                                            <td class="px-4 py-2 text-gray-600">{{ $task->description ?? '-' }}</td>
-                                            <td class="px-4 py-2 text-center">
-                                                @if($task->is_active)
-                                                    <span class="px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">
-                                                        Active
-                                                    </span>
-                                                @else
-                                                    <span class="px-2 py-1 text-xs font-semibold text-gray-700 bg-gray-200 rounded-full">
-                                                        Inactive
-                                                    </span>
+                                        <td class="px-4 py-3 text-center">
+                                            {{-- Aksi untuk Admin (CRUD) --}}
+                                            <a href="{{ route('tasks.show', $task->id) }}" title="Show"
+                                                class="inline-block px-2 py-1 text-sm text-gray-500 hover:text-gray-800"><i
+                                                class="fas fa-eye"></i>
+                                            </a>
+                                            @can('edit-task')
+                                                <a href="{{ route('tasks.edit', $task->id) }}" title="Edit"
+                                                    class="inline-block px-2 py-1 text-sm text-teal-600 hover:text-teal-800"><i
+                                                        class="fas fa-edit"></i></a>
+                                            @endcan
+
+                                            {{-- Aksi untuk IT Support (Checklist) --}}
+                                            @can('checked-task')
+                                                @if (!in_array($task->id, $completedTodayIds))
+                                                    <form action="{{ route('tasks.complete', $task) }}" method="POST"
+                                                        class="inline">
+                                                        @csrf
+                                                        <button type="submit" title="Mark as Complete"
+                                                            class="px-3 py-1 text-sm text-green-600 hover:text-green-800">
+                                                            <i class="fas fa-check-circle"></i> Mark Complete
+                                                        </button>
+                                                    </form>
                                                 @endif
-                                            </td>
-                                            <td class="px-4 py-2 text-center capitalize text-gray-700">
-                                                {{ $task->frequency }}
-                                            </td>
-                                            <td class="px-4 py-2 text-center">
-                                                <a href="{{ route('tasks.show', $task->id) }}"
-                                                    class="inline-block px-3 py-1 text-sm text-teal-600 hover:text-teal-800">
-                                                    Show
-                                                </a>
-                                                @can('edit-task', $task)    
-                                                <a href="{{ route('tasks.edit', $task->id) }}"
-                                                    class="inline-block px-3 py-1 text-sm text-teal-600 hover:text-teal-800">
-                                                    Edit
-                                                </a>
-                                                @endcan
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @endif
+                                            @endcan
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4 text-gray-500">No daily tasks found.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
             </div>
