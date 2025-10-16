@@ -3,7 +3,7 @@
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             Create New Task
         </h2>
-         <a href="{{ route('tasks.index') }}" class="mt-4 inline-block bg-teal-500 text-white py-2 px-4 rounded-lg">Back to Task</a>
+         <a href="{{ route('tasks.daily') }}" class="mt-4 inline-block bg-teal-500 text-white py-2 px-4 rounded-lg">Back to Task</a>
     </x-slot>
 
     <div class="py-12">
@@ -28,8 +28,8 @@
                         <div class="mt-4">
                             <x-input-label for="frequency" :value="__('Frequency')" />
                             <select name="frequency" id="frequency" class="block mt-1 w-full border-gray-300 focus:border-teal-500 focus:ring-teal-500 rounded-md shadow-sm">
-                                <option value="Daily">Daily</option>
-                                <option value="Monthly">Monthly</option>
+                                <option value="daily">Daily</option>
+                                <option value="monthly">Monthly</option>
                             </select>
                         </div>
 

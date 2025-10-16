@@ -14,55 +14,83 @@ use PhpParser\Node\Stmt\TryCatch;
 
 class TaskController extends Controller
 {
-    public function index()
+    // public function index()
+    // {
+    //     // Logic to list tasks
+    //     // $dailyTasks = Task::where('frequency', 'daily')->get();
+    //     // $monthlyTasks = Task::where('frequency', 'monthly')->get();
+
+    //     // return view('frontend.Tasks.index', compact('dailyTasks', 'monthlyTasks'));
+
+    //     Gate::authorize('view-tasks');
+
+    //     $dailyTasks = Task::where('frequency', 'daily')->get();
+    //     $monthlyTasks = Task::where('frequency', 'monthly')->get();
+
+    //     $completedTodayIds = TaskCompletion::where('user_id', auth()->id())
+    //         ->whereDate('complated_at', today())
+    //         ->pluck('task_id')
+    //         ->toArray();
+
+    //     $complatedMonthly = TaskCompletion::where('user_id', auth()->id())
+    //         // ->whereDate('complate_at', monthly())
+    //         ->whereMonth('complated_at', now()->month)
+    //         ->whereYear('complated_at', now()->year)
+    //         ->pluck('task_id')
+    //         ->toArray();
+
+    //     return view('frontend.Tasks.index', compact('dailyTasks', 'monthlyTasks',  'completedTodayIds', 'complatedMonthly'));
+    // }
+
+    public function daily()
     {
-        // Logic to list tasks
-        // $dailyTasks = Task::where('frequency', 'daily')->get();
-        // $monthlyTasks = Task::where('frequency', 'monthly')->get();
+        // $tasks = Task::where('frequency', 'daily')->orderBy('title')->get()->where('is_active', true);
+        $isAdmin = auth()->user()->hasRole('admin'); // atau sesuaikan dengan sistem role kamu
 
-        // return view('frontend.Tasks.index', compact('dailyTasks', 'monthlyTasks'));
+        // Kalau admin, tampilkan semua task; kalau support, hanya yang aktif
+        $tasksQuery = Task::where('frequency', 'daily')->orderBy('title');
 
-        Gate::authorize('view-tasks');
+        if (!$isAdmin) {
+            $tasksQuery->where('is_active', true);
+        }
 
-        $dailyTasks = Task::where('frequency', 'daily')->get();
-        $monthlyTasks = Task::where('frequency', 'monthly')->get();
+        $tasks = $tasksQuery->get();
+        $completedTodays = TaskCompletion::whereDate('complated_at', today())->pluck('task_id')->unique()->toArray();
 
-        $completedTodayIds = TaskCompletion::where('user_id', auth()->id())
-            ->whereDate('complated_at', today())
-            ->pluck('task_id')
-            ->toArray();
-        
-        $complatedMonthly = TaskCompletion::where('user_id', auth()->id())
-            // ->whereDate('complate_at', monthly())
-            ->whereMonth('complated_at', now()->month)
-            ->whereYear('complated_at', now()->year)
-            ->pluck('task_id')
-            ->toArray();
+        return view('frontend.Tasks.daily', compact('tasks', 'completedTodays'));
+    }
 
-        return view('frontend.Tasks.index', compact('dailyTasks', 'monthlyTasks',  'completedTodayIds', 'complatedMonthly'));
+    public function monthly()
+    {
+        // $tasks = Task::where('frequency', 'monthly')
+        //     ->orderBy('title')
+        //     ->where('is_active', true)
+        //     ->get();
+
+        $isAdmin = auth()->user()->hasRole('admin');
+
+        $tasksQuery = Task::where('frequency', 'monthly')->orderBy('title');
+
+        if (!$isAdmin) {
+            $tasksQuery->where('is_active', true);
+        }
+
+        $tasks = $tasksQuery->get();
+        $completedMonthlys = TaskCompletion::whereMonth('complated_at', now()->month)->whereYear('complated_at', now()->year)->pluck('task_id')->toArray();
+
+        return view('frontend.Tasks.monthly', compact('tasks', 'completedMonthlys'));
     }
 
     public function show(Task $task)
     {
-        // logic to show detail
-        // $titletes = Task::all();
-        // dd($titletes);
-        // return view('frontend.Tasks.show', compact('task'));
         Gate::authorize('view-tasks');
 
-        // Ambil semua completion untuk task ini
-        $completions = $task->completions()
-            ->with('user')
-            ->orderByDesc('complated_at')
-            ->get();
+        $completions = $task->completions()->with('user')->orderByDesc('complated_at')->get();
 
-        // Hitung berapa kali diselesaikan bulan ini
-        $completedCountThisMonth = $task->completions()
-            ->whereMonth('complated_at', now()->month)
-            ->whereYear('complated_at', now()->year)
-            ->count();
-        
-        // dd($completedCountThisMonth);
+        $completedCountThisMonth = $task->completions()->whereMonth('complated_at', now()->month)->whereYear('complated_at', now()->year)->count();
+
+        // dd($task->title);
+        // dd($task->toArray());
 
         return view('frontend.Tasks.show', compact('task', 'completions', 'completedCountThisMonth'));
     }
@@ -80,7 +108,7 @@ class TaskController extends Controller
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
-                'frequency' => 'required|in:Daily,Monthly',
+                'frequency' => 'required|in:daily,monthly',
                 // 'is_active' => 'nullable'
             ]);
 
@@ -91,7 +119,7 @@ class TaskController extends Controller
                 // 'is_active' => $validated['is_active'],
             ]);
 
-            return redirect()->route('tasks.index')->with('success', 'Task created successfully');
+            return redirect()->route('tasks.daily')->with('success', 'Task created successfully');
         } catch (Exception $e) {
             \Log::error('Eror creating ticket: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
             return back()->withErrors('An error occurred while creating the task.');
@@ -105,23 +133,29 @@ class TaskController extends Controller
         return view('frontend.Tasks.edit', compact('task'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Task $task)
     {
         // Logic to update a task
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'frequency' => 'required|in:daily,monthly',
+        ]);
+
+        $task->update($validated);
+
+        return redirect()->route('tasks.show', $task->id)->with('success', 'Task updated successfully!');
     }
 
-    public function destroy($id)
+    public function destroy(Task $task)
     {
         // Logic to delete a task
+        $task->delete();
+        return redirect()->route('tasks.daily')->with('success', 'Task deleted successfully!');
     }
 
     public function complete(Request $request, Task $task)
     {
-        // Gate::authorize('checked-task');
-        Gate::define('checked-task', function ($user) {
-            return in_array($user->role, ['admin', 'support', 'manager']);
-        });
-
         $alreadyDone = TaskCompletion::where('task_id', $task->id)
             ->where('user_id', auth()->id())
             ->whereDate('complated_at', today())

@@ -99,7 +99,7 @@
 
             {{-- Back Button --}}
             <div class="mt-8 flex justify-end">
-                <a href="{{ route('tasks.index') }}"
+                <a href="{{ route('tasks.daily') }}"
                     class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-lg shadow transition">
                     <i class="fas fa-arrow-left mr-2"></i> Back to Tasks
                 </a>

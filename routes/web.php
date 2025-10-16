@@ -46,13 +46,18 @@ Route::middleware('auth')->group(function () {
     Route::post('/tickets/{ticket}/handle-escalated', [TicketController::class, 'handleEscalated'])->name('tickets.handleEscalated');
 
     // Tasks Route
-    Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
+    // Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
+
+    Route::get('tasks/daily', [TaskController::class, 'daily'])->name('tasks.daily');
+    Route::get('tasks/monthly', [TaskController::class, 'monthly'])->name('tasks.monthly');
+
     Route::get('/tasks/create', [TaskController::class, 'create'])->name('tasks.create');
     Route::post('/tasks/store', [TaskController::class, 'store'])->name('tasks.store');
-    Route::get('/tasks/{ticket}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
-    Route::patch('/tasks/{ticket}', [TaskController::class, 'update'])->name('tasks.update');
-    Route::get('/tasks/{ticket}', [TaskController::class, 'show'])->name('tasks.show');
-    Route::delete('/tasks/{ticket}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+    Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
+    Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
+    Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
+    Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+
     Route::post('/tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
     
 });
