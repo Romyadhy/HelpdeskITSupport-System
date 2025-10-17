@@ -44,6 +44,18 @@
                 </select>
             </div>
 
+            {{-- Activated --}}
+            <div class="mb-4">
+                <label class="block text-gray-700 font-medium mb-2">Activated</label>
+                <select name="is_active" class="w-full border-gray-300 rounded-lg focus:ring focus:ring-emerald-300 p-2" required>
+                    <option value="1" {{ $task->is_active ? 'selected' : '' }}>Active</option>
+                    <option value="0" {{ !$task->is_active ? 'selected' : '' }}>Inactive</option>
+                </select>
+                @error('is_active')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
             <div class="flex justify-end gap-2">
                 <a href="{{ route('tasks.show', $task->id) }}"
                     class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Cancel</a>

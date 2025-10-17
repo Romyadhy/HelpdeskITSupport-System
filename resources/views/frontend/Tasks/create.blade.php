@@ -11,7 +11,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <form method="POST" action="{{ route('tasks.store') }}">
-                        @csrf 
+                        @csrf
 
                         <div>
                             <x-input-label for="title" :value="__('Title')" />
@@ -33,7 +33,14 @@
                             </select>
                         </div>
 
-                      
+
+                        <div class="mt-4">
+                            <x-input-label for="is_active" :value="__('Activated')" \>
+                            <select name="is_active" id="is_active" class="block mt-1 w-full border-gray-300 focus:border-teal-500 focus:ring-teal-500 rounded-md shadow-sm">
+                                <option value="1" {{old('is_active') == 1 ? 'selected': ''}}>Active</option>
+                                <option value="0" {{old('is_active') == 0 ? 'selected': ''}}>Inactive</option>
+                            </select>
+                        </div>
 
                         <div class="flex items-center justify-end mt-4">
                             <x-primary-button>

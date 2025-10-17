@@ -103,20 +103,19 @@ class TaskController extends Controller
 
     public function store(Request $request)
     {
-        // Logic to store a new task
         try {
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
                 'frequency' => 'required|in:daily,monthly',
-                // 'is_active' => 'nullable'
+                'is_active' => 'nullable|boolean',
             ]);
 
             Task::create([
                 'title' => $validated['title'],
                 'description' => $validated['description'],
                 'frequency' => $validated['frequency'],
-                // 'is_active' => $validated['is_active'],
+                'is_active' => $validated['is_active'],
             ]);
 
             return redirect()->route('tasks.daily')->with('success', 'Task created successfully');
@@ -140,6 +139,7 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'frequency' => 'required|in:daily,monthly',
+            'is_active' => 'nullable|boolean'
         ]);
 
         $task->update($validated);

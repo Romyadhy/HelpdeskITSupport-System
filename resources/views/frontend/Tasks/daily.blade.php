@@ -1,4 +1,3 @@
-{{-- resources/views/frontend/Tasks/daily.blade.php --}}
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">Daily / Monthly Tasks</h2>
@@ -57,7 +56,7 @@
                                 @forelse($tasks as $task)
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-4 py-3 font-semibold text-gray-800">{{ $task->title }}</td>
-                                        
+
                                         @if (auth()->user()->hasRole('admin'))
                                             <td class="px-4 py-3">
                                                 @if ($task->is_active)
