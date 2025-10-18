@@ -79,46 +79,49 @@
                                             @endif
                                         </td>
 
-                                        <td class="px-4 py-3 text-center space-x-2">
-                                            <a href="{{ route('tasks.show', $task) }}" title="Detail"
-                                                class="inline-block px-2 py-1 text-gray-500 hover:text-gray-800">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-
-                                            @can('edit-task')
-                                                <a href="{{ route('tasks.edit', $task) }}" title="Edit"
-                                                    class="inline-block px-2 py-1 text-teal-600 hover:text-teal-800">
-                                                    <i class="fas fa-edit"></i>
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center justify-center gap-3">
+                                                <a href="{{ route('tasks.show', $task) }}" title="Detail"
+                                                    class="inline-block px-2 py-1 text-gray-500 hover:text-gray-800">
+                                                    <i class="fas fa-eye"></i>
                                                 </a>
-                                            @endcan
 
-                                            @can('delete-task')
-                                                <form action="{{ route('tasks.destroy', $task->id) }}" method="POST"
-                                                    onsubmit="return confirm('Are you sure you want to delete this task?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                        class="inline-block px-2 py-1 text-red-400 hover:text-red-600">
-                                                        <i class="fa-solid fa-trash"></i>
-                                                    </button>
-                                                </form>
-                                            @endcan
+                                                @can('edit-task')
+                                                    <a href="{{ route('tasks.edit', $task) }}" title="Edit"
+                                                        class="inline-block px-2 py-1 text-teal-600 hover:text-teal-800">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                @endcan
 
-                                            @can('checked-task')
-                                                {{-- @if (!in_array($task->id, $completedTodays)) --}}
-                                                <form action="{{ route('tasks.complete', $task) }}" method="POST"
-                                                    class="inline">
-                                                    @csrf
-                                                    <button type="submit" class="px-3 py-1 text-sm">
-                                                        @if (!in_array($task->id, $completedTodays))
-                                                            <i class="far fa-circle text-gray-400 hover:text-green-600"></i>
-                                                        @else
-                                                            <i class="fas fa-check-circle text-green-500"></i>
-                                                        @endif
-                                                    </button>
-                                                </form>
-                                                {{-- @endif --}}
-                                            @endcan
+                                                @can('delete-task')
+                                                    <form action="{{ route('tasks.destroy', $task->id) }}" method="POST"
+                                                        onsubmit="return confirm('Are you sure you want to delete this task?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="inline-block px-2 py-1 text-red-400 hover:text-red-600">
+                                                            <i class="fa-solid fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                @endcan
+
+                                                @can('checked-task')
+                                                    {{-- @if (!in_array($task->id, $completedTodays)) --}}
+                                                    <form action="{{ route('tasks.complete', $task) }}" method="POST"
+                                                        class="inline">
+                                                        @csrf
+                                                        <button type="submit" class="px-3 py-1 text-sm">
+                                                            @if (!in_array($task->id, $completedTodays))
+                                                                <i
+                                                                    class="far fa-circle text-gray-400 hover:text-green-600"></i>
+                                                            @else
+                                                                <i class="fas fa-check-circle text-green-500"></i>
+                                                            @endif
+                                                        </button>
+                                                    </form>
+                                                    {{-- @endif --}}
+                                                @endcan
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
