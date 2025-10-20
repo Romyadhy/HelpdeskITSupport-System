@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\DailyReportController;
+use App\Http\Controllers\MonthlyReportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TicketController;
@@ -59,6 +61,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 
     Route::post('/tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
+
+    // Report Route
+    Route::get('reports/daily', [DailyReportController::class, 'index'])->name('reports.daily');
+    Route::get('reports/monthly', [MonthlyReportController::class, 'index'])->name('reports.monthly');
     
 });
 
