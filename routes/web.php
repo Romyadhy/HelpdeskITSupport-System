@@ -63,8 +63,41 @@ Route::middleware('auth')->group(function () {
     Route::post('/tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
 
     // Report Route
-    Route::get('reports/daily', [DailyReportController::class, 'index'])->name('reports.daily');
-    Route::get('reports/monthly', [MonthlyReportController::class, 'index'])->name('reports.monthly');
+    // Route::get('reports/daily', [DailyReportController::class, 'index'])->name('reports.daily');
+    // Route::get('reports/monthly', [MonthlyReportController::class, 'index'])->name('reports.monthly');
+    // === DAILY REPORT ===
+    Route::get('reports/daily', [DailyReportController::class, 'index'])
+        ->name('reports.daily');
+        // ->middleware('permission:view-daily-reports');
+    
+    Route::get('reports/daily/create', [DailyReportController::class, 'create'])
+        ->name('reports.daily.create');
+
+    Route::post('reports/daily', [DailyReportController::class, 'store'])
+        ->name('reports.daily.store');
+        // ->middleware('permission:create-daily-report');
+
+    Route::put('reports/daily/{id}/verify', [DailyReportController::class, 'verify'])
+        ->name('reports.daily.verify');
+        // ->middleware('permission:verify-daily-report');
+
+
+    // === MONTHLY REPORT ===
+    Route::get('reports/monthly', [MonthlyReportController::class, 'index'])
+        ->name('reports.monthly');
+        // ->middleware('permission:view-monthly-reports');
+
+    Route::post('reports/monthly', [MonthlyReportController::class, 'store'])
+        ->name('reports.monthly.store');
+        // ->middleware('permission:create-monthly-report');
+
+    Route::put('reports/monthly/{id}', [MonthlyReportController::class, 'update'])
+        ->name('reports.monthly.update');
+        // ->middleware('permission:edit-monthly-report');
+
+    Route::delete('reports/monthly/{id}', [MonthlyReportController::class, 'destroy'])
+        ->name('reports.monthly.destroy');
+        // ->middleware('permission:delete-monthly-report');
     
 });
 

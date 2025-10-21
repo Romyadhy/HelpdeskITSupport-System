@@ -14,24 +14,7 @@ use Carbon\Interval;
 class Ticket extends Model
 {
     use HasFactory;
-    protected $fillable = [
-        'title',
-        'description',
-        'status',
-        'priority',
-        'user_id',
-        'solution',
-        'solved_by',
-        'started_at',
-        'solved_at',
-        'assigned_to',
-        'duration',
-        'category_id',
-        'location_id',
-        'is_escalation',
-        'escalated_at',
-
-    ];
+    protected $fillable = ['title', 'description', 'status', 'priority', 'user_id', 'solution', 'solved_by', 'started_at', 'solved_at', 'assigned_to', 'duration', 'category_id', 'location_id', 'is_escalation', 'escalated_at'];
 
     protected $casts = [
         'started_at' => 'datetime',
@@ -47,9 +30,13 @@ class Ticket extends Model
         }
         $ci = CarbonInterval::minutes($this->duration)->cascade();
         $parts = [];
-        if ($ci->d) $parts[] = $ci->d.'d';
-        if ($ci->h) $parts[] = $ci->h.'h';
-        $parts[] = ($ci->i ?: 0).'m';
+        if ($ci->d) {
+            $parts[] = $ci->d . 'd';
+        }
+        if ($ci->h) {
+            $parts[] = $ci->h . 'h';
+        }
+        $parts[] = ($ci->i ?: 0) . 'm';
         return implode(' ', $parts);
     }
 
@@ -77,5 +64,9 @@ class Ticket extends Model
     {
         return $this->belongsTo(TicketLocation::class, 'location_id');
     }
-    
+
+    public function dailyReports()
+    {
+        return $this->belongsToMany(DailyReport::class, 'daily_report_tickets');
+    }
 }

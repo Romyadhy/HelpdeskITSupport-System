@@ -22,4 +22,9 @@ class Task extends Model
     {
         return $this->hasMany(TaskCompletion::class, 'task_id');
     }
+
+    public function dailyReports()
+    {
+        return $this->belongsToMany(DailyReport::class, 'daily_report_tasks');
+    }
 }
