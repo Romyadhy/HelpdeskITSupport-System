@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DailyReportController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MonthlyReportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskController;
@@ -31,6 +32,8 @@ Route::middleware('auth')->group(function () {
             return view('frontend.Dashbord.userdahboard');
         }
     })->name('dashboard');
+
+    Route::get('/dashhboard', [DashboardController::class, 'index'])->name('dashhboard');
     // Route::get('/dashboard', function () {return view('frontend.dashboard'); })->name('dashboard');
 
     // Tickets Route
@@ -48,56 +51,31 @@ Route::middleware('auth')->group(function () {
     Route::post('/tickets/{ticket}/handle-escalated', [TicketController::class, 'handleEscalated'])->name('tickets.handleEscalated');
 
     // Tasks Route
-    // Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
-
     Route::get('tasks/daily', [TaskController::class, 'daily'])->name('tasks.daily');
     Route::get('tasks/monthly', [TaskController::class, 'monthly'])->name('tasks.monthly');
-
     Route::get('/tasks/create', [TaskController::class, 'create'])->name('tasks.create');
     Route::post('/tasks/store', [TaskController::class, 'store'])->name('tasks.store');
     Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
     Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
-
     Route::post('/tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
 
     // Report Route
     // Route::get('reports/daily', [DailyReportController::class, 'index'])->name('reports.daily');
     // Route::get('reports/monthly', [MonthlyReportController::class, 'index'])->name('reports.monthly');
     // === DAILY REPORT ===
-    Route::get('reports/daily', [DailyReportController::class, 'index'])
-        ->name('reports.daily');
-        // ->middleware('permission:view-daily-reports');
-    
-    Route::get('reports/daily/create', [DailyReportController::class, 'create'])
-        ->name('reports.daily.create');
-
-    Route::post('reports/daily', [DailyReportController::class, 'store'])
-        ->name('reports.daily.store');
-        // ->middleware('permission:create-daily-report');
-
-    Route::put('reports/daily/{id}/verify', [DailyReportController::class, 'verify'])
-        ->name('reports.daily.verify');
-        // ->middleware('permission:verify-daily-report');
-
+    Route::get('reports/daily', [DailyReportController::class, 'index'])->name('reports.daily');
+    Route::get('reports/daily/create', [DailyReportController::class, 'create'])->name('reports.daily.create');
+    Route::post('reports/daily', [DailyReportController::class, 'store'])->name('reports.daily.store');
+    Route::get('reports/daily/{id}', [DailyReportController::class, 'show'])->name('reports.daily.show');
+    Route::put('reports/daily/{id}/verify', [DailyReportController::class, 'verify'])->name('reports.daily.verify');
 
     // === MONTHLY REPORT ===
-    Route::get('reports/monthly', [MonthlyReportController::class, 'index'])
-        ->name('reports.monthly');
-        // ->middleware('permission:view-monthly-reports');
-
-    Route::post('reports/monthly', [MonthlyReportController::class, 'store'])
-        ->name('reports.monthly.store');
-        // ->middleware('permission:create-monthly-report');
-
-    Route::put('reports/monthly/{id}', [MonthlyReportController::class, 'update'])
-        ->name('reports.monthly.update');
-        // ->middleware('permission:edit-monthly-report');
-
-    Route::delete('reports/monthly/{id}', [MonthlyReportController::class, 'destroy'])
-        ->name('reports.monthly.destroy');
-        // ->middleware('permission:delete-monthly-report');
+    Route::get('reports/monthly', [MonthlyReportController::class, 'index'])->name('reports.monthly');
+    Route::post('reports/monthly', [MonthlyReportController::class, 'store'])->name('reports.monthly.store');
+    Route::put('reports/monthly/{id}', [MonthlyReportController::class, 'update'])->name('reports.monthly.update');
+    Route::delete('reports/monthly/{id}', [MonthlyReportController::class, 'destroy'])->name('reports.monthly.destroy');
     
 });
 

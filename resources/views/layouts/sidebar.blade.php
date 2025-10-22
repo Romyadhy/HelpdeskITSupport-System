@@ -106,10 +106,12 @@
                  {{ request()->routeIs('reports.daily') ? 'bg-emerald-50 text-emerald-700' : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
                             Daily Report
                         </a>
-                        <a href="{{ route('reports.monthly') }}"
-                            class="block px-3 py-2 rounded-md text-sm
-                 {{ request()->routeIs('reports.monthly') ? 'bg-emerald-50 text-emerald-700' : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
-                            Monthly Report
+                        @can('view-monthly-reports')
+                            <a href="{{ route('reports.monthly') }}"
+                                class="block px-3 py-2 rounded-md text-sm 
+                                {{ request()->routeIs('reports.monthly') ? 'bg-emerald-50 text-emerald-700' : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
+                                Monthly Report
+                        @endcan
                         </a>
                     </div>
                 </div>

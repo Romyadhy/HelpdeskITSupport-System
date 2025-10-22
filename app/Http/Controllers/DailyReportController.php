@@ -82,6 +82,18 @@ class DailyReportController extends Controller
         $user = Auth::user();
         $today = now()->toDateString();
 
+         // Ambil daftar laporan harian
+        if ($user->hasRole('support')) {
+            $dailyReports = DailyReport::with(['tasks', 'tickets', 'verifier'])
+                ->where('user_id', $user->id)
+                ->latest()
+                ->get();
+        } else {
+            $dailyReports = DailyReport::with(['user', 'tasks', 'tickets', 'verifier'])
+                ->latest()
+                ->get();
+        }
+
         // Cegah user bikin 2 laporan dalam 1 hari
         $existing = DailyReport::where('user_id', $user->id)->whereDate('report_date', $today)->first();
 
@@ -103,8 +115,11 @@ class DailyReportController extends Controller
             ->whereDate('updated_at', $today)
             ->orderBy('updated_at', 'desc')
             ->get();
+        
+        // dd($dailyReports);
 
         return view('frontend.Report.create', [
+            'dailyReports ' => $dailyReports, 
             'tasksCompletedToday' => $tasksCompletedToday,
             'ticketsClosedToday' => $ticketsClosedToday,
             'ticketsActiveToday' => $ticketsActiveToday,
@@ -162,6 +177,13 @@ class DailyReportController extends Controller
         }
 
         return redirect()->route('reports.daily')->with('success', 'Laporan harian berhasil dikirim.');
+    }
+
+    public function show($id){
+        $report = DailyReport::with(['user', 'tasks', 'tickets', 'verifier'])
+        ->findOrFail($id);
+        
+        return view('frontend.Report.show', compact('report'));
     }
 
     public function verify($id)
