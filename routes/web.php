@@ -73,6 +73,7 @@ Route::middleware('auth')->group(function () {
 
     // === MONTHLY REPORT ===
     Route::get('reports/monthly', [MonthlyReportController::class, 'index'])->name('reports.monthly');
+    Route::get('reports/monthly/create', [MonthlyReportController::class, 'create'])->name('reports.monthly.create');
     Route::post('reports/monthly', [MonthlyReportController::class, 'store'])->name('reports.monthly.store');
     Route::put('reports/monthly/{id}', [MonthlyReportController::class, 'update'])->name('reports.monthly.update');
     Route::delete('reports/monthly/{id}', [MonthlyReportController::class, 'destroy'])->name('reports.monthly.destroy');

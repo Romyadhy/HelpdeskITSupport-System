@@ -35,6 +35,9 @@
                             <thead class="bg-gray-100">
                                 <tr>
                                     <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Title</th>
+                                    @if (auth()->user()->hasRole('admin'))
+                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Activate</th>
+                                    @endif
                                     <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Status (this
                                         month)</th>
                                     <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Action</th>
@@ -44,6 +47,18 @@
                                 @forelse($tasks as $task)
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-4 py-3 font-semibold text-gray-800">{{ $task->title }}</td>
+
+                                        @if (auth()->user()->hasRole('admin'))
+                                           <td class="px-4 py-3">
+                                                @if ($task->is_active)
+                                                    <span
+                                                        class="px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">Active</span>
+                                                @else
+                                                    <span
+                                                        class="px-2 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-full">Inactive</span>
+                                                @endif
+                                            </td>
+                                        @endif
 
                                         <td class="px-4 py-3">
                                             @if (in_array($task->id, $completedMonthlys))

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\DailyReport;
+use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,13 +19,13 @@ class DashboardController extends Controller
             $tickets = Ticket::with(['user', 'category'])->latest()->take(10)->get();
             return view('frontend.Dashbord.admindashboard', compact('tickets'));
         }
-        
+
         if ($user->hasRole('manager')) {
             // Data untuk manager dashboard
             $pendingTickets = Ticket::where('status', 'pending')->count();
             return view('frontend.Dashbord.menagerdashboard', compact('pendingTickets'));
         }
-        
+
         if ($user->hasRole('support')) {
             // Data untuk support dashboard
             $assignedTickets = Ticket::where('assigned_to', $user->id)

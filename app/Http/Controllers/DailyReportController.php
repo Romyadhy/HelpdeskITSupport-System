@@ -15,12 +15,12 @@ class DailyReportController extends Controller
     $user = Auth::user();
     $today = now()->toDateString();
 
-    // Cek apakah user sudah buat laporan hari ini
-    $hasReportToday = DailyReport::where('user_id', $user->id)
-        ->whereDate('report_date', $today)
-        ->exists();
+    // Cek laporan hari ini (hanya untuk support)
+    $hasReportToday = $user->hasRole('support')
+        ? DailyReport::where('user_id', $user->id)->whereDate('report_date', $today)->exists()
+        : false;
 
-    // Ambil daftar laporan harian
+    // Ambil daftar laporan (support = laporan pribadi, admin/manager = semua laporan)
     if ($user->hasRole('support')) {
         $dailyReports = DailyReport::with(['tasks', 'tickets', 'verifier'])
             ->where('user_id', $user->id)
@@ -32,38 +32,49 @@ class DailyReportController extends Controller
             ->get();
     }
 
-    // --- Statistik tambahan (optional tapi bagus untuk dashboard) ---
-    $monthlyReportsCount = DailyReport::where('user_id', $user->id)
-        ->whereMonth('report_date', now()->month)
-        ->count();
+    // =========================
+    // BAGIAN YANG BERUBAH DI SINI
+    // =========================
+    if ($user->hasRole('support')) {
+        // Statistik untuk user support
+        $monthlyReportsCount = DailyReport::where('user_id', $user->id)
+            ->whereMonth('report_date', now()->month)
+            ->count();
 
-    // Task completed today
-    $tasksCompletedToday = Task::whereHas('completions', function ($q) use ($user, $today) {
-        $q->where('user_id', $user->id)
-          ->whereDate('created_at', $today);
-    })
-    ->orderBy('title')
-    ->get();
+        $tasksCompletedToday = Task::whereHas('completions', function ($q) use ($user, $today) {
+            $q->where('user_id', $user->id)->whereDate('created_at', $today);
+        })->get();
+
+        $ticketsClosedToday = Ticket::where('assigned_to', $user->id)
+            ->where('status', 'Closed')
+            ->whereDate('solved_at', $today)
+            ->get();
+
+        $ticketsActiveToday = Ticket::where('assigned_to', $user->id)
+            ->whereIn('status', ['Open', 'In Progress'])
+            ->whereDate('updated_at', $today)
+            ->get();
+    } else {
+        // Statistik untuk admin/manager (lihat semua data support)
+        $monthlyReportsCount = DailyReport::whereMonth('report_date', now()->month)->count();
+
+        $tasksCompletedToday = Task::whereHas('completions', function ($q) use ($today) {
+            $q->whereDate('created_at', $today);
+        })->get();
+
+        $ticketsClosedToday = Ticket::where('status', 'Closed')
+            ->whereDate('solved_at', $today)
+            ->get();
+
+        $ticketsActiveToday = Ticket::whereIn('status', ['Open', 'In Progress'])
+            ->whereDate('updated_at', $today)
+            ->get();
+    }
+    // =========================
 
     $completedTasksCount = $tasksCompletedToday->count();
-
-    // Tickets closed today
-    $ticketsClosedToday = Ticket::where('assigned_to', $user->id)
-        ->where('status', 'Closed')
-        ->whereDate('solved_at', $today)
-        ->orderBy('updated_at', 'desc')
-        ->get();
-
-    // Tickets active today
-    $ticketsActiveToday = Ticket::where('assigned_to', $user->id)
-        ->whereIn('status', ['Open', 'In Progress'])
-        ->whereDate('updated_at', $today)
-        ->orderBy('updated_at', 'desc')
-        ->get();
-
     $handledTicketsCount = $ticketsClosedToday->count() + $ticketsActiveToday->count();
 
-    // Return ke view overview
     return view('frontend.Report.daily', [
         'dailyReports' => $dailyReports,
         'tasksCompletedToday' => $tasksCompletedToday,
@@ -75,6 +86,7 @@ class DailyReportController extends Controller
         'handledTicketsCount' => $handledTicketsCount,
     ]);
 }
+
 
 
     public function create()

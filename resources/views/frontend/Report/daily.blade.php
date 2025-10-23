@@ -20,7 +20,7 @@
                 @else
                     @can('create-daily-report')
                         <a href="{{ route('reports.daily.create') }}"
-                            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow">
+                           class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow">
                             + Buat Laporan Harian
                         </a>
                     @endcan
@@ -43,6 +43,33 @@
                 </div>
             </div>
 
+            {{-- OPSIONAL: Statistik per support untuk admin/manager --}}
+            @if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('manager'))
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">📊 Statistik Support</h3>
+                    <table class="min-w-full border border-gray-200 text-sm">
+                        <thead class="bg-gray-100 text-gray-600">
+                            <tr>
+                                <th class="p-2 text-left">Nama Support</th>
+                                <th class="p-2 text-center">Jumlah Laporan Bulan Ini</th>
+                                <th class="p-2 text-center">Total Task Hari Ini</th>
+                                <th class="p-2 text-center">Ticket Hari Ini</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($dailyReports->groupBy('user.name') as $name => $reports)
+                                <tr class="border-t">
+                                    <td class="p-2">{{ $name }}</td>
+                                    <td class="text-center p-2">{{ $reports->count() }}</td>
+                                    <td class="text-center p-2">{{ $reports->flatMap->tasks->count() }}</td>
+                                    <td class="text-center p-2">{{ $reports->flatMap->tickets->count() }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+
             {{-- Riwayat laporan --}}
             <div class="bg-white shadow rounded-lg p-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">📋 Laporan Sebelumnya</h3>
@@ -51,29 +78,22 @@
                     <div class="border-b py-3">
                         <div class="flex justify-between items-start">
                             <div>
-                                {{-- Gunakan parse jika belum di-cast di model --}}
                                 <p class="font-medium text-gray-800">
                                     {{ \Carbon\Carbon::parse($report->report_date)->format('d M Y') }}
+                                    @if (isset($report->user))
+                                        <span class="text-sm text-gray-500"> oleh {{ $report->user->name }}</span>
+                                    @endif
                                 </p>
-                                <p class="text-sm text-gray-500 mt-1">
-                                    {{ Str::limit($report->content, 80) }}
-                                </p>
-
+                                <p class="text-sm text-gray-500 mt-1">{{ Str::limit($report->content, 80) }}</p>
                                 <a href="{{ route('reports.daily.show', $report->id) }}"
-                                    class="text-blue-600 hover:underline text-sm">Lihat Detail</a>
+                                   class="text-teal-600 hover:underline text-sm">Lihat Detail</a>
 
-
-                                {{-- Tampilkan task dan ticket jika ada --}}
                                 <div class="text-xs text-gray-500 mt-2">
                                     @if ($report->tasks->count() > 0)
-                                        <p><strong>Tasks:</strong>
-                                            {{ $report->tasks->pluck('title')->join(', ') }}
-                                        </p>
+                                        <p><strong>Tasks:</strong> {{ $report->tasks->pluck('title')->join(', ') }}</p>
                                     @endif
                                     @if ($report->tickets->count() > 0)
-                                        <p><strong>Tickets:</strong>
-                                            {{ $report->tickets->pluck('title')->join(', ') }}
-                                        </p>
+                                        <p><strong>Tickets:</strong> {{ $report->tickets->pluck('title')->join(', ') }}</p>
                                     @endif
                                 </div>
                             </div>
@@ -82,8 +102,7 @@
                             @if ($report->verified_at)
                                 <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">Verified</span>
                             @else
-                                <span
-                                    class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">Pending</span>
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">Pending</span>
                             @endif
                         </div>
                     </div>
@@ -91,6 +110,8 @@
                     <p class="text-gray-500 text-sm">Belum ada laporan yang dibuat.</p>
                 @endforelse
             </div>
+
+            
         </div>
     </div>
 </x-app-layout>
