@@ -154,6 +154,7 @@ class TicketController extends Controller
                     'status' => 'In Progress',
                     'started_at' => $ticket->started_at ?? now(),
                     'assigned_to' => auth()->id(),
+                    // 'updated_at' => now(),
                 ]);
                 return redirect()->route('tickets.index')->with('success', 'Ticket started successfully.');
             } catch (Exception $e) {

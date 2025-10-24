@@ -120,7 +120,11 @@ class DailyReportController extends Controller
             ->orderBy('title')
             ->get();
 
-        $ticketsClosedToday = Ticket::where('assigned_to', $user->id)->where('status', 'Closed')->whereDate('solved_at', $today)->orderBy('updated_at', 'desc')->get();
+        $ticketsClosedToday = Ticket::where('assigned_to', $user->id)
+            ->where('status', 'Closed')            
+            ->whereDate('solved_at', $today)
+            ->orderBy('updated_at', 'desc')
+            ->get();
 
         $ticketsActiveToday = Ticket::where('assigned_to', $user->id)
             ->whereIn('status', ['Open', 'In Progress'])
@@ -172,7 +176,7 @@ class DailyReportController extends Controller
                 $idsClosed = Ticket::where('assigned_to', $user->id)->where('status', 'Closed')->whereDate('solved_at', $today)->pluck('id');
 
                 $idsActive = Ticket::where('assigned_to', $user->id)
-                    ->whereIn('status', ['Open', 'On Progress'])
+                    ->whereIn('status', ['Open', 'On Progress', 'Closed'])
                     ->whereDate('updated_at', $today)
                     ->pluck('id');
 
@@ -194,6 +198,7 @@ class DailyReportController extends Controller
     public function show($id){
         $report = DailyReport::with(['user', 'tasks', 'tickets', 'verifier'])
         ->findOrFail($id);
+        // dd($report);
         
         return view('frontend.Report.show', compact('report'));
     }

@@ -52,8 +52,8 @@
                             <tr>
                                 <th class="p-2 text-left">Nama Support</th>
                                 <th class="p-2 text-center">Jumlah Laporan Bulan Ini</th>
-                                <th class="p-2 text-center">Total Task Hari Ini</th>
-                                <th class="p-2 text-center">Ticket Hari Ini</th>
+                                <th class="p-2 text-center">Total Task</th>
+                                <th class="p-2 text-center">Total Ticket</th>
                             </tr>
                         </thead>
                         <tbody>
