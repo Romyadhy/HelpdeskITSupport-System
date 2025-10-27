@@ -1,84 +1,146 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Buat Laporan Bulanan
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight flex items-center gap-2">
+            🗓️ Buat Laporan Bulanan
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <form method="POST" action="{{ route('reports.monthly.store') }}">
-                @csrf
+    <div class="py-10 bg-gray-50 min-h-screen">
+        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white shadow-lg rounded-2xl border border-gray-100 p-8">
 
-                {{-- Input hidden untuk tahun dan bulan --}}
-                <input type="hidden" name="year" value="{{ $year }}">
-                <input type="hidden" name="month" value="{{ $month }}">
+                {{-- Error Message --}}
+                @if ($errors->any())
+                    <div class="mb-8 rounded-xl border-l-4 border-red-500 bg-red-50 p-4 text-red-700">
+                        <p class="font-semibold mb-2">Terjadi kesalahan:</p>
+                        <ul class="list-disc pl-6 space-y-1">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
-                <div class="bg-white shadow-sm sm:rounded-lg mb-6">
-                    <div class="p-6 border-b border-gray-200">
-                        <h3 class="text-lg font-medium text-gray-900">Laporan untuk Bulan: {{ $monthName }}</h3>
-                        <p class="mt-1 text-sm text-gray-600">Berikut adalah rangkuman data untuk periode ini. Silakan tulis analisis Anda di bawah.</p>
+                {{-- Header Info --}}
+                <div class="mb-8 flex flex-col md:flex-row justify-between md:items-center gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-teal-700">
+                            Periode Laporan: {{ $month }} {{ $year }}
+                        </h3>
+                        <p class="text-sm text-gray-500">
+                            Data laporan harian di bawah diambil otomatis berdasarkan bulan dan tahun saat ini.
+                        </p>
                     </div>
 
-                    {{-- Menampilkan Statistik Tiket --}}
-                    <div class="p-6 border-b border-gray-200">
-                        <h4 class="font-medium text-gray-700 mb-2">Statistik Tiket</h4>
-                        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                            <dt class="text-gray-500">Total Tiket Masuk:</dt>
-                            <dd class="font-semibold text-gray-900">{{ $ticketStats['total_created'] ?? 0 }}</dd>
+                    {{-- Optional month selector --}}
+                    <form method="GET" action="{{ route('reports.monthly.create') }}" class="flex items-center gap-3">
+                        <input type="month" name="period" value="{{ $period ?? now()->format('Y-m') }}"
+                            class="border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <button
+                            class="px-3 py-2 rounded-md bg-teal-600 text-white hover:bg-teal-700 transition shadow-sm">
+                            Ganti Periode
+                        </button>
+                    </form>
+                </div>
 
-                            <dt class="text-gray-500">Total Tiket Selesai:</dt>
-                            <dd class="font-semibold text-gray-900">{{ $ticketStats['total_closed'] ?? 0 }}</dd>
-
-                            <dt class="text-gray-500">Total Eskalasi:</dt>
-                            <dd class="font-semibold text-gray-900">{{ $ticketStats['total_escalated'] ?? 0 }}</dd>
-                            
-                            <dt class="text-gray-500">Waktu Penyelesaian Rata-rata:</dt>
-                            <dd class="font-semibold text-gray-900">
-                                {{ $ticketStats['avg_duration_minutes'] ? number_format($ticketStats['avg_duration_minutes'] / 60, 1) . ' jam' : 'N/A' }}
-                            </dd>
-                        </dl>
-                        {{-- Input hidden untuk mengirim data statistik tiket --}}
-                        <input type="hidden" name="ticket_stats_json" value="{{ json_encode($ticketStats) }}">
+                {{-- Statistik --}}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-5 text-center shadow-sm">
+                        <p class="text-sm text-blue-600">Jumlah Hari Dilaporkan</p>
+                        <p class="mt-2 text-3xl font-bold text-blue-700">{{ $totalDaysReported }}</p>
                     </div>
-
-                    {{-- Menampilkan Statistik Laporan Harian --}}
-                    <div class="p-6">
-                        <h4 class="font-medium text-gray-700 mb-2">Statistik Laporan Harian</h4>
-                         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                            <dt class="text-gray-500">Total Laporan Masuk:</dt>
-                            <dd class="font-semibold text-gray-900">{{ $dailyReportStats['total_reports_submitted'] ?? 0 }}</dd>
-
-                            <dt class="text-gray-500">Total Laporan Diverifikasi:</dt>
-                            <dd class="font-semibold text-gray-900">{{ $dailyReportStats['total_reports_verified'] ?? 0 }}</dd>
-                            
-                            <dt class="text-gray-500">Jumlah Staf Melapor:</dt>
-                            <dd class="font-semibold text-gray-900">{{ $dailyReportStats['total_staff_reported'] ?? 0 }}</dd>
-                        </dl>
-                         {{-- Input hidden untuk data statistik laporan harian (jika perlu disimpan) --}}
-                         {{-- <input type="hidden" name="daily_report_stats_json" value="{{ json_encode($dailyReportStats) }}"> --}}
+                    <div class="bg-green-50 border border-green-100 rounded-xl p-5 text-center shadow-sm">
+                        <p class="text-sm text-green-600">Total Tasks</p>
+                        <p class="mt-2 text-3xl font-bold text-green-700">{{ $totalTasks }}</p>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-100 rounded-xl p-5 text-center shadow-sm">
+                        <p class="text-sm text-amber-600">Total Tickets</p>
+                        <p class="mt-2 text-3xl font-bold text-amber-700">{{ $totalTickets }}</p>
                     </div>
                 </div>
 
-                {{-- Textarea untuk Summary --}}
-                <div class="bg-white shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                         <label for="summary" class="block text-sm font-medium text-gray-700">Ringkasan & Analisis Bulanan</label>
-                         <textarea name="summary" id="summary" rows="10" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" placeholder="Tulis analisis Anda mengenai performa, kendala, dan rekomendasi untuk bulan ini..." required>{{ old('summary') }}</textarea>
-                         <x-input-error :messages="$errors->get('summary')" class="mt-2" />
+                {{-- Form Create --}}
+                <form method="POST" action="{{ route('reports.monthly.store') }}" class="space-y-10">
+                    @csrf
+
+                    {{-- Ringkasan --}}
+                    <div>
+                        <label for="content" class="block text-sm font-semibold text-gray-700 mb-2">
+                            📝 Ringkasan Laporan Bulanan
+                        </label>
+                        <textarea id="content" name="content" rows="6"
+                            class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="Tuliskan ringkasan kegiatan, pencapaian, kendala, serta rekomendasi selama periode ini..." required>{{ old('content') }}</textarea>
+                        <p class="mt-2 text-xs text-gray-500">
+                            Gunakan ringkasan ini untuk menyoroti capaian utama, hambatan, dan insight dari laporan
+                            harian.
+                        </p>
                     </div>
-                </div>
 
-                <div class="flex justify-end mt-6">
-                    <a href="{{ route('reports.monthly') }}" class="inline-flex items-center px-4 py-2 bg-white border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150 mr-4">
-                        Batal
-                    </a>
-                    <x-primary-button>
-                        Simpan Laporan Bulanan
-                    </x-primary-button>
-                </div>
+                    {{-- Pilih Daily Reports --}}
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-semibold text-gray-700 text-sm">📋 Laporan Harian dalam Periode Ini</h3>
+                            <button type="button" id="btnSelectAll"
+                                class="text-xs px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 transition">
+                                Pilih Semua / Hapus Semua
+                            </button>
+                        </div>
 
-            </form>
+                        <div
+                            class="bg-gray-50 border rounded-lg p-4 max-h-80 overflow-y-auto divide-y divide-gray-200 shadow-inner">
+                            @forelse ($dailyReports as $report)
+                                <div class="py-3 flex items-start gap-3">
+                                    <input type="checkbox" class="mt-1 dr-check accent-indigo-600"
+                                        name="daily_report_ids[]" id="dr_{{ $report->id }}"
+                                        value="{{ $report->id }}"
+                                        {{ in_array($report->id, old('daily_report_ids', [])) ? 'checked' : '' }}>
+                                    <label for="dr_{{ $report->id }}" class="cursor-pointer flex-1">
+                                        <div class="flex justify-between text-sm font-medium text-gray-800">
+                                            <span>{{ \Carbon\Carbon::parse($report->report_date)->format('d M Y') }}</span>
+                                            <span class="text-xs text-gray-500">
+                                                {{ $report->tasks->count() }} tugas • {{ $report->tickets->count() }}
+                                                tiket
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-gray-600 mt-1">
+                                            {{ Str::limit($report->content, 120) }}
+                                        </p>
+                                    </label>
+                                </div>
+                            @empty
+                                <p class="text-sm text-gray-500 italic py-2">Tidak ada laporan harian untuk periode ini.
+                                </p>
+                            @endforelse
+                        </div>
+
+                        <p class="text-xs text-gray-500 mt-2 italic">
+                            *Jika tidak memilih laporan harian apa pun, maka tidak ada laporan yang akan disertakan.*
+                        </p>
+                    </div>
+
+                    {{-- Tombol Aksi --}}
+                    <div class="flex justify-end gap-3 pt-6 border-t border-gray-200">
+                        <a href="{{ route('reports.monthly') }}"
+                            class="px-4 py-2 bg-gray-500 text-white rounded-lg shadow hover:bg-gray-600 transition">
+                            ← Batal
+                        </a>
+                        <button type="submit"
+                            class="px-5 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-300 transition">
+                            💾 Simpan Laporan
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
+
+    {{-- Select All helper --}}
+    <script>
+        document.getElementById('btnSelectAll')?.addEventListener('click', function() {
+            const checks = document.querySelectorAll('.dr-check');
+            const allChecked = Array.from(checks).every(c => c.checked);
+            checks.forEach(c => c.checked = !allChecked);
+        });
+    </script>
 </x-app-layout>

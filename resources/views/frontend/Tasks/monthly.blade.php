@@ -38,8 +38,7 @@
                                     @if (auth()->user()->hasRole('admin'))
                                         <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Activate</th>
                                     @endif
-                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Status (this
-                                        month)</th>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
                                     <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Action</th>
                                 </tr>
                             </thead>

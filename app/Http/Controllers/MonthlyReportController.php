@@ -2,110 +2,196 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DailyReport;
 use App\Models\MonthlyReport;
-use App\Models\Ticket; // <-- Tambahkan ini
-use App\Models\TaskCompletion; // <-- Tambahkan ini jika pakai
+use App\Models\DailyReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB; // <-- Tambahkan ini untuk kalkulasi
 
 class MonthlyReportController extends Controller
 {
+    public function __construct()
+    {
+        // Middleware Spatie untuk otomatis handle permission
+        $this->middleware('permission:view-monthly-reports')->only(['index', 'show']);
+        $this->middleware('permission:create-monthly-report')->only(['create', 'store']);
+        $this->middleware('permission:edit-monthly-report')->only(['edit', 'update']);
+        $this->middleware('permission:delete-monthly-report')->only(['destroy']);
+        $this->middleware('permission:verify-daily-report')->only(['verify']);
+    }
+
+    /**
+     * Tampilkan semua laporan bulanan
+     */
     public function index()
     {
-        // Sebaiknya filter berdasarkan hak akses (Admin & Manager)
-        // Dan gunakan paginate() untuk performa
         $user = Auth::user();
-        if ($user->can('view-monthly-reports')) {
-            $monthlyReports = MonthlyReport::with('user') // Ambil relasi ke user Admin
-                                      ->latest()
-                                      ->paginate(10);
-            return view('frontend.Report.monthly', compact('monthlyReports'));
+
+        if ($user->hasRole(['admin', 'manager'])) {
+            $monthlyReports = MonthlyReport::with(['user', 'verifier'])
+                ->latest()
+                ->get();
+        } else {
+            $monthlyReports = MonthlyReport::where('user_id', $user->id)
+                ->with(['user', 'verifier'])
+                ->latest()
+                ->get();
         }
-        abort(403); // Jika tidak punya izin
+
+        return view('frontend.Report.monthly', compact('monthlyReports'));
     }
 
     public function create(Request $request)
     {
-        // Pastikan hanya Admin yang bisa mengakses
-        if (!Auth::user()->hasRole('admin')) {
-             abort(403);
-        }
+        // Ambil periode dari query, default bulan berjalan
+        $period = $request->query('period', now()->format('Y-m')); // e.g. "2025-10"
+        [$year, $monthNum] = explode('-', $period);
 
-        // Tentukan bulan dan tahun (default bulan lalu, atau dari input user)
-        // $year = $request->input('year', now()->subMonth()->year);
-        // $month = $request->input('month', now()->subMonth()->month);
-        $year = $request->input('year', now()->year);
-        $month = $request->input('month', now()->month);
-        $monthName = now()->month($month)->year($year)->format('F Y');
+        // Ambil semua daily report di bulan tersebut
+        $dailyReports = DailyReport::whereYear('report_date', $year)
+            ->whereMonth('report_date', $monthNum)
+            ->with(['tasks', 'tickets', 'user'])
+            ->orderBy('report_date')
+            ->get();
 
-        // --- PENGUMPULAN DATA STATISTIK ---
+        // Agregat data
+        $totalDaysReported = $dailyReports->count();
+        $totalTasks = $dailyReports->flatMap->tasks->count();
+        $totalTickets = $dailyReports->flatMap->tickets->count();
 
-        // 1. Statistik Tiket (dari tabel tickets)
-        $ticketStats = Ticket::query()
-            ->whereYear('created_at', $year)
-            ->whereMonth('created_at', $month)
-            ->selectRaw("
-                COUNT(*) as total_created,
-                SUM(CASE WHEN status = 'Closed' THEN 1 ELSE 0 END) as total_closed,
-                AVG(duration) as avg_duration_minutes, 
-                SUM(is_escalation) as total_escalated 
-            ")
-            ->first() // Ambil hasilnya
-            ->toArray(); // Ubah jadi array
+        // Nama bulan (dalam format lokal, misal: Oktober)
+        $month = \Carbon\Carbon::createFromDate($year, $monthNum, 1)->translatedFormat('F');
 
-        // 2. Statistik Laporan Harian (dari tabel daily_reports)
-        $dailyReportStats = DailyReport::query()
-            ->whereYear('report_date', $year)
-            ->whereMonth('report_date', $month)
-            ->selectRaw("
-                COUNT(DISTINCT user_id) as total_staff_reported,
-                COUNT(*) as total_reports_submitted,
-                SUM(CASE WHEN verified_at IS NOT NULL THEN 1 ELSE 0 END) as total_reports_verified
-            ")
-            ->first()
-            ->toArray();
-
-        // 3. Statistik Penyelesaian Tugas (dari task_completions - Opsional)
-        // ... (Logika untuk menghitung persentase penyelesaian tugas) ...
-
-        // Kirim data ini ke view create
-        return view('frontend.Report.monthly-create', [
-            'monthName' => $monthName,
-            'year' => $year,
-            'month' => $month,
-            'ticketStats' => $ticketStats,
-            'dailyReportStats' => $dailyReportStats,
-            // 'taskCompletionStats' => $taskCompletionStats, // Jika ada
-        ]);
+        return view('frontend.Report.monthly-create', compact('dailyReports', 'totalDaysReported', 'totalTasks', 'totalTickets', 'month', 'year', 'period'));
     }
 
     public function store(Request $request)
     {
-        // Pastikan hanya Admin yang bisa menyimpan
-         if (!Auth::user()->hasRole('admin')) {
-             abort(403);
-         }
+        // Ambil periode dari input hidden (atau query)
+        $period = $request->query('period', now()->format('Y-m'));
+        [$year, $monthNum] = explode('-', $period);
+
+        // Validasi isi laporan
+        $validated = $request->validate([
+            'content' => ['required', 'string'],
+            'daily_report_ids' => ['array', 'nullable'],
+        ]);
+
+        // Nama bulan lokal
+        $monthName = \Carbon\Carbon::createFromDate($year, $monthNum, 1)->translatedFormat('F');
+
+        // Jika user tidak memilih daily report, ambil semua laporan bulan tsb
+        $pickedIds = $validated['daily_report_ids'] ?? [];
+        if (empty($pickedIds)) {
+            $pickedIds = DailyReport::whereYear('report_date', $year)->whereMonth('report_date', $monthNum)->pluck('id')->all();
+        }
+
+        $pickedDaily = DailyReport::whereIn('id', $pickedIds)
+            ->with(['tasks', 'tickets'])
+            ->get();
+
+        // Simpan ke tabel monthly_reports
+        $monthly = MonthlyReport::create([
+            'user_id' => Auth::id(),
+            'month' => $monthName,
+            'year' => (int) $year,
+            'report_date' => now(),
+            'content' => $validated['content'],
+            'total_days_reported' => $pickedDaily->count(),
+            'total_tasks' => $pickedDaily->flatMap->tasks->count(),
+            'total_tickets' => $pickedDaily->flatMap->tickets->count(),
+            'daily_report_ids' => array_values($pickedIds),
+            'status' => 'Verified',
+        ]);
+
+        return redirect()
+            ->route('reports.monthly.show', $monthly->id)
+            ->with('success', "Laporan bulanan untuk $monthName $year berhasil dibuat.");
+    }
+
+    /**
+     * Lihat detail laporan bulanan
+     */
+    public function show($id)
+    {
+        $report = MonthlyReport::with(['user', 'verifier'])->findOrFail($id);
+
+        // Ambil laporan harian terkait
+        $dailyReports = [];
+        if ($report->daily_report_ids) {
+            $dailyReports = DailyReport::whereIn('id', $report->daily_report_ids)->get();
+        }
+
+        return view('frontend.Report.monthly-show', compact('report', 'dailyReports'));
+    }
+
+    /**
+     * Edit laporan bulanan
+     */
+    public function edit($id)
+    {
+        $report = MonthlyReport::findOrFail($id);
+
+        $dailyReports = DailyReport::whereMonth('report_date', now()->month)
+            ->whereYear('report_date', now()->year)
+            ->with(['tasks', 'tickets'])
+            ->get();
+
+        return view('frontend.Report.monthly-edit', compact('report', 'dailyReports'));
+    }
+
+    /**
+     * Update laporan bulanan
+     */
+    public function update(Request $request, $id)
+    {
+        $report = MonthlyReport::findOrFail($id);
 
         $validated = $request->validate([
-            'year' => 'required|integer',
-            'month' => 'required|integer|between:1,12',
-            'summary' => 'required|string|min:20',
-            // Kita perlu mengirim statistik yang dihitung di create() kembali
-            // Cara paling mudah: gunakan input hidden di form create
-            'ticket_stats_json' => 'required|json', 
-            // 'daily_report_stats_json' => 'required|json', // Jika perlu disimpan juga
+            'content' => 'required|string',
+            'daily_report_ids' => 'array|nullable',
         ]);
 
-        MonthlyReport::create([
-            'user_id' => Auth::id(), // ID Admin yang membuat
-            'year' => $validated['year'],
-            'month' => $validated['month'],
-            'summary' => $validated['summary'],
-            'ticket_stats' => json_decode($validated['ticket_stats_json'], true), // Simpan sebagai JSON
+        $dailyReportIds = $validated['daily_report_ids'] ?? [];
+        $dailyReports = DailyReport::whereIn('id', $dailyReportIds)
+            ->with(['tasks', 'tickets'])
+            ->get();
+
+        $report->update([
+            'content' => $validated['content'],
+            'daily_report_ids' => $dailyReportIds,
+            'total_days_reported' => $dailyReports->count(),
+            'total_tasks' => $dailyReports->flatMap->tasks->count(),
+            'total_tickets' => $dailyReports->flatMap->tickets->count(),
+            'status' => 'Verified',
         ]);
 
-        return redirect()->route('reports.monthly')->with('success', 'Laporan bulanan berhasil dibuat.');
+        return redirect()->route('reports.monthly.show', $report->id)->with('success', 'Laporan bulanan berhasil diperbarui.');
+    }
+
+    /**
+     * Verifikasi laporan bulanan (Admin Only)
+     */
+    public function verify($id)
+    {
+        $report = MonthlyReport::findOrFail($id);
+
+        $report->update([
+            'verified_by' => Auth::id(),
+            'verified_at' => now(),
+            'status' => 'Verified',
+        ]);
+
+        return redirect()->route('reports.monthly.show', $report->id)->with('success', 'Laporan bulanan berhasil diverifikasi.');
+    }
+
+    /**
+     * Hapus laporan bulanan
+     */
+    public function destroy($id)
+    {
+        $report = MonthlyReport::findOrFail($id);
+        $report->delete();
+
+        return redirect()->route('reports.monthly')->with('success', 'Laporan bulanan berhasil dihapus.');
     }
 }

@@ -72,14 +72,24 @@ Route::middleware('auth')->group(function () {
     Route::put('reports/daily/{id}/verify', [DailyReportController::class, 'verify'])->name('reports.daily.verify');
 
     // === MONTHLY REPORT ===
+    // Route::get('reports/monthly', [MonthlyReportController::class, 'index'])->name('reports.monthly');
+    // Route::get('reports/monthly/create', [MonthlyReportController::class, 'create'])->name('reports.monthly.create');
+    // Route::post('reports/monthly', [MonthlyReportController::class, 'store'])->name('reports.monthly.store');
+    // Route::get('reports/monthly/{id}', [MonthlyReportController::class, 'show'])->name('reports.monthly.show');
+    // Route::get('reports/monthly/{id}/edit', [MonthlyReportController::class, 'edit'])->name('reports.monthly.edit');
+    // Route::put('reports/monthly/{id}', [MonthlyReportController::class, 'update'])->name('reports.monthly.update');
+    // Route::delete('reports/monthly/{id}', [MonthlyReportController::class, 'destroy'])->name('reports.monthly.destroy');
+    // === MONTHLY REPORT ===
     Route::get('reports/monthly', [MonthlyReportController::class, 'index'])->name('reports.monthly');
     Route::get('reports/monthly/create', [MonthlyReportController::class, 'create'])->name('reports.monthly.create');
     Route::post('reports/monthly', [MonthlyReportController::class, 'store'])->name('reports.monthly.store');
-    Route::post('reports/monthly{id}', [MonthlyReportController::class, 'update'])->name('reports.monthly.show');
+    Route::get('reports/monthly/{id}', [MonthlyReportController::class, 'show'])->name('reports.monthly.show');
     Route::get('reports/monthly/{id}/edit', [MonthlyReportController::class, 'edit'])->name('reports.monthly.edit');
     Route::put('reports/monthly/{id}', [MonthlyReportController::class, 'update'])->name('reports.monthly.update');
     Route::delete('reports/monthly/{id}', [MonthlyReportController::class, 'destroy'])->name('reports.monthly.destroy');
-    
+
+    Route::put('reports/monthly/{id}/verify', [MonthlyReportController::class, 'verify'])->name('reports.monthly.verify');
+
 });
 
 require __DIR__.'/auth.php';
