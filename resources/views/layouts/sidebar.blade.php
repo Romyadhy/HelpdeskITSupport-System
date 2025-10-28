@@ -42,6 +42,22 @@
                 <span class="text-sm">Dashboard</span>
             </a>
 
+            {{-- @hasanyrole('admin|support|manager') --}}
+            @can('view-handbook')
+                <a href="{{ route('handbook.index') }}"
+                    class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 
+                    {{ request()->routeIs('handbook.*') ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                    
+                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="currentColor" xmlns="http://www.w3.org/2000/svg" 
+                        viewBox="0 0 576 512">
+                        <path d="M96 0C60.7 0 32 28.7 32 64V448c0 35.3 28.7 64 64 64H480c17.7 0 32-14.3 32-32V64c0-35.3-28.7-64-64-64H96zm64 96h256c8.8 0 16 7.2 16 16s-7.2 16-16 16H160c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64h256c8.8 0 16 7.2 16 16s-7.2 16-16 16H160c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64h128c8.8 0 16 7.2 16 16s-7.2 16-16 16H160c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/>
+                    </svg>
+
+                <span class="text-sm font-medium">Handbook/SOP</span>
+                </a>
+             @endcan
+            {{-- @endhasanyrole --}}
+
             <!-- Tickets -->
             <a href="{{ route('tickets.index') }}"
                 class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ is_active(['tickets.index', 'tickets.create', 'tickets.show', 'tickets.edit']) ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">

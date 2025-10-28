@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DailyReportController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HandbookController;
 use App\Http\Controllers\MonthlyReportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskController;
@@ -48,7 +49,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/tickets/{ticket}/take-over', [TicketController::class, 'takeOver'])->name('tickets.takeOver');
     Route::post('/tickets/{ticket}/close', [TicketController::class, 'close'])->name('tickets.close');
     Route::post('tickets/{ticket}/escalate', [TicketController::class, 'escalate'])->name('tickets.escalate');
-    Route::post('/tickets/{ticket}/handle-escalated', [TicketController::class, 'handleEscalated'])->name('tickets.handleEscalated');
+    Route::put('/tickets/{ticket}/handle-escalated', [TicketController::class, 'handleEscalated'])->name('tickets.handleEscalated');
 
     // Tasks Route
     Route::get('tasks/daily', [TaskController::class, 'daily'])->name('tasks.daily');
@@ -87,9 +88,17 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/monthly/{id}/edit', [MonthlyReportController::class, 'edit'])->name('reports.monthly.edit');
     Route::put('reports/monthly/{id}', [MonthlyReportController::class, 'update'])->name('reports.monthly.update');
     Route::delete('reports/monthly/{id}', [MonthlyReportController::class, 'destroy'])->name('reports.monthly.destroy');
-
     Route::put('reports/monthly/{id}/verify', [MonthlyReportController::class, 'verify'])->name('reports.monthly.verify');
 
+    // Handbook Route
+    Route::get('handbook', [HandbookController::class, 'index'])->name('handbook.index');
+    Route::get('handbook/show/{id}', [HandbookController::class, 'show'])->name('handbook.show');
+    Route::get('handbook/create', [HandbookController::class, 'create'])->name('handbook.create');
+    Route::post('handbook/store', [HandbookController::class, 'store'])->name('handbook.store');
+    Route::get('handbook/edit/{id}', [HandbookController::class, 'edit'])->name('handbook.edit');
+    Route::put('handbook/update/{id}', [HandbookController::class, 'update'])->name('handbook.update');
+    Route::delete('handbook/delete/{id}', [HandbookController::class, 'destroy'])->name('handbook.delete');
+    
 });
 
 require __DIR__.'/auth.php';
