@@ -4,9 +4,20 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 📝 Detail Laporan Harian
             </h2>
-            <a href="{{ route('reports.daily') }}" class="text-sm text-gray-600 hover:text-gray-900">
-                &larr; Kembali ke Daftar Laporan
-            </a>
+            <div class="flex items-center gap-4">
+                {{-- Tombol Export PDF --}}
+                <a href="{{ route('reports.daily.pdf', $report->id) }}"
+                   class="inline-flex items-center gap-2 bg-rose-600/90 text-white px-3 py-1.5 rounded-md text-sm font-medium shadow-sm hover:bg-rose-700 transition-all duration-150">
+                    <i class="fas fa-file-pdf text-xs"></i>
+                    Export PDF
+                </a>
+
+                {{-- Tombol Kembali --}}
+                <a href="{{ route('reports.daily') }}" 
+                   class="text-sm text-gray-600 hover:text-gray-900">
+                    &larr; Kembali ke Daftar Laporan
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -47,17 +58,17 @@
 
             {{-- Card 2: Konten Laporan --}}
             <div class="bg-white shadow-md rounded-lg p-6">
-                <h4 class="text-base font-semibold text-gray-700  mb-3 border-b pb-2">
+                <h4 class="text-base font-semibold text-gray-700 mb-3 border-b pb-2">
                     <i class="fas fa-file-alt mr-2 text-indigo-500"></i>Isi Laporan
                 </h4>
-                <div class="prose prose-sm text-gray-700  leading-relaxed whitespace-pre-line">
+                <div class="prose prose-sm text-gray-700 leading-relaxed whitespace-pre-line">
                     {{ $report->content }}
                 </div>
             </div>
 
             {{-- Card 3: Tugas yang Dilaporkan Selesai --}}
-            <div class="bg-white  shadow-md rounded-lg p-6">
-                 <h4 class="text-base font-semibold text-gray-700 mb-3 border-b pb-2">
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <h4 class="text-base font-semibold text-gray-700 mb-3 border-b pb-2">
                     <i class="fas fa-tasks mr-2 text-blue-500"></i>Tugas Harian yang Diselesaikan
                 </h4>
                 @if ($report->tasks && $report->tasks->count() > 0)
@@ -75,15 +86,17 @@
 
             {{-- Card 4: Tiket yang Ditangani --}}
             <div class="bg-white shadow-md rounded-lg p-6">
-                 <h4 class="text-base font-semibold text-gray-700 mb-4 border-b pb-2">
-                     <i class="fas fa-ticket-alt mr-2 text-orange-500"></i>Tiket yang Ditangani
-                 </h4>
-                 @if ($report->tickets && $report->tickets->count() > 0)
+                <h4 class="text-base font-semibold text-gray-700 mb-4 border-b pb-2">
+                    <i class="fas fa-ticket-alt mr-2 text-orange-500"></i>Tiket yang Ditangani
+                </h4>
+                @if ($report->tickets && $report->tickets->count() > 0)
                     <div class="space-y-4">
                         @foreach ($report->tickets as $ticket)
                             <div class="border rounded p-3 bg-gray-50 text-sm">
                                 <div class="flex justify-between items-center">
-                                    <span class="font-medium text-gray-800">#{{ str_pad($ticket->id, 4, '0', STR_PAD_LEFT) }} - {{ $ticket->title }}</span>
+                                    <span class="font-medium text-gray-800">
+                                        #{{ str_pad($ticket->id, 4, '0', STR_PAD_LEFT) }} - {{ $ticket->title }}
+                                    </span>
                                     <span @class([
                                         'px-2 py-0.5 text-xs font-semibold rounded-full',
                                         'bg-red-100 text-red-600' => $ticket->status === 'Open',
@@ -98,27 +111,26 @@
                             </div>
                         @endforeach
                     </div>
-                 @else
+                @else
                     <p class="text-sm text-gray-500 italic">Tidak ada tiket yang dilaporkan ditangani.</p>
-                 @endif
+                @endif
             </div>
 
-            {{-- Card 5: Tombol Aksi (Verifikasi oleh Admin) --}}
-            {{-- Tampilkan tombol ini HANYA jika laporan belum diverifikasi DAN user adalah admin --}}
+            {{-- Card 5: Tombol Verifikasi (Admin) --}}
             @can('verify-daily-report')
-                 @if (!$report->verified_at)
-                     <div class="bg-white shadow-md rounded-lg p-6 text-center">
-                         <p class="text-sm text-gray-600 mb-4">Laporan ini belum diverifikasi.</p>
-                         <form action="{{ route('reports.daily.verify', $report->id) }}" method="POST">
-                             @csrf
-                             @method('PUT') {{-- Gunakan PUT untuk aksi update/verifikasi --}}
-                             <button type="submit"
-                                 class="inline-flex items-center px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow transition">
-                                 <i class="fas fa-check-circle mr-2"></i> Verifikasi Laporan Ini
-                             </button>
-                         </form>
-                     </div>
-                 @endif
+                @if (!$report->verified_at)
+                    <div class="bg-white shadow-md rounded-lg p-6 text-center">
+                        <p class="text-sm text-gray-600 mb-4">Laporan ini belum diverifikasi.</p>
+                        <form action="{{ route('reports.daily.verify', $report->id) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            <button type="submit"
+                                class="inline-flex items-center px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow transition">
+                                <i class="fas fa-check-circle mr-2"></i> Verifikasi Laporan Ini
+                            </button>
+                        </form>
+                    </div>
+                @endif
             @endcan
 
         </div>

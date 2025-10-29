@@ -71,6 +71,8 @@ Route::middleware('auth')->group(function () {
     Route::post('reports/daily', [DailyReportController::class, 'store'])->name('reports.daily.store');
     Route::get('reports/daily/{id}', [DailyReportController::class, 'show'])->name('reports.daily.show');
     Route::put('reports/daily/{id}/verify', [DailyReportController::class, 'verify'])->name('reports.daily.verify');
+    Route::get('reports/daily/{id}/pdf', [DailyReportController::class, 'exportPdf'])->name('reports.daily.pdf');
+    
 
     // === MONTHLY REPORT ===
     // Route::get('reports/monthly', [MonthlyReportController::class, 'index'])->name('reports.monthly');
@@ -89,6 +91,7 @@ Route::middleware('auth')->group(function () {
     Route::put('reports/monthly/{id}', [MonthlyReportController::class, 'update'])->name('reports.monthly.update');
     Route::delete('reports/monthly/{id}', [MonthlyReportController::class, 'destroy'])->name('reports.monthly.destroy');
     Route::put('reports/monthly/{id}/verify', [MonthlyReportController::class, 'verify'])->name('reports.monthly.verify');
+    Route::get('reports/monthly/{id}/pdf', [MonthlyReportController::class, 'exportPdf'])->name('reports.monthly.pdf');
 
     // Handbook Route
     Route::get('handbook', [HandbookController::class, 'index'])->name('handbook.index');

@@ -20,7 +20,7 @@
                 @else
                     @can('create-daily-report')
                         <a href="{{ route('reports.daily.create') }}"
-                           class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow">
+                            class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow">
                             + Buat Laporan Harian
                         </a>
                     @endcan
@@ -86,14 +86,15 @@
                                 </p>
                                 <p class="text-sm text-gray-500 mt-1">{{ Str::limit($report->content, 80) }}</p>
                                 <a href="{{ route('reports.daily.show', $report->id) }}"
-                                   class="text-teal-600 hover:underline text-sm">Lihat Detail</a>
+                                    class="text-teal-600 hover:underline text-sm">Lihat Detail</a>
 
-                                <div class="text-xs text-gray-500 mt-2">
+                                <div class="text-xs text-gray-500 mt-2 mb-2">
                                     @if ($report->tasks->count() > 0)
                                         <p><strong>Tasks:</strong> {{ $report->tasks->pluck('title')->join(', ') }}</p>
                                     @endif
                                     @if ($report->tickets->count() > 0)
-                                        <p><strong>Tickets:</strong> {{ $report->tickets->pluck('title')->join(', ') }}</p>
+                                        <p><strong>Tickets:</strong> {{ $report->tickets->pluck('title')->join(', ') }}
+                                        </p>
                                     @endif
                                 </div>
                             </div>
@@ -102,16 +103,25 @@
                             @if ($report->verified_at)
                                 <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">Verified</span>
                             @else
-                                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">Pending</span>
+                                <span
+                                    class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">Pending</span>
                             @endif
+
+                            
                         </div>
+                        {{-- Export Pdf --}}
+                            <a href="{{ route('reports.daily.pdf', $report->id) }}"
+                                class="inline-flex items-center gap-2 bg-rose-500/90 text-white px-2.5 py-1.5 rounded-md text-sm font-medium shadow-sm hover:bg-rose-600 transition-all duration-150">
+                                <i class="fas fa-file-pdf text-xs"></i>
+                                Export PDF
+                            </a>
                     </div>
                 @empty
                     <p class="text-gray-500 text-sm">Belum ada laporan yang dibuat.</p>
                 @endforelse
             </div>
 
-            
+
         </div>
     </div>
 </x-app-layout>

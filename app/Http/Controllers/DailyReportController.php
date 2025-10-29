@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\DailyReport;
 use App\Models\Task;
 use App\Models\Ticket;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Spatie\LaravelPdf\Facades\Pdf;
 
 class DailyReportController extends Controller
 {
@@ -212,5 +214,30 @@ class DailyReportController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Laporan berhasil diverifikasi.');
+    }
+
+    public function exportPdf($id){
+        $user = Auth::user();
+        $report = DailyReport::with([
+            'user',
+            'verifier',
+            'tasks',
+            'tickets',
+        ])->findOrFail($id);
+
+        if (! $user->hasRole(['admin', 'manager']) && $report->user_id !== $user->id) {
+            abort(403, 'Unauthorized to export this report');
+        }
+
+        return Pdf::view('pdf.daily-report', [
+        'report' => $report,
+        'today' => now(),
+        ])
+        ->format('a4')
+        ->margins(16, 16, 20, 16) // top, right, bottom, left (mm)
+        ->name('DailyReport-'.$report->id.'.pdf');
+        // ->download();
+
+
     }
 }

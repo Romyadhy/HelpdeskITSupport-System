@@ -6,6 +6,7 @@ use App\Models\MonthlyReport;
 use App\Models\DailyReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Spatie\LaravelPdf\Facades\Pdf;
 
 class MonthlyReportController extends Controller
 {
@@ -193,5 +194,33 @@ class MonthlyReportController extends Controller
         $report->delete();
 
         return redirect()->route('reports.monthly')->with('success', 'Laporan bulanan berhasil dihapus.');
+    }
+
+    public function exportPdf($id){
+        $user = Auth::user();
+        $report = MonthlyReport::with(['user', 'verifier'])->findOrFail($id);
+
+        if (!$user->hasRole(['admin', 'manager']) && $report->user_id !== $user->id) {
+            abort(403, 'Unauthorized to export this report');
+        }
+
+        // Ambil daily reports yang terhubung untuk isi tabel ringkasan
+        $dailyReports = collect();
+        if (!empty($report->daily_report_ids)) {
+            $dailyReports = DailyReport::whereIn('id', $report->daily_report_ids)
+                ->with(['tasks', 'tickets'])
+                ->orderBy('report_date')
+                ->get();
+        }
+
+        return Pdf::view('pdf.monthly-report', [
+                'report'       => $report,
+                'dailyReports' => $dailyReports,
+                'today'        => now()->setTimezone('Asia/Makassar'),
+            ])
+            ->format('a4')
+            ->margins(16, 16, 20, 16) // top, right, bottom, left (mm)
+            ->name('MonthlyReport-'.$report->id.'.pdf');
+        // ->download();
     }
 }

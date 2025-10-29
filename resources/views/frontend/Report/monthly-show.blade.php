@@ -112,7 +112,16 @@
                     class="px-5 py-2.5 bg-gray-600 text-white rounded-lg shadow hover:bg-gray-700 transition">
                     ← Kembali
                 </a>
+
+                {{-- 🔽 Export PDF --}}
+                <a href="{{ route('reports.monthly.pdf', $report->id) }}"
+                    class="inline-flex items-center gap-2 bg-rose-600/90 text-white px-3 py-1.5 rounded-md text-sm font-medium shadow-sm hover:bg-rose-700 transition">
+                    <i class="fas fa-file-pdf text-xs"></i>
+                    Export PDF
+                </a>
             </div>
+
+
 
         </div>
     </div>
