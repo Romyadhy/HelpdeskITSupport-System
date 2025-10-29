@@ -101,7 +101,10 @@ class MonthlyReportController extends Controller
             'total_tasks' => $pickedDaily->flatMap->tasks->count(),
             'total_tickets' => $pickedDaily->flatMap->tickets->count(),
             'daily_report_ids' => array_values($pickedIds),
+            //ini kalo misal mau matikan dan aktifkan verif
             'status' => 'Verified',
+            'verified_by' => Auth::id(),
+            'verified_at' => now(),
         ]);
 
         return redirect()
