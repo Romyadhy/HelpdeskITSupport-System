@@ -100,7 +100,9 @@ Route::middleware('auth')->group(function () {
     Route::post('handbook/store', [HandbookController::class, 'store'])->name('handbook.store');
     Route::get('handbook/edit/{id}', [HandbookController::class, 'edit'])->name('handbook.edit');
     Route::put('handbook/update/{id}', [HandbookController::class, 'update'])->name('handbook.update');
-    Route::delete('handbook/delete/{id}', [HandbookController::class, 'destroy'])->name('handbook.delete');
+    Route::delete('handbook/delete/{handbook}', [HandbookController::class, 'destroy'])->name('handbook.delete');
+    Route::get('handbook/download/{id}', [HandbookController::class, 'downloadPdf'])->name('handbook.download');
+    // Route::get('handbook/export/pdf', [HandbookController::class, 'exportPdf'])->name('handbook.export.pdf');
     
 });
 

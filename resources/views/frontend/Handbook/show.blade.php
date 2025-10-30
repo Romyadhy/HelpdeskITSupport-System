@@ -17,7 +17,8 @@
                     <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                         <div>
                             <i class="fas fa-user mr-1 text-emerald-500"></i>
-                            Dibuat oleh: <span class="font-medium text-gray-700">{{ $handbook->uploader->name ?? 'Unknown' }}</span>
+                            Dibuat oleh: <span
+                                class="font-medium text-gray-700">{{ $handbook->uploader->name ?? 'Unknown' }}</span>
                         </div>
                         <div>
                             <i class="fas fa-calendar-alt mr-1 text-emerald-500"></i>
@@ -40,6 +41,41 @@
                     </div>
                 </div>
 
+                {{-- File PDF --}}
+                <div class="mb-8">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                        <i class="fas fa-file-pdf text-emerald-500"></i> Dokumen PDF
+                    </h4>
+
+                    @if ($handbook->file_path)
+                        <div class="flex flex-wrap items-center gap-3 bg-gray-50 border rounded-lg p-4 justify-between">
+                            <p class="text-sm text-gray-700">
+                                <i class="fas fa-file-alt mr-2 text-emerald-500"></i>
+                                File: <span class="font-medium">{{ basename($handbook->file_path) }}</span>
+                            </p>
+                            <div class="flex gap-2">
+                                {{-- Lihat PDF --}}
+                                <a href="{{ asset('storage/' . $handbook->file_path) }}" target="_blank"
+                                    class="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition">
+                                    <i class="fas fa-eye mr-1"></i> Lihat PDF
+                                </a>
+
+                                {{-- Download PDF --}}
+                                <a href="{{ route('handbook.download', $handbook->id) }}"
+                                    class="px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition">
+                                    <i class="fas fa-download mr-1"></i> Download
+                                </a>
+                            </div>
+                        </div>
+                    @else
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 p-4 rounded-md">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Belum ada file PDF yang diunggah untuk handbook ini.
+                        </div>
+                    @endif
+                </div>
+
+
                 {{-- Tombol Aksi --}}
                 <div class="flex justify-end gap-3 pt-4 border-t">
                     <a href="{{ route('handbook.index') }}"
@@ -56,7 +92,7 @@
 
                     @can('delete-handbook')
                         <form action="{{ route('handbook.delete', $handbook->id) }}" method="POST"
-                              onsubmit="return confirm('Yakin ingin menghapus handbook ini?')">
+                            onsubmit="return confirm('Yakin ingin menghapus handbook ini?')">
                             @csrf
                             @method('DELETE')
                             <button type="submit"

@@ -14,6 +14,7 @@ class Handbook extends Model
         'description',
         'category',
         'uploaded_by',
+        'file_path'
     ];
 
 

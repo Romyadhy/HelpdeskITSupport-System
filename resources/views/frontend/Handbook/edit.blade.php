@@ -22,7 +22,8 @@
                 @endif
 
                 {{-- Form Edit --}}
-                <form method="POST" action="{{ route('handbook.update', $handbook->id) }}" class="space-y-6">
+                <form method="POST" action="{{ route('handbook.update', $handbook->id) }}" 
+                      enctype="multipart/form-data" class="space-y-6">
                     @csrf
                     @method('PUT')
 
@@ -63,8 +64,42 @@
                             required>{{ old('description', $handbook->description) }}</textarea>
                     </div>
 
+                    {{-- File PDF --}}
+                    <div>
+                        <label for="file" class="block text-sm font-medium text-gray-700 mb-1">
+                            Ganti File PDF (opsional)
+                        </label>
+
+                        {{-- Jika sudah ada file sebelumnya --}}
+                        @if ($handbook->file_path)
+                            <div class="bg-gray-50 border rounded-lg p-4 mb-3 flex justify-between items-center">
+                                <div>
+                                    <i class="fas fa-file-pdf text-red-500 mr-2"></i>
+                                    <span class="text-sm text-gray-700">{{ basename($handbook->file_path) }}</span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <a href="{{ asset('storage/' . $handbook->file_path) }}" target="_blank"
+                                        class="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700">
+                                        <i class="fas fa-eye mr-1"></i> Lihat PDF
+                                    </a>
+                                    <a href="{{ route('handbook.download', $handbook->id) }}"
+                                        class="px-3 py-1 bg-emerald-600 text-white text-sm rounded hover:bg-emerald-700">
+                                        <i class="fas fa-download mr-1"></i> Download
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- Input file baru --}}
+                        <input type="file" id="file" name="file" accept="application/pdf"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500 file:mr-4 file:py-2 file:px-4
+                                   file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700
+                                   hover:file:bg-emerald-100">
+                        <p class="text-sm text-gray-500 mt-1">Upload file baru jika ingin mengganti PDF lama (maks. 5MB)</p>
+                    </div>
+
                     {{-- Tombol Aksi --}}
-                    <div class="flex justify-end gap-3 pt-4">
+                    <div class="flex justify-end gap-3 pt-4 border-t">
                         <a href="{{ route('handbook.index') }}"
                             class="px-4 py-2 rounded-md bg-gray-500 text-white hover:bg-gray-600 transition">
                             <i class="fas fa-arrow-left mr-1"></i> Kembali
@@ -75,6 +110,7 @@
                         </button>
                     </div>
                 </form>
+
             </div>
         </div>
     </div>

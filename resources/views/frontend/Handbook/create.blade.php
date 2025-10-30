@@ -63,6 +63,18 @@
                             required>{{ old('description') }}</textarea>
                     </div>
 
+                    {{-- Upload File PDF --}}
+                    <div>
+                        <label for="file" class="block text-sm font-medium text-gray-700 mb-1">
+                            File PDF (opsional)
+                        </label>
+                        <input type="file" id="file" name="file"  accept="application/pdf"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500 file:mr-4 file:py-2 file:px-4
+                                   file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700
+                                   hover:file:bg-emerald-100 cursor-pointer border">
+                        <p class="text-sm text-gray-500 mt-1">Hanya file PDF, maksimal 5MB.</p>
+                    </div>
+
                     {{-- Tombol Aksi --}}
                     <div class="flex justify-end gap-3 pt-4">
                         <a href="{{ route('handbook.index') }}"
