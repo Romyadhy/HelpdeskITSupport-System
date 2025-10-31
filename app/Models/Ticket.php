@@ -2,19 +2,32 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
-use App\Models\TicketCategory;
-use App\Models\TicketLocation;
 use Carbon\CarbonInterval;
-use Carbon\Interval;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Ticket extends Model
 {
     use HasFactory;
-    protected $fillable = ['title', 'description', 'status', 'priority', 'user_id', 'solution', 'solved_by', 'started_at', 'solved_at', 'assigned_to', 'duration', 'category_id', 'location_id', 'is_escalation', 'escalated_at'];
+
+    protected $fillable = [
+        'title',
+        'description',
+        'status',
+        'priority',
+        'user_id',
+        'solution',
+        'solved_by',
+        'started_at',
+        'solved_at',
+        'assigned_to',
+        'duration',
+        'category_id',
+        'location_id',
+        'is_escalation',
+        'escalated_at',
+    ];
 
     protected $casts = [
         'started_at' => 'datetime',
@@ -37,6 +50,7 @@ class Ticket extends Model
             $parts[] = $ci->h . 'h';
         }
         $parts[] = ($ci->i ?: 0) . 'm';
+
         return implode(' ', $parts);
     }
 

@@ -9,15 +9,18 @@
         <!-- Bagian Atas: Logo -->
         <div>
             <div class="flex flex-col items-center justify-center mt-8">
-                <div class="bg-emerald-500/20 p-3 rounded-xl shadow-inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-emerald-400" fill="none"
+                <div class="p-5 rounded-xl shadow-inner">
+                    {{-- <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-emerald-400" fill="none"
                         viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
+                    </svg> --}}
+                    <img src="{{ asset('images/logo3.png') }}" alt="IT Support Logo" class="object-contain h-10 w-10 sm:h-12 sm:w-12 lg:h-16 lg:w-16"
+                        width="100%" height="100%" loading="eager" decoding="async">
                 </div>
                 <h1 class="mt-3 text-2xl font-bold tracking-wide text-white">IT Support</h1>
-                <p class="text-sm text-gray-400">Helpdesk Dashboard</p>
+                <p class="text-sm text-gray-400">Helpdesk</p>
+                <p class="text-sm text-gray-400">RSU Kertha Usada</p>
             </div>
             <div class="mt-6 border-t border-gray-700/50"></div>
         </div>
@@ -45,17 +48,18 @@
             {{-- @hasanyrole('admin|support|manager') --}}
             @can('view-handbook')
                 <a href="{{ route('handbook.index') }}"
-                    class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 
+                    class="flex items-center px-4 py-3 rounded-lg transition-all duration-200
                     {{ request()->routeIs('handbook.*') ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
-                    
-                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="currentColor" xmlns="http://www.w3.org/2000/svg" 
+
+                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 576 512">
-                        <path d="M96 0C60.7 0 32 28.7 32 64V448c0 35.3 28.7 64 64 64H480c17.7 0 32-14.3 32-32V64c0-35.3-28.7-64-64-64H96zm64 96h256c8.8 0 16 7.2 16 16s-7.2 16-16 16H160c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64h256c8.8 0 16 7.2 16 16s-7.2 16-16 16H160c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64h128c8.8 0 16 7.2 16 16s-7.2 16-16 16H160c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/>
+                        <path
+                            d="M96 0C60.7 0 32 28.7 32 64V448c0 35.3 28.7 64 64 64H480c17.7 0 32-14.3 32-32V64c0-35.3-28.7-64-64-64H96zm64 96h256c8.8 0 16 7.2 16 16s-7.2 16-16 16H160c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64h256c8.8 0 16 7.2 16 16s-7.2 16-16 16H160c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64h128c8.8 0 16 7.2 16 16s-7.2 16-16 16H160c-8.8 0-16-7.2-16-16s7.2-16 16-16z" />
                     </svg>
 
-                <span class="text-sm font-medium">Handbook/SOP</span>
+                    <span class="text-sm font-medium">Handbook/SOP</span>
                 </a>
-             @endcan
+            @endcan
             {{-- @endhasanyrole --}}
 
             <!-- Tickets -->
@@ -104,7 +108,7 @@
             @hasanyrole('admin|support|manager')
                 <div x-data="{ open: {{ request()->routeIs('repots.*') ? 'true' : 'false' }} }">
                     <button @click="open = !open"
-                        class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition 
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition
                         {{ request()->routeIs('reports.*') ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <span class="flex items-center">
                             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" stroke-width="2"
@@ -124,10 +128,10 @@
                         </a>
                         @can('view-monthly-reports')
                             <a href="{{ route('reports.monthly') }}"
-                                class="block px-3 py-2 rounded-md text-sm 
+                                class="block px-3 py-2 rounded-md text-sm
                                 {{ request()->routeIs('reports.monthly') ? 'bg-emerald-50 text-emerald-700' : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
                                 Monthly Report
-                        @endcan
+                            @endcan
                         </a>
                     </div>
                 </div>
@@ -149,7 +153,8 @@
                     </div>
                     <svg class="h-5 w-5 text-gray-300 transition-transform duration-200" :class="{ 'rotate-180': open }"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                        </path>
                     </svg>
                 </button>
 

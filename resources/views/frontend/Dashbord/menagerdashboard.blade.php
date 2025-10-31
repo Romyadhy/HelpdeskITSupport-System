@@ -51,7 +51,8 @@
 
                 {{-- Bar Chart: Performa SLA --}}
                 <div class="bg-white shadow rounded-lg p-6">
-                    <h3 class="text-lg font-bold text-gray-700 mb-4">Performa SLA (Rata-rata Penyelesaian per Kategori)</h3>
+                    <h3 class="text-lg font-bold text-gray-700 mb-4">Performa SLA (Rata-rata Penyelesaian per Kategori)
+                    </h3>
                     <div class="w-full max-w-lg mx-auto h-80">
                         <canvas id="slaPerformanceChart"></canvas>
                     </div>
@@ -73,22 +74,24 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
-                            @foreach($tickets ?? [] as $index => $ticket)
+                            @foreach ($tickets ?? [] as $index => $ticket)
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-2">{{ $index + 1 }}</td>
                                     <td class="px-4 py-2 font-medium text-gray-700">{{ $ticket->title }}</td>
-                                    <td class="px-4 py-2 text-gray-600">{{ $ticket->category->name ?? '-' }}</td>
+                                    <td class="px-4 py-2 text-gray-600">{{ $ticket->category_name ?? '-' }}</td>
                                     <td class="px-4 py-2">
-                                        <span class="px-3 py-1 text-xs font-semibold rounded-full 
-                                            @if($ticket->priority === 'High') bg-red-100 text-red-700
+                                        <span
+                                            class="px-3 py-1 text-xs font-semibold rounded-full
+                                            @if ($ticket->priority === 'High') bg-red-100 text-red-700
                                             @elseif($ticket->priority === 'Medium') bg-yellow-100 text-yellow-700
                                             @else bg-green-100 text-green-700 @endif">
                                             {{ ucfirst($ticket->priority) }}
                                         </span>
                                     </td>
                                     <td class="px-4 py-2">
-                                        <span class="px-3 py-1 text-xs font-semibold rounded-full 
-                                            @if($ticket->status === 'closed') bg-green-100 text-green-700
+                                        <span
+                                            class="px-3 py-1 text-xs font-semibold rounded-full
+                                            @if ($ticket->status === 'closed') bg-green-100 text-green-700
                                             @elseif($ticket->status === 'pending') bg-yellow-100 text-yellow-700
                                             @else bg-gray-100 text-gray-700 @endif">
                                             {{ ucfirst($ticket->status) }}
@@ -116,7 +119,8 @@
             data: {
                 labels: ['Closed', 'Pending', 'Open'],
                 datasets: [{
-                    data: [{{ $closedTickets ?? 0 }}, {{ $pendingTickets ?? 0 }}, {{ $openTickets ?? 0 }}],
+                    data: [{{ $closedTickets ?? 0 }}, {{ $pendingTickets ?? 0 }},
+                        {{ $openTickets ?? 0 }}],
                     backgroundColor: ['#16a34a', '#facc15', '#f87171'],
                     borderWidth: 1,
                 }]
@@ -127,7 +131,11 @@
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { font: { size: 14 } }
+                        labels: {
+                            font: {
+                                size: 14
+                            }
+                        }
                     }
                 }
             }
@@ -149,7 +157,9 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    y: { beginAtZero: true }
+                    y: {
+                        beginAtZero: true
+                    }
                 },
                 plugins: {
                     legend: {

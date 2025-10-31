@@ -8,32 +8,35 @@
     <div class="py-10 px-6 max-w-7xl mx-auto space-y-8">
         {{-- Statistik Utama --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="bg-green-50 border border-green-200 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition">
+            <div
+                class="bg-green-50 border border-green-200 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition">
                 <div class="text-4xl mb-2">🟢</div>
                 <h3 class="text-gray-700 font-semibold text-sm">Tiket Aktif</h3>
-                <p class="text-2xl font-bold text-gray-900">{{ $assignedTickets->where('status', 'open')->count() }}</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $openTickets }}</p>
             </div>
 
-            <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition">
+            <div
+                class="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition">
                 <div class="text-4xl mb-2">🕓</div>
                 <h3 class="text-gray-700 font-semibold text-sm">Menunggu Respon</h3>
-                <p class="text-2xl font-bold text-gray-900">{{ $assignedTickets->where('status', 'pending')->count() }}</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $inProgressTickets }}</p>
             </div>
 
-            <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition">
+            <div
+                class="bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition">
                 <div class="text-4xl mb-2">✅</div>
                 <h3 class="text-gray-700 font-semibold text-sm">Tiket Selesai</h3>
-                <p class="text-2xl font-bold text-gray-900">{{ $assignedTickets->where('status', 'closed')->count() }}</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $closedTickets }}</p>
             </div>
 
-            <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition">
+            <div
+                class="bg-indigo-50 border border-indigo-200 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition">
                 <div class="text-4xl mb-2">📅</div>
                 <h3 class="text-gray-700 font-semibold text-sm">Tiket Hari Ini</h3>
-                <p class="text-2xl font-bold text-gray-900">
-                    {{ $assignedTickets->where('created_at', '>=', now()->startOfDay())->count() }}
-                </p>
+                <p class="text-2xl font-bold text-gray-900">{{ $todayTickets }}</p>
             </div>
         </div>
+
 
         {{-- Daftar Tiket Aktif --}}
         <div class="bg-white shadow-md rounded-2xl overflow-hidden border border-gray-100">
@@ -60,17 +63,26 @@
                         @forelse ($assignedTickets as $index => $ticket)
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="px-6 py-3 text-gray-700">{{ $index + 1 }}</td>
-                                <td class="px-6 py-3 text-gray-900 font-medium">{{ $ticket->title ?? 'Tanpa Judul' }}</td>
-                                <td class="px-6 py-3 text-gray-700">{{ $ticket->category->name ?? '-' }}</td>
+                                <td class="px-6 py-3 text-gray-900 font-medium">{{ $ticket->title ?? 'Tanpa Judul' }}
+                                </td>
+                                <td class="px-6 py-3 text-gray-700">{{ $ticket->category_name ?? '-' }}</td>
                                 <td class="px-6 py-3 text-center">
-                                    @if ($ticket->status === 'open')
-                                        <span class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">Open</span>
-                                    @elseif ($ticket->status === 'pending')
-                                        <span class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700">Pending</span>
+                                    @if ($ticket->status === 'Open')
+                                        <span
+                                            class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">Open</span>
+                                    @elseif ($ticket->status === 'In Progress')
+                                        <span
+                                            class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700">In
+                                            Progress</span>
+                                    @elseif ($ticket->status === 'Closed')
+                                        <span
+                                            class="px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600">Closed</span>
                                     @else
-                                        <span class="px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600">Closed</span>
+                                        <span
+                                            class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700">Unknown</span>
                                     @endif
                                 </td>
+
                                 <td class="px-6 py-3 text-center text-gray-600">
                                     {{ \Carbon\Carbon::parse($ticket->created_at)->format('d M Y') }}
                                 </td>
