@@ -39,7 +39,7 @@ class DashboardController extends Controller
                 ->get();
 
             $slaCategories = $slaData->map(fn($t) => $t->category->name ?? 'Unknown');
-            $slaDuration = $slaData->map(fn($t) => round($t->avg_duration, 2));
+            $slaDurations = $slaData->map(fn($t) => round($t->avg_duration, 2));
 
             return view('frontend.Dashbord.admindashboard', compact(
                 'tickets',
@@ -49,7 +49,7 @@ class DashboardController extends Controller
                 'openTickets',
                 'totalUsers',
                 'slaCategories',
-                'slaDuration'
+                'slaDurations'
             ));
         }
 

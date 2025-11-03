@@ -19,6 +19,16 @@ class SupportController extends Controller
         ], 205);
     }
 
+    public function tickets()
+    {
+        $tickets = Ticket::all();
+
+        return response()->json([
+            'message' => 'success',
+            'data' => $tickets,
+        ], 202);
+    }
+
     public function submitTask(Request $request)
     {
         try {

@@ -149,7 +149,7 @@
                 datasets: [{
                     label: 'Rata-rata durasi penyelesaian (menit)',
                     data: {!! json_encode($slaDurations ?? []) !!},
-                    backgroundColor: '#14b8a6',
+                    backgroundColor: ['#14b8a6', '#3b82f6', '#facc15', '#ef4444'],
                     borderRadius: 8,
                 }]
             },

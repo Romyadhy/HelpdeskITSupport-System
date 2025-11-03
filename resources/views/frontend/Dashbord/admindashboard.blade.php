@@ -91,7 +91,8 @@
                                             class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-black">Open</span>
                                     @elseif ($ticket->status === 'In Progress')
                                         <span
-                                            class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-black">In Progress</span>
+                                            class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-black">In
+                                            Progress</span>
                                     @elseif ($ticket->status === 'Closed')
                                         <span
                                             class="px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-black">Closed</span>
