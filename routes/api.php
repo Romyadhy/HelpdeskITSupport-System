@@ -19,6 +19,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/tickets/{id}', [TicketController::class, 'show']);
     Route::put('/tickets/{id}', [TicketController::class, 'update']);
     Route::delete('/tickets/{id}', [TicketController::class, 'destroy']);
+    Route::post('/ticket/{id}/start', [TicketController::class, 'startTicket']);
+    Route::post('/ticket/{id}/close', [TicketController::class, 'closeTicket']);
+    Route::post('/ticket/{id}/escalate', [TicketController::class, 'escalateTicket']);
+    Route::post('/ticket/{id}/handle-escalation', [TicketController::class, 'handleEscalatedTicket']);
+    Route::post('/ticket/{id}/close-admin', [TicketController::class, 'closeTicketByAdmin']);
 });
 
 // Route::get('/tes', [SupportController::class, 'index']);

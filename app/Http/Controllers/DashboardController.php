@@ -38,8 +38,8 @@ class DashboardController extends Controller
                 ->with('category')
                 ->get();
 
-            $slaCategories = $slaData->map(fn($t) => $t->category->name ?? 'Unknown');
-            $slaDurations = $slaData->map(fn($t) => round($t->avg_duration, 2));
+            $slaCategories = $slaData->map(fn ($t) => $t->category->name ?? 'Unknown');
+            $slaDurations = $slaData->map(fn ($t) => round($t->avg_duration, 2));
 
             return view('frontend.Dashbord.admindashboard', compact(
                 'tickets',
@@ -77,8 +77,8 @@ class DashboardController extends Controller
                 ->with('category')
                 ->get();
 
-            $slaCategories = $slaData->map(fn($t) => $t->category->name ?? 'Unknown');
-            $slaDurations = $slaData->map(fn($t) => round($t->avg_duration, 2));
+            $slaCategories = $slaData->map(fn ($t) => $t->category->name ?? 'Unknown');
+            $slaDurations = $slaData->map(fn ($t) => round($t->avg_duration, 2));
 
             return view('frontend.Dashbord.menagerdashboard', compact(
                 'tickets',
@@ -98,9 +98,10 @@ class DashboardController extends Controller
          */
         if ($user->hasRole('support')) {
             // Ambil semua tiket yang ditugaskan ke user
-            $assignedTickets = Ticket::where('assigned_to', $user->id)
-                ->with(['category'])
+            $assignedTickets = Ticket::select('tickets.*', 'ticket_categories.name as category_name')
+                ->leftJoin('ticket_categories', 'tickets.category_id', '=', 'ticket_categories.id')
                 ->latest()
+                ->with('user')
                 ->get();
 
             // Statistik tiket

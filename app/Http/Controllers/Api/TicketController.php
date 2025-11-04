@@ -16,7 +16,13 @@ class TicketController extends Controller
     public function index(Request $request)
     {
         try {
-            $tickets = Ticket::with(['user', 'category', 'location', 'assignee', 'solver'])
+            $tickets = Ticket::with([
+                'user',
+                'category',
+                'location',
+                'assignee',
+                'solver',
+            ])
                 ->where('user_id', $request->user()->id)
                 ->latest()
                 ->get();
@@ -162,6 +168,267 @@ class TicketController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Gagal menghapus tiket.',
+                'error' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * 🔹 Start handling a ticket (by IT Support)
+     */
+    public function startTicket(Request $request, $id)
+    {
+        try {
+            $ticket = Ticket::findOrFail($id);
+            $user = Auth::user();
+
+            // Pastikan user memiliki hak untuk menangani tiket
+            if (! $user->can('handle-ticket')) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Anda tidak memiliki izin untuk memulai tiket ini.',
+                ], 403);
+            }
+
+            // Pastikan tiket belum ditangani atau sudah selesai
+            if ($ticket->status !== 'Open') {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Tiket tidak dalam status Open.',
+                ], 400);
+            }
+
+            $ticket->update([
+                'status' => 'In Progress',
+                'started_at' => $ticket->started_at ?? now(),
+                'assigned_to' => $user->id,
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Tiket berhasil dimulai.',
+                'data' => $ticket,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan saat memulai tiket.',
+                'error' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * 🔹 Close a ticket after solving it
+     */
+    public function closeTicket(Request $request, $id)
+    {
+        try {
+            $ticket = Ticket::findOrFail($id);
+            $user = Auth::user();
+
+            // Pastikan hanya IT Support yang menangani tiket ini yang boleh menutupnya
+            if ($ticket->assigned_to !== $user->id) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Anda tidak dapat menutup tiket ini.',
+                ], 403);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'solution' => 'required|string|min:1',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'failed',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $start = $ticket->started_at ?: $ticket->created_at;
+            $closedAt = now();
+            $duration = $start->diffInMinutes($closedAt);
+
+            $ticket->update([
+                'solution' => $request->solution,
+                'status' => 'Closed',
+                'solved_by' => $user->id,
+                'solved_at' => $closedAt,
+                'duration' => $duration,
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Tiket berhasil ditutup.',
+                'data' => $ticket,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal menutup tiket.',
+                'error' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * 🔹 Escalate a ticket to Admin
+     */
+    public function escalateTicket(Request $request, $id)
+    {
+        try {
+            $ticket = Ticket::findOrFail($id);
+            $user = Auth::user();
+
+            // Pastikan user memiliki izin untuk mengeskalasi tiket
+            if (! $user->can('escalate-ticket')) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Anda tidak memiliki izin untuk mengeskalasi tiket ini.',
+                ], 403);
+            }
+
+            // Pastikan hanya user yang sedang menangani tiket yang bisa melakukan eskalasi
+            if ($ticket->assigned_to !== $user->id) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Anda tidak dapat mengeskalasi tiket yang tidak Anda tangani.',
+                ], 403);
+            }
+
+            // Pastikan tiket belum di-escalate sebelumnya
+            if ($ticket->is_escalation === true) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Tiket ini sudah dalam status eskalasi.',
+                ], 400);
+            }
+
+            $ticket->update([
+                'is_escalation' => true,
+                'escalated_at' => now(),
+                'status' => 'In Progress',
+                'assigned_to' => null, // kosongkan karena belum ditangani admin
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Tiket berhasil di-escalate ke admin.',
+                'data' => $ticket,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal mengeskalasi tiket.',
+                'error' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * 🔹 Handle an escalated ticket (by Admin)
+     */
+    public function handleEscalatedTicket(Request $request, $id)
+    {
+        try {
+            $ticket = Ticket::findOrFail($id);
+            $user = Auth::user();
+
+            // Hanya admin/koordinator yang boleh menangani tiket eskalasi
+            if (! $user->can('handle-escalated-ticket')) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Anda tidak memiliki izin untuk menangani tiket eskalasi.',
+                ], 403);
+            }
+
+            // Pastikan tiket memang dalam status eskalasi
+            if ($ticket->is_escalation !== true) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Tiket ini tidak sedang dalam status eskalasi.',
+                ], 400);
+            }
+
+            $ticket->update([
+                'is_escalation' => false,
+                'status' => 'In Progress',
+                'assigned_to' => $user->id,
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Tiket eskalasi kini ditangani oleh admin.',
+                'data' => $ticket,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal menangani tiket eskalasi.',
+                'error' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * 🔹 Close an escalated ticket (by Admin)
+     */
+    public function closeTicketByAdmin(Request $request, $id)
+    {
+        try {
+            $ticket = Ticket::findOrFail($id);
+            $user = Auth::user();
+
+            // Pastikan hanya admin/koordinator yang bisa menutup tiket eskalasi
+            if (! $user->can('handle-escalated-ticket')) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Anda tidak memiliki izin untuk menutup tiket ini.',
+                ], 403);
+            }
+
+            // Pastikan tiket sedang ditangani oleh admin ini
+            if ($ticket->assigned_to !== $user->id) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Anda tidak sedang menangani tiket ini.',
+                ], 403);
+            }
+
+            // Validasi input solusi
+            $validator = Validator::make($request->all(), [
+                'solution' => 'required|string|min:1',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'failed',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $start = $ticket->started_at ?: $ticket->created_at;
+            $closedAt = now();
+            $duration = $start->diffInMinutes($closedAt);
+
+            $ticket->update([
+                'solution' => $request->solution,
+                'status' => 'Closed',
+                'solved_by' => $user->id,
+                'solved_at' => $closedAt,
+                'duration' => $duration,
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Tiket berhasil diselesaikan dan ditutup oleh admin.',
+                'data' => $ticket,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal menutup tiket eskalasi.',
                 'error' => $th->getMessage(),
             ], 500);
         }
