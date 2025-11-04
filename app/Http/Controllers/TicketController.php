@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use App\Models\Ticket;
 use App\Models\TicketCategory;
 use App\Models\TicketLocation;
@@ -60,7 +61,7 @@ class TicketController extends Controller
 
             return redirect()->route('tickets.index')->with('success', 'Ticket created successfully.');
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 \Log::error('Error creating ticket: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
                 return back()->withErrors('An error occurred while creating the ticket. Please try again.');
             }
@@ -101,7 +102,7 @@ class TicketController extends Controller
                 $ticket->update($validated);
 
                 return redirect()->route('tickets.index')->with('success', 'Ticket updated successfully.');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 \Log::error('Error updating ticket: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
                 return back()->withErrors('error', 'An error occurred while updating the ticket.');
             }
@@ -119,8 +120,13 @@ class TicketController extends Controller
             // dd($ticket->location->name);
             // $tes = $ticket->load(['category', 'location', 'user', 'solver']);
             // dd($tes);
+            // dd($ticket->assignee->name);
+            
+            // calling manually
+            $categoryName = TicketCategory::find($ticket->category_id)->name;
+            $locationName = TicketLocation::find($ticket->location_id)->name;
 
-            return view('frontend.Tickets.show', compact('ticket'));
+            return view('frontend.Tickets.show', compact('ticket', 'categoryName', 'locationName'));
         }
 
     public function destroy(Ticket $ticket)
@@ -148,13 +154,30 @@ class TicketController extends Controller
                     'status' => 'In Progress',
                     'started_at' => $ticket->started_at ?? now(),
                     'assigned_to' => auth()->id(),
+                    // 'updated_at' => now(),
                 ]);
                 return redirect()->route('tickets.index')->with('success', 'Ticket started successfully.');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 \Log::error('Error starting ticket: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
                 return back()->withErrors('error', 'An error occurred while starting the ticket.');
             }
         }
+
+    public function takeOver($id)
+    {
+        $ticket = Ticket::findOrFail($id);
+
+        // check ticket status
+        if ($ticket->status === 'In Progress' && $ticket->assigned_to !== auth()->id()){
+            if (auth()->user()->can('take-over')) {
+                $ticket->save();
+                $ticket->update([
+                    'assigned_to' => auth()->id(),
+                ]);
+                return redirect()->route('tickets.index')->with('success', 'You have taken over the ticket.');
+            }
+        }
+    }
 
     public function close(Request $request, Ticket $ticket): RedirectResponse
         {
@@ -184,7 +207,7 @@ class TicketController extends Controller
                 ]);
                 return redirect()->route('tickets.index')->with('success', 'Ticket closed successfully.');
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 \Log::error('Error closing ticket: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
                 return back()->withErrors('Error', 'An error occurred while closing the ticket.');
             }
@@ -217,9 +240,9 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('handle-escalated-ticket')) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!$user->can('handle-escalated-ticket')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         try {
             $ticket->update([
@@ -229,7 +252,7 @@ class TicketController extends Controller
             ]);
 
             return redirect()->route('tickets.index')->with('success', 'Escalated ticket now handled by Admin.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error handling escalated ticket: ' . $e->getMessage());
             return back()->withErrors('An error occurred while handling the escalated ticket.');
         }
