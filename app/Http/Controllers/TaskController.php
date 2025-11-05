@@ -9,8 +9,6 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
-use PhpParser\Node\Stmt\TryCatch;
 
 class TaskController extends Controller
 {
@@ -48,14 +46,18 @@ class TaskController extends Controller
         $isAdmin = auth()->user()->hasRole('admin'); // atau sesuaikan dengan sistem role kamu
 
         // Kalau admin, tampilkan semua task; kalau support, hanya yang aktif
-        $tasksQuery = Task::where('frequency', 'daily')->orderBy('title');
+        $tasksQuery = Task::where('frequency', 'daily')
+            ->orderBy('title');
 
-        if (!$isAdmin) {
+        if (! $isAdmin) {
             $tasksQuery->where('is_active', true);
         }
 
         $tasks = $tasksQuery->get();
-        $completedTodays = TaskCompletion::whereDate('complated_at', today())->pluck('task_id')->unique()->toArray();
+        $completedTodays = TaskCompletion::whereDate('complated_at', today())
+            ->pluck('task_id')
+            ->unique()
+            ->toArray();
 
         return view('frontend.Tasks.daily', compact('tasks', 'completedTodays'));
     }
@@ -71,12 +73,14 @@ class TaskController extends Controller
 
         $tasksQuery = Task::where('frequency', 'monthly')->orderBy('title');
 
-        if (!$isAdmin) {
+        if (! $isAdmin) {
             $tasksQuery->where('is_active', true);
         }
 
         $tasks = $tasksQuery->get();
-        $completedMonthlys = TaskCompletion::whereMonth('complated_at', now()->month)->whereYear('complated_at', now()->year)->pluck('task_id')->toArray();
+        $completedMonthlys = TaskCompletion::whereMonth('complated_at', now()->month)->whereYear('complated_at', now()->year)
+            ->pluck('task_id')
+            ->toArray();
 
         return view('frontend.Tasks.monthly', compact('tasks', 'completedMonthlys'));
     }
@@ -121,8 +125,10 @@ class TaskController extends Controller
             return redirect()->route('tasks.daily')->with('success', 'Task created successfully');
         } catch (Exception $e) {
             \Log::error('Eror creating ticket: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
+
             return back()->withErrors('An error occurred while creating the task.');
         }
+
         return back()->withErrors('error', 'Something went wrong while creating the task');
     }
 
@@ -139,7 +145,7 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'frequency' => 'required|in:daily,monthly',
-            'is_active' => 'nullable|boolean'
+            'is_active' => 'nullable|boolean',
         ]);
 
         $task->update($validated);
@@ -151,6 +157,7 @@ class TaskController extends Controller
     {
         // Logic to delete a task
         $task->delete();
+
         return redirect()->route('tasks.daily')->with('success', 'Task deleted successfully!');
     }
 
