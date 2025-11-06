@@ -239,22 +239,47 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
+        // Pastikan user punya izin
         if (! $user->can('escalate-ticket')) {
             abort(403, 'Unauthorized action.');
         }
 
-        if ($ticket->assigned_to === $user->id) {
-            $ticket->update([
-                'is_escalation' => true,
-                'escalated_at' => now(),
-                'status' => 'In Progress',
-                'assigned_to' => null,
-            ]);
-
-            return redirect()->route('tickets.index')->with('success', 'Ticket has been escalated to Admin.');
+        // Pastikan tiket benar milik user yang sedang login
+        if ($ticket->assigned_to !== $user->id) {
+            return back()->with('error', 'You cannot escalate this ticket.');
         }
 
-        return back()->with('error', 'You cannot escalate this ticket.');
+        // Update status tiket menjadi eskalasi
+        $ticket->update([
+            'is_escalation' => true,
+            'escalated_at' => now(),
+            'status' => 'In Progress',
+            'assigned_to' => null,
+        ]);
+
+        // Setelah update, pastikan relasi dimuat agar bisa ambil nama kategori dan lokasi
+        $ticket->load(['category', 'location', 'user']);
+
+        // ============================
+        // Kirim notifikasi ke Telegram
+        // ============================
+        try {
+            $telegram = app(TelegramService::class);
+
+            $message = "⚠️ <b>Ticket DIESKALASIKAN</b>\n"
+                . "Judul     : {$ticket->title}\n"
+                . "Prioritas : {$ticket->priority}\n"
+                . "Dari      : {$ticket->user->name}\n"
+                . 'Eskalasi Oleh: ' . $user->name . "\n\n"
+                . '🛠️ <i>Tiket ini memerlukan perhatian admin untuk tindak lanjut.</i>';
+
+            $telegram->sendMessage($message);
+        } catch (\Exception $e) {
+            \Log::error('Gagal mengirim notifikasi Telegram: ' . $e->getMessage());
+        }
+
+        return redirect()->route('tickets.index')
+            ->with('success', 'Ticket has been escalated to Admin and notification sent.');
     }
 
     // Admin menangani tiket yang di-escalate
