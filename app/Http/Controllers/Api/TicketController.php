@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -71,6 +72,19 @@ class TicketController extends Controller
                 'location_id' => $request->location_id,
                 'is_escalation' => false,
             ]);
+
+            $ticket->load(['category', 'location']);
+
+            $telegram = app(TelegramService::class);
+
+            $message = "📩 <b>Ticket Baru Masuk</b>\n"
+                . "Judul     : {$ticket->title}\n"
+                . "Prioritas : {$ticket->priority}\n"
+                . "Kategori  : {$ticket->category->name}\n"
+                . "Lokasi    : {$ticket->location->name}\n"
+                . 'Dari      : ' . auth()->user()->name;
+
+            $telegram->sendMessage($message);
 
             return response()->json([
                 'status' => 'success',

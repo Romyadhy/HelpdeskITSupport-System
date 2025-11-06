@@ -5,17 +5,15 @@
                 📝 Detail Laporan Harian
             </h2>
             <div class="flex items-center gap-4">
+                {{-- Tombol Kembali --}}
+                <a href="{{ route('reports.daily') }}" class="text-sm text-gray-600 hover:text-gray-900">
+                    &larr; Kembali ke Daftar Laporan
+                </a>
                 {{-- Tombol Export PDF --}}
                 <a href="{{ route('reports.daily.pdf', $report->id) }}"
-                   class="inline-flex items-center gap-2 bg-rose-600/90 text-white px-3 py-1.5 rounded-md text-sm font-medium shadow-sm hover:bg-rose-700 transition-all duration-150">
+                    class="inline-flex items-center gap-2 bg-rose-600/90 text-white px-3 py-1.5 rounded-md text-sm font-medium shadow-sm hover:bg-rose-700 transition-all duration-150">
                     <i class="fas fa-file-pdf text-xs"></i>
                     Export PDF
-                </a>
-
-                {{-- Tombol Kembali --}}
-                <a href="{{ route('reports.daily') }}" 
-                   class="text-sm text-gray-600 hover:text-gray-900">
-                    &larr; Kembali ke Daftar Laporan
                 </a>
             </div>
         </div>
@@ -25,30 +23,33 @@
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             {{-- Card 1: Informasi Utama Laporan --}}
-            <div class="bg-white shadow-md rounded-lg p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+            <div
+                class="bg-white shadow-md rounded-lg p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
                     <p class="text-sm text-gray-500">Laporan Oleh:</p>
                     <h3 class="text-lg font-semibold text-gray-900">
                         {{ $report->user->name ?? 'Pengguna Tidak Dikenal' }}
                     </h3>
                     <p class="text-sm text-gray-600">
-                        Tanggal Laporan: {{ $report->report_date->format('l, d F Y') }}
+                        Tanggal Laporan: {{ $report->report_date->setTimezone('Asia/Makassar')->format('l, d F Y') }}
                     </p>
                     <p class="text-xs text-gray-400">
-                        Dikirim pada: {{ $report->created_at->format('d M Y, H:i') }}
+                        Dikirim pada: {{ $report->created_at->setTimezone('Asia/Makassar')->format('d M Y, H:i') }}
                     </p>
                 </div>
                 <div class="mt-4 sm:mt-0 text-sm text-right">
                     @if ($report->verified_at)
-                        <span class="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full font-medium">
+                        <span
+                            class="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full font-medium">
                             <i class="fas fa-check-circle mr-1.5"></i>
                             Diverifikasi oleh {{ $report->verifier->name ?? 'N/A' }}
                         </span>
                         <span class="block text-xs text-gray-400 mt-1">
-                            pada {{ $report->verified_at->format('d M Y, H:i') }}
+                            pada {{ $report->verified_at->setTimezone('Asia/Makassar')->format('d M Y, H:i') }}
                         </span>
                     @else
-                        <span class="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full font-medium">
+                        <span
+                            class="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full font-medium">
                             <i class="fas fa-clock mr-1.5"></i>
                             Menunggu Verifikasi
                         </span>

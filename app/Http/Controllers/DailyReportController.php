@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DailyReport;
 use App\Models\Task;
 use App\Models\Ticket;
-use App\Models\User;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Spatie\LaravelPdf\Facades\Pdf;
@@ -13,90 +13,85 @@ use Spatie\LaravelPdf\Facades\Pdf;
 class DailyReportController extends Controller
 {
     public function index()
-{
-    $user = Auth::user();
-    $today = now()->toDateString();
+    {
+        $user = Auth::user();
+        $today = now()->toDateString();
 
-    // Cek laporan hari ini (hanya untuk support)
-    $hasReportToday = $user->hasRole('support')
-        ? DailyReport::where('user_id', $user->id)->whereDate('report_date', $today)->exists()
-        : false;
+        // Cek laporan hari ini (hanya untuk support)
+        $hasReportToday = $user->hasRole('support')
+            ? DailyReport::where('user_id', $user->id)->whereDate('report_date', $today)->exists()
+            : false;
 
-    // Ambil daftar laporan (support = laporan pribadi, admin/manager = semua laporan)
-    if ($user->hasRole('support')) {
-        $dailyReports = DailyReport::with(['tasks', 'tickets', 'verifier'])
-            ->where('user_id', $user->id)
-            ->latest()
-            ->get();
-    } else {
-        $dailyReports = DailyReport::with(['user', 'tasks', 'tickets', 'verifier'])
-            ->latest()
-            ->get();
+        // Ambil daftar laporan (support = laporan pribadi, admin/manager = semua laporan)
+        if ($user->hasRole('support')) {
+            $dailyReports = DailyReport::with(['tasks', 'tickets', 'verifier'])
+                ->where('user_id', $user->id)
+                ->latest()
+                ->get();
+        } else {
+            $dailyReports = DailyReport::with(['user', 'tasks', 'tickets', 'verifier'])
+                ->latest()
+                ->get();
+        }
+
+        if ($user->hasRole('support')) {
+            // Statistik untuk user support
+            $monthlyReportsCount = DailyReport::where('user_id', $user->id)
+                ->whereMonth('report_date', now()->month)
+                ->count();
+
+            $tasksCompletedToday = Task::whereHas('completions', function ($q) use ($user, $today) {
+                $q->where('user_id', $user->id)->whereDate('created_at', $today);
+            })->get();
+
+            $ticketsClosedToday = Ticket::where('assigned_to', $user->id)
+                ->where('status', 'Closed')
+                ->whereDate('solved_at', $today)
+                ->get();
+
+            $ticketsActiveToday = Ticket::where('assigned_to', $user->id)
+                ->whereIn('status', ['Open', 'In Progress'])
+                ->whereDate('updated_at', $today)
+                ->get();
+        } else {
+            // Statistik untuk admin/manager (lihat semua data support)
+            $monthlyReportsCount = DailyReport::whereMonth('report_date', now()->month)->count();
+
+            $tasksCompletedToday = Task::whereHas('completions', function ($q) use ($today) {
+                $q->whereDate('created_at', $today);
+            })->get();
+
+            $ticketsClosedToday = Ticket::where('status', 'Closed')
+                ->whereDate('solved_at', $today)
+                ->get();
+
+            $ticketsActiveToday = Ticket::whereIn('status', ['Open', 'In Progress'])
+                ->whereDate('updated_at', $today)
+                ->get();
+        }
+        // =========================
+
+        $completedTasksCount = $tasksCompletedToday->count();
+        $handledTicketsCount = $ticketsClosedToday->count() + $ticketsActiveToday->count();
+
+        return view('frontend.Report.daily', [
+            'dailyReports' => $dailyReports,
+            'tasksCompletedToday' => $tasksCompletedToday,
+            'ticketsClosedToday' => $ticketsClosedToday,
+            'ticketsActiveToday' => $ticketsActiveToday,
+            'hasReportToday' => $hasReportToday,
+            'monthlyReportsCount' => $monthlyReportsCount,
+            'completedTasksCount' => $completedTasksCount,
+            'handledTicketsCount' => $handledTicketsCount,
+        ]);
     }
-
-    // =========================
-    // BAGIAN YANG BERUBAH DI SINI
-    // =========================
-    if ($user->hasRole('support')) {
-        // Statistik untuk user support
-        $monthlyReportsCount = DailyReport::where('user_id', $user->id)
-            ->whereMonth('report_date', now()->month)
-            ->count();
-
-        $tasksCompletedToday = Task::whereHas('completions', function ($q) use ($user, $today) {
-            $q->where('user_id', $user->id)->whereDate('created_at', $today);
-        })->get();
-
-        $ticketsClosedToday = Ticket::where('assigned_to', $user->id)
-            ->where('status', 'Closed')
-            ->whereDate('solved_at', $today)
-            ->get();
-
-        $ticketsActiveToday = Ticket::where('assigned_to', $user->id)
-            ->whereIn('status', ['Open', 'In Progress'])
-            ->whereDate('updated_at', $today)
-            ->get();
-    } else {
-        // Statistik untuk admin/manager (lihat semua data support)
-        $monthlyReportsCount = DailyReport::whereMonth('report_date', now()->month)->count();
-
-        $tasksCompletedToday = Task::whereHas('completions', function ($q) use ($today) {
-            $q->whereDate('created_at', $today);
-        })->get();
-
-        $ticketsClosedToday = Ticket::where('status', 'Closed')
-            ->whereDate('solved_at', $today)
-            ->get();
-
-        $ticketsActiveToday = Ticket::whereIn('status', ['Open', 'In Progress'])
-            ->whereDate('updated_at', $today)
-            ->get();
-    }
-    // =========================
-
-    $completedTasksCount = $tasksCompletedToday->count();
-    $handledTicketsCount = $ticketsClosedToday->count() + $ticketsActiveToday->count();
-
-    return view('frontend.Report.daily', [
-        'dailyReports' => $dailyReports,
-        'tasksCompletedToday' => $tasksCompletedToday,
-        'ticketsClosedToday' => $ticketsClosedToday,
-        'ticketsActiveToday' => $ticketsActiveToday,
-        'hasReportToday' => $hasReportToday,
-        'monthlyReportsCount' => $monthlyReportsCount,
-        'completedTasksCount' => $completedTasksCount,
-        'handledTicketsCount' => $handledTicketsCount,
-    ]);
-}
-
-
 
     public function create()
     {
         $user = Auth::user();
         $today = now()->toDateString();
 
-         // Ambil daftar laporan harian
+        // Ambil daftar laporan harian
         if ($user->hasRole('support')) {
             $dailyReports = DailyReport::with(['tasks', 'tickets', 'verifier'])
                 ->where('user_id', $user->id)
@@ -123,7 +118,7 @@ class DailyReportController extends Controller
             ->get();
 
         $ticketsClosedToday = Ticket::where('assigned_to', $user->id)
-            ->where('status', 'Closed')            
+            ->where('status', 'Closed')
             ->whereDate('solved_at', $today)
             ->orderBy('updated_at', 'desc')
             ->get();
@@ -133,11 +128,11 @@ class DailyReportController extends Controller
             ->whereDate('updated_at', $today)
             ->orderBy('updated_at', 'desc')
             ->get();
-        
+
         // dd($dailyReports);
 
         return view('frontend.Report.create', [
-            'dailyReports ' => $dailyReports, 
+            'dailyReports ' => $dailyReports,
             'tasksCompletedToday' => $tasksCompletedToday,
             'ticketsClosedToday' => $ticketsClosedToday,
             'ticketsActiveToday' => $ticketsActiveToday,
@@ -186,22 +181,33 @@ class DailyReportController extends Controller
             }
         }
 
-        if (!empty($taskIds)) {
+        if (! empty($taskIds)) {
             $report->tasks()->attach($taskIds);
         }
 
-        if (!empty($ticketIds)) {
+        if (! empty($ticketIds)) {
             $report->tickets()->attach($ticketIds);
         }
+
+        $telegram = app(TelegramService::class);
+
+        $text = "📝 <b>Laporan Harian </b>\n"
+            . 'Oleh : ' . Auth::user()->name . "\n"
+            . 'Tanggal: ' . now()->format('d-m-Y') . "\n"
+            . "Ringkasan:\n"
+            . substr($report->content, 0, 200) . ' ...';
+
+        $telegram->sendMessage($text);
 
         return redirect()->route('reports.daily')->with('success', 'Laporan harian berhasil dikirim.');
     }
 
-    public function show($id){
+    public function show($id)
+    {
         $report = DailyReport::with(['user', 'tasks', 'tickets', 'verifier'])
-        ->findOrFail($id);
+            ->findOrFail($id);
         // dd($report);
-        
+
         return view('frontend.Report.show', compact('report'));
     }
 
@@ -212,11 +218,21 @@ class DailyReportController extends Controller
             'verified_by' => Auth::id(),
             'verified_at' => now(),
         ]);
+        // notif telegram
+        $telegram = app(\App\Services\TelegramService::class);
+
+        $text = "✅ <b>Laporan Diverifikasi</b>\n"
+            . "User    : {$report->user->name}\n"
+            . "Tanggal : {$report->report_date->format('d-m-Y')}\n"
+            . 'Verifier: ' . Auth::user()->name;
+
+        $telegram->sendMessage($text);
 
         return redirect()->back()->with('success', 'Laporan berhasil diverifikasi.');
     }
 
-    public function exportPdf($id){
+    public function exportPdf($id)
+    {
         $user = Auth::user();
         $report = DailyReport::with([
             'user',
@@ -230,14 +246,12 @@ class DailyReportController extends Controller
         }
 
         return Pdf::view('pdf.daily-report', [
-        'report' => $report,
-        'today' => now(),
+            'report' => $report,
+            'today' => now(),
         ])
-        ->format('a4')
-        ->margins(16, 16, 20, 16) // top, right, bottom, left (mm)
-        ->name('DailyReport-'.$report->id.'.pdf');
+            ->format('a4')
+            ->margins(16, 16, 20, 16) // top, right, bottom, left (mm)
+            ->name('DailyReport-' . $report->id . '.pdf');
         // ->download();
-
-
     }
 }
