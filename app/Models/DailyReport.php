@@ -8,8 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class DailyReport extends Model
 {
     use HasFactory;
+
     protected $table = 'daily_reports';
-    protected $fillable = ['user_id', 'report_date', 'content', 'verified_by', 'verified_at'];
+
+    protected $fillable = [
+        'user_id',
+        'report_date',
+        'content',
+        'verified_by',
+        'verified_at',
+    ];
+
     protected $casts = [
         'report_date' => 'date',
         'verified_at' => 'datetime',
