@@ -1,3 +1,4 @@
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -36,12 +37,12 @@
                         <tbody class="divide-y divide-gray-200">
                             @forelse($tickets as $ticket)
                                 <tr class="hover:bg-gray-50 transition text-left">
-                                    {{-- Kolom Ticket ID --}}
+                                    {{-- Ticket ID --}}
                                     <td class="px-6 py-4 font-semibold text-gray-800">
                                         #{{ str_pad($ticket->id, 4, '0', STR_PAD_LEFT) }}
                                     </td>
 
-                                    {{-- Kolom Subject --}}
+                                    {{-- Subject --}}
                                     <td class="px-6 py-4">
                                         <div class="font-medium text-gray-900">{{ $ticket->title }}</div>
                                         <p class="text-xs text-gray-500 mt-1">
@@ -49,7 +50,7 @@
                                         </p>
                                     </td>
 
-                                    {{-- Kolom User --}}
+                                    {{-- User --}}
                                     <td class="px-6 py-4 hidden md:table-cell">
                                         <div class="flex items-center">
                                             <div
@@ -60,7 +61,7 @@
                                         </div>
                                     </td>
 
-                                    {{-- Kolom Status --}}
+                                    {{-- Status --}}
                                     <td class="px-6 py-4">
                                         <span @class([
                                             'px-3 py-1 text-xs font-semibold rounded-full',
@@ -73,7 +74,7 @@
                                         </span>
                                     </td>
 
-                                    {{-- Kolom Priority --}}
+                                    {{-- Priority --}}
                                     <td class="px-6 py-4">
                                         <span @class([
                                             'px-3 py-1 text-xs font-semibold rounded-full',
@@ -85,11 +86,10 @@
                                         </span>
                                     </td>
 
-                                    {{-- ===================== ACTIONS ===================== --}}
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center space-x-2">
+                                    {{-- ACTIONS --}}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center space-x-2">
 
-                                        {{-- View Button --}}
+                                        {{-- View --}}
                                         <a href="{{ route('tickets.show', $ticket->id) }}" title="View Ticket"
                                             class="text-gray-400 hover:text-indigo-600 p-2 rounded-lg transition">
                                             <i class="fas fa-eye"></i>
@@ -108,11 +108,11 @@
                                         @can('delete-own-ticket', $ticket)
                                             @if (in_array($ticket->status, ['Open', 'Closed']))
                                                 <form action="{{ route('tickets.destroy', $ticket->id) }}" method="POST"
-                                                    onsubmit="return confirm('Are you sure?');" class="inline">
+                                                    class="inline delete-ticket-form">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" title="Delete Ticket"
-                                                        class="text-gray-400 hover:text-red-600 p-2 rounded-lg transition">
+                                                    <button type="button" title="Delete Ticket"
+                                                        class="delete-ticket-btn text-gray-400 hover:text-red-600 p-2 rounded-lg transition">
                                                         <i class="fas fa-trash-alt"></i>
                                                     </button>
                                                 </form>
@@ -121,45 +121,47 @@
 
                                         {{-- ==== Support ==== --}}
                                         @can('handle-ticket')
-                                            {{-- Hanldle --}}
                                             @if ($ticket->status === 'Open' && !$ticket->assigned_to)
+                                                {{-- Handle Ticket --}}
                                                 <form action="{{ route('tickets.start', $ticket->id) }}" method="POST"
-                                                    class="inline">
+                                                    class="inline handle-ticket-form">
                                                     @csrf
-                                                    <button type="submit" title="Handle Ticket"
-                                                        class="text-gray-400 hover:text-yellow-600 p-2 rounded-lg transition">
-                                                        <i class="fas fa-wrench"></i>
+                                                    <button type="button" title="Handle Ticket"
+                                                        class="handle-ticket-btn text-gray-400 hover:text-yellow-600 p-2 rounded-lg transition">
+                                                        <i class="fas fa-wrench mr-1"></i>
                                                     </button>
                                                 </form>
 
-                                                {{-- Closed --}}
                                             @elseif($ticket->status === 'In Progress' && $ticket->assigned_to === auth()->id())
+                                                {{-- Close Ticket --}}
                                                 @can('close-ticket')
-                                                    <form action="{{ route('tickets.close', $ticket->id) }}" method="POST"
-                                                        class="inline-flex items-center space-x-2">
-                                                        @csrf
-                                                        <input type="text" name="solution" placeholder="Solution..."
-                                                            class="border rounded px-2 text-xs w-28" required>
-                                                        <button type="submit" title="Close Ticket"
-                                                            class="text-gray-400 hover:text-green-600 p-2 rounded-lg transition">
-                                                            <i class="fas fa-check"></i>
-                                                        </button>
-                                                    </form>
+                                                    <button type="button" title="Close Ticket"
+                                                        class="close-ticket-btn text-gray-400 hover:text-green-600 p-2 rounded-lg transition"
+                                                        data-action="{{ route('tickets.close', $ticket->id) }}">
+                                                        <i class="fas fa-check mr-1"></i>
+                                                    </button>
                                                 @endcan
 
-                                                {{-- Escalations --}}
+                                                {{-- Escalate --}}
                                                 @can('escalate-ticket')
-                                                    <form action="{{ route('tickets.escalate', $ticket->id) }}" method="POST"
-                                                        class="inline">
-                                                        @csrf
-                                                        <button type="submit" title="Escalate Ticket"
-                                                            class="text-gray-400 hover:text-purple-600 p-2 rounded-lg transition">
-                                                            <i class="fas fa-level-up-alt"></i>
-                                                        </button>
-                                                    </form>
+                                                    <button type="button" title="Escalate Ticket"
+                                                        class="escalate-ticket-btn text-gray-400 hover:text-purple-600 p-2 rounded-lg transition"
+                                                        data-action="{{ route('tickets.escalate', $ticket->id) }}">
+                                                        <i class="fas fa-level-up-alt mr-1"></i>
+                                                    </button>
                                                 @endcan
 
-                                                {{-- Take Over --}}
+                                                {{-- 🟠 Cancel Ticket --}}
+                                                <form action="{{ route('tickets.cancel', $ticket->id) }}" method="POST"
+                                                    class="inline cancel-ticket-form">
+                                                    @csrf
+                                                    <button type="button" title="Cancel Handling"
+                                                        class="cancel-ticket-btn text-gray-400 hover:text-orange-600 p-2 rounded-lg transition"
+                                                        data-ticket-id="{{ $ticket->id }}">
+                                                        <i class="fas fa-ban mr-1"></i>
+                                                    </button>
+                                                </form>
+
                                             @elseif($ticket->status === 'In Progress' && $ticket->assigned_to !== auth()->id())
                                                 @can('take-over')
                                                     <form action="{{ route('tickets.takeOver', $ticket->id) }}" method="POST"
@@ -167,7 +169,7 @@
                                                         @csrf
                                                         <button type="submit" title="Take Over Ticket"
                                                             class="text-gray-400 hover:text-yellow-600 p-2 rounded-lg transition">
-                                                            <i class="fas fa-hand-paper"></i>
+                                                            <i class="fas fa-hand-paper mr-1"></i>
                                                         </button>
                                                     </form>
                                                 @endcan
@@ -177,18 +179,12 @@
                                         {{-- ==== Admin ==== --}}
                                         @can('handle-escalated-ticket')
                                             @if (!$ticket->is_escalation && $ticket->status === 'In Progress' && $ticket->assigned_to === auth()->id())
-                                                {{-- Admin handle ticket setelah eskalasi --}}
                                                 @can('close-ticket')
-                                                    <form action="{{ route('tickets.close', $ticket->id) }}" method="POST"
-                                                        class="inline-flex items-center space-x-2">
-                                                        @csrf
-                                                        <input type="text" name="solution" placeholder="Solution..."
-                                                            class="border rounded px-2 text-xs w-28" required>
-                                                        <button type="submit" title="Close Ticket"
-                                                            class="text-gray-400 hover:text-green-600 p-2 rounded-lg transition">
-                                                            <i class="fas fa-check"></i>
-                                                        </button>
-                                                    </form>
+                                                    <button type="button" title="Close Ticket"
+                                                        class="close-ticket-btn text-gray-400 hover:text-green-600 p-2 rounded-lg transition"
+                                                        data-action="{{ route('tickets.close', $ticket->id) }}">
+                                                        <i class="fas fa-check mr-1"></i>
+                                                    </button>
                                                 @endcan
                                             @endif
                                             @if ($ticket->is_escalation && $ticket->status === 'In Progress')
@@ -198,19 +194,16 @@
                                                     @method('PUT')
                                                     <button type="submit" title="Handle Escalated Ticket"
                                                         class="text-gray-400 hover:text-blue-600 p-2 rounded-lg transition">
-                                                        <i class="fas fa-user-check"></i>
+                                                        <i class="fas fa-user-check mr-1"></i>
                                                     </button>
                                                 </form>
                                             @endif
                                         @endcan
-
                                     </td>
-
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">No tickets found.
-                                    </td>
+                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">No tickets found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -219,4 +212,143 @@
             </div>
         </div>
     </div>
+
+    {{-- ✅ SweetAlert Scripts --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // ✅ Global Success Alert
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: '{{ session('success') }}',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+            @endif
+
+            // 🗑️ Delete
+            document.querySelectorAll('.delete-ticket-btn').forEach(button => {
+                button.addEventListener('click', e => {
+                    e.preventDefault();
+                    const form = button.closest('form');
+                    Swal.fire({
+                        title: 'Delete this ticket?',
+                        text: "This action cannot be undone.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Yes, delete it',
+                        cancelButtonText: 'Cancel'
+                    }).then(result => { if (result.isConfirmed) form.submit(); });
+                });
+            });
+
+            // 🔧 Handle
+            document.querySelectorAll('.handle-ticket-btn').forEach(button => {
+                button.addEventListener('click', e => {
+                    e.preventDefault();
+                    const form = button.closest('form');
+                    Swal.fire({
+                        title: 'Start Handling?',
+                        text: 'You will take responsibility for this ticket.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, Handle it',
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#6b7280'
+                    }).then(result => { if (result.isConfirmed) form.submit(); });
+                });
+            });
+
+            // ✅ Close Ticket (solution input)
+            document.querySelectorAll('.close-ticket-btn').forEach(button => {
+                button.addEventListener('click', e => {
+                    e.preventDefault();
+                    const actionUrl = button.dataset.action;
+                    Swal.fire({
+                        title: 'Finish Ticket',
+                        text: 'Please describe your solution before closing.',
+                        input: 'textarea',
+                        inputPlaceholder: 'Enter solution here...',
+                        showCancelButton: true,
+                        confirmButtonText: 'Submit Solution',
+                        confirmButtonColor: '#16a34a',
+                        cancelButtonColor: '#6b7280',
+                        preConfirm: value => {
+                            if (!value.trim()) Swal.showValidationMessage('Solution is required!');
+                            return value;
+                        }
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = actionUrl;
+                            const token = document.createElement('input');
+                            token.type = 'hidden'; token.name = '_token'; token.value = '{{ csrf_token() }}';
+                            const solution = document.createElement('input');
+                            solution.type = 'hidden'; solution.name = 'solution'; solution.value = result.value;
+                            form.append(token, solution);
+                            document.body.append(form);
+                            form.submit();
+                        }
+                    });
+                });
+            });
+
+            // ⬆️ Escalate
+            document.querySelectorAll('.escalate-ticket-btn').forEach(button => {
+                button.addEventListener('click', e => {
+                    e.preventDefault();
+                    const actionUrl = button.dataset.action;
+                    Swal.fire({
+                        title: 'Escalate Ticket?',
+                        text: 'This will forward the issue to higher support.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#9333ea',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Yes, escalate it'
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = actionUrl;
+                            const token = document.createElement('input');
+                            token.type = 'hidden';
+                            token.name = '_token';
+                            token.value = '{{ csrf_token() }}';
+                            form.appendChild(token);
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+                    });
+                });
+            });
+
+            // 🟠 Cancel Ticket (new polish)
+            document.querySelectorAll('.cancel-ticket-btn').forEach(button => {
+                button.addEventListener('click', e => {
+                    e.preventDefault();
+                    const form = button.closest('form');
+                    Swal.fire({
+                        title: 'Cancel Handling?',
+                        text: 'This ticket will be reopened and available for other support members.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#f59e0b',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Yes, release it'
+                    }).then(result => {
+                        if (result.isConfirmed) form.submit();
+                    });
+                });
+            });
+
+        });
+    </script>
 </x-app-layout>

@@ -1,4 +1,5 @@
 <x-app-layout>
+    {{-- ================= HEADER ================= --}}
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             Task #{{ str_pad($task->id, 4, '0', STR_PAD_LEFT) }}
@@ -41,7 +42,6 @@
                 <div class="flex items-center space-x-2">
                     <i class="fas fa-calendar-check text-emerald-500"></i>
                     <span><strong>Created At:</strong>
-                        {{-- {{ optional($task->created_at)->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') ?? 'Unknown' }} --}}
                         {{ optional($task->created_at, fn($date) => $date->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i')) ?? 'Unknown' }}
                         WITA
                     </span>
@@ -106,4 +106,23 @@
             </div>
         </div>
     </div>
+
+    {{-- ================= SWEETALERT SCRIPTS ================= --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ✅ Show success popup after edit/update
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Task Updated!',
+                    text: '{{ session('success') }}',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+            @endif
+        });
+    </script>
 </x-app-layout>

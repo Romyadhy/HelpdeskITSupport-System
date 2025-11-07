@@ -305,4 +305,30 @@ class TicketController extends Controller
             return back()->withErrors('An error occurred while handling the escalated ticket.');
         }
     }
+
+    public function cancel(Ticket $ticket)
+    {
+        // Pastikan hanya support yang sedang menangani ticket ini yang bisa cancel
+        if (auth()->id() !== $ticket->assigned_to) {
+            abort(403, 'You are not authorized to cancel this ticket.');
+        }
+
+        // Update status ticket menjadi Open dan kosongkan assigned_to
+        $ticket->update([
+            'status' => 'Open',
+            'assigned_to' => null,
+        ]);
+
+        // (Opsional - nanti kita tambahkan log)
+        // TicketLog::create([
+        //     'ticket_id' => $ticket->id,
+        //     'user_id' => auth()->id(),
+        //     'action' => 'cancel',
+        //     'description' => 'Support canceled the ticket; reopened for reassignment.',
+        // ]);
+
+        // Redirect ke halaman daftar ticket dengan pesan sukses
+        return redirect()->route('tickets.index')
+            ->with('success', 'Ticket has been released and is now available for other support members.');
+    }
 }

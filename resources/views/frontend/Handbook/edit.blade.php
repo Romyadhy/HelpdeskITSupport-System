@@ -1,3 +1,4 @@
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight flex items-center gap-2">
@@ -22,7 +23,7 @@
                 @endif
 
                 {{-- Form Edit --}}
-                <form method="POST" action="{{ route('handbook.update', $handbook->id) }}" 
+                <form id="editForm" method="POST" action="{{ route('handbook.update', $handbook->id) }}"
                       enctype="multipart/form-data" class="space-y-6">
                     @csrf
                     @method('PUT')
@@ -104,7 +105,7 @@
                             class="px-4 py-2 rounded-md bg-gray-500 text-white hover:bg-gray-600 transition">
                             <i class="fas fa-arrow-left mr-1"></i> Kembali
                         </a>
-                        <button type="submit"
+                        <button type="button" id="btnSave"
                             class="px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition">
                             <i class="fas fa-save mr-1"></i> Simpan Perubahan
                         </button>
@@ -114,4 +115,52 @@
             </div>
         </div>
     </div>
+
+    {{-- ==== SCRIPT SECTION ==== --}}
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+
+                // ✅ Tambahkan confirm box sebelum submit
+                const btnSave = document.getElementById('btnSave');
+                const form = document.getElementById('editForm');
+
+                btnSave.addEventListener('click', function() {
+                    Swal.fire({
+                        title: 'Yakin ingin menyimpan perubahan?',
+                        text: "Pastikan data yang diubah sudah benar.",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#059669',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Ya, Simpan',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+
+                // ✅ Alert untuk success/error dari session
+                @if (session('success'))
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: '{{ session('success') }}',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+                @endif
+
+                @if (session('error'))
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Terjadi Kesalahan!',
+                        text: '{{ session('error') }}',
+                        confirmButtonColor: '#ef4444'
+                    });
+                @endif
+            });
+        </script>
 </x-app-layout>
