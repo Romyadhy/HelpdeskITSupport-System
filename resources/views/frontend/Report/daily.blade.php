@@ -30,7 +30,7 @@
             {{-- Statistik kecil --}}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white p-5 rounded-lg shadow text-center">
-                    <h4 class="text-gray-600 text-sm">Total Laporan Harian di Bulan Ini</h4>
+                    <h4 class="text-gray-600 text-sm">Total Laporan Bulan Ini</h4>
                     <p class="text-3xl font-bold text-blue-600">{{ $monthlyReportsCount }}</p>
                 </div>
                 <div class="bg-white p-5 rounded-lg shadow text-center">
@@ -43,7 +43,7 @@
                 </div>
             </div>
 
-            {{-- OPSIONAL: Statistik per support untuk admin/manager --}}
+            {{-- Statistik per support (admin/manager) --}}
             @if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('manager'))
                 <div class="bg-white shadow rounded-lg p-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">📊 Statistik Support</h3>
@@ -51,7 +51,7 @@
                         <thead class="bg-gray-100 text-gray-600">
                             <tr>
                                 <th class="p-2 text-left">Nama Support</th>
-                                <th class="p-2 text-center">Jumlah Laporan Bulan Ini</th>
+                                <th class="p-2 text-center">Jumlah Laporan</th>
                                 <th class="p-2 text-center">Total Task</th>
                                 <th class="p-2 text-center">Total Ticket</th>
                             </tr>
@@ -75,7 +75,7 @@
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">📋 Laporan Sebelumnya</h3>
 
                 @forelse ($dailyReports as $report)
-                    <div class="border-b py-3">
+                    <div class="border-b py-4">
                         <div class="flex justify-between items-start">
                             <div>
                                 <p class="font-medium text-gray-800">
@@ -106,22 +106,101 @@
                                 <span
                                     class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">Pending</span>
                             @endif
-
-                            
                         </div>
-                        {{-- Export Pdf --}}
-                            <a href="{{ route('reports.daily.pdf', $report->id) }}"
-                                class="inline-flex items-center gap-2 bg-rose-500/90 text-white px-2.5 py-1.5 rounded-md text-sm font-medium shadow-sm hover:bg-rose-600 transition-all duration-150">
-                                <i class="fas fa-file-pdf text-xs"></i>
-                                Export PDF
-                            </a>
+
+                        {{-- Tombol Aksi --}}
+                        <div class="flex gap-3 mt-3">
+                            {{-- Export PDF --}}
+                            <button onclick="confirmExport('{{ route('reports.daily.pdf', $report->id) }}')"
+                                class="inline-flex items-center gap-2 bg-rose-500 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-rose-600 transition">
+                                <i class="fas fa-file-pdf text-xs"></i> Export PDF
+                            </button>
+
+                            {{-- Verifikasi (hanya admin/manager) --}}
+                            @if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('manager'))
+                                @if (!$report->verified_at)
+                                    <form id="verifyForm-{{ $report->id }}"
+                                        action="{{ route('reports.daily.verify', $report->id) }}" method="POST"
+                                        class="inline">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="button" onclick="confirmVerify({{ $report->id }})"
+                                            class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow">
+                                            <i class="fas fa-check mr-1"></i> Verify
+                                        </button>
+                                    </form>
+                                @endif
+                            @endif
+                        </div>
                     </div>
                 @empty
                     <p class="text-gray-500 text-sm">Belum ada laporan yang dibuat.</p>
                 @endforelse
             </div>
 
-
         </div>
     </div>
+
+    {{-- ============= SWEETALERT ============= --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // ✅ Notifikasi Sukses & Warning
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: '{{ session('success') }}',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            @endif
+
+            @if (session('warning'))
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Perhatian!',
+                    text: '{{ session('warning') }}',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#facc15'
+                });
+            @endif
+        });
+
+        // ✅ Konfirmasi Export PDF
+        function confirmExport(url) {
+            Swal.fire({
+                title: 'Export ke PDF?',
+                text: "Laporan ini akan diunduh dalam format PDF.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Export!',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        }
+
+        // ✅ Konfirmasi Verifikasi
+        function confirmVerify(url) {
+            Swal.fire({
+                title: 'Verifikasi Laporan?',
+                text: 'Laporan ini akan ditandai sebagai sudah diverifikasi.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Verifikasi',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#6b7280',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        }
+    </script>
 </x-app-layout>
