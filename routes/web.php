@@ -20,22 +20,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Dashboard Route
-    // Route::get('/dashboard', function () {
-    //     $user = auth()->user();
-    //     if ($user->hasRole('admin')) {
-    //         return view('frontend.Dashbord.admindashboard');
-    //     } elseif ($user->hasRole('manager')) {
-    //         return view('frontend.Dashbord.menagerdashboard');
-    //     } elseif ($user->hasRole('support')) {
-    //         return view('frontend.Dashbord.supportdashboard');
-    //     } else {
-    //         return view('frontend.Dashbord.userdahboard');
-    //     }
-    // })->name('dashboard');
-
+    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    // Route::get('/dashboard', function () {return view('frontend.dashboard'); })->name('dashboard');
 
     // Tickets Route
     Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');
@@ -50,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/tickets/{ticket}/close', [TicketController::class, 'close'])->name('tickets.close');
     Route::post('tickets/{ticket}/escalate', [TicketController::class, 'escalate'])->name('tickets.escalate');
     Route::put('/tickets/{ticket}/handle-escalated', [TicketController::class, 'handleEscalated'])->name('tickets.handleEscalated');
+    Route::post('/tickets/{ticket}/cancel', [TicketController::class, 'cancel'])->name('tickets.cancel');
 
     // Tasks Route
     Route::get('tasks/daily', [TaskController::class, 'daily'])->name('tasks.daily');
@@ -62,9 +49,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
     Route::post('/tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
 
-    // Report Route
-    // Route::get('reports/daily', [DailyReportController::class, 'index'])->name('reports.daily');
-    // Route::get('reports/monthly', [MonthlyReportController::class, 'index'])->name('reports.monthly');
     // === DAILY REPORT ===
     Route::get('reports/daily', [DailyReportController::class, 'index'])->name('reports.daily');
     Route::get('reports/daily/create', [DailyReportController::class, 'create'])->name('reports.daily.create');
@@ -72,16 +56,7 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/daily/{id}', [DailyReportController::class, 'show'])->name('reports.daily.show');
     Route::put('reports/daily/{id}/verify', [DailyReportController::class, 'verify'])->name('reports.daily.verify');
     Route::get('reports/daily/{id}/pdf', [DailyReportController::class, 'exportPdf'])->name('reports.daily.pdf');
-    
 
-    // === MONTHLY REPORT ===
-    // Route::get('reports/monthly', [MonthlyReportController::class, 'index'])->name('reports.monthly');
-    // Route::get('reports/monthly/create', [MonthlyReportController::class, 'create'])->name('reports.monthly.create');
-    // Route::post('reports/monthly', [MonthlyReportController::class, 'store'])->name('reports.monthly.store');
-    // Route::get('reports/monthly/{id}', [MonthlyReportController::class, 'show'])->name('reports.monthly.show');
-    // Route::get('reports/monthly/{id}/edit', [MonthlyReportController::class, 'edit'])->name('reports.monthly.edit');
-    // Route::put('reports/monthly/{id}', [MonthlyReportController::class, 'update'])->name('reports.monthly.update');
-    // Route::delete('reports/monthly/{id}', [MonthlyReportController::class, 'destroy'])->name('reports.monthly.destroy');
     // === MONTHLY REPORT ===
     Route::get('reports/monthly', [MonthlyReportController::class, 'index'])->name('reports.monthly');
     Route::get('reports/monthly/create', [MonthlyReportController::class, 'create'])->name('reports.monthly.create');
@@ -103,7 +78,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('handbook/delete/{handbook}', [HandbookController::class, 'destroy'])->name('handbook.delete');
     Route::get('handbook/download/{id}', [HandbookController::class, 'downloadPdf'])->name('handbook.download');
     // Route::get('handbook/export/pdf', [HandbookController::class, 'exportPdf'])->name('handbook.export.pdf');
-    
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
