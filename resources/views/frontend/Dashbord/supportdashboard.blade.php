@@ -1,4 +1,4 @@
-<x-app-layout>
+{{-- <x-app-layout> --}}
     <x-slot name="header">
         <h2 class="font-semibold text-2xl text-gray-800 leading-tight flex items-center gap-2">
             ⚙️ Support Dashboard
@@ -109,4 +109,4 @@
             </p>
         </div>
     </div>
-</x-app-layout>
+{{-- </x-app-layout> --}}

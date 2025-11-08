@@ -7,6 +7,7 @@ use App\Http\Controllers\MonthlyReportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TicketController;
+use App\Livewire\Dashboard;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,7 +22,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', Dashboard::class)->name('dashboard');
 
     // Tickets Route
     Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');

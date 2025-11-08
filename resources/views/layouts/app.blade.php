@@ -13,14 +13,18 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     {{-- Icon FontAwesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    {{-- <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> --}}
     {{-- Alert and Confirm Box --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
 
-    <!-- Scripts -->
+    <!-- Scripts Vite -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    {{-- Livewire --}}
+    @livewireStyles
+
 </head>
 
 <body class="font-sans antialiased bg-gray-100">
@@ -56,6 +60,10 @@
             </main>
         </div>
     </div>
+    {{-- Livewire --}}
+    @livewireScripts
+    @livewireScriptConfig(['navigate' => true])
+    @stack('scripts')
 </body>
 
 </html>
