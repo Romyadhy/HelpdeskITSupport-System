@@ -25,6 +25,22 @@
     {{-- Livewire --}}
     @livewireStyles
 
+    <style>
+        [wire\:transition] {
+            transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
+        }
+
+        [wire\:transition].livewire-transition-enter {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        [wire\:transition].livewire-transition-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+
 </head>
 
 <body class="font-sans antialiased bg-gray-100">

@@ -25,7 +25,7 @@ class TicketController extends Controller
             $tickets = $ticketsQuery->where('user_id', $users->id)->paginate(10);
         }
 
-        return view('frontend.Tickets.tickets', ['tickets' => $tickets]);
+        return view('frontend.Tickets.tickets', ['tickets' => $tickets])->layout('layouts.app');
     }
 
     public function create()
@@ -33,7 +33,7 @@ class TicketController extends Controller
         $categories = TicketCategory::where('is_active', true)->get();
         $locations = TicketLocation::where('is_active', true)->get();
 
-        return view('frontend.Tickets.create', compact('categories', 'locations'));
+        return view('frontend.Tickets.create', compact('categories', 'locations'))->layout('layouts.app');
     }
 
     public function store(Request $request): RedirectResponse
@@ -95,7 +95,7 @@ class TicketController extends Controller
         $categories = TicketCategory::where('is_active', true)->get();
         $locations = TicketLocation::where('is_active', true)->get();
 
-        return view('frontend.Tickets.edit', compact('ticket', 'categories', 'locations'));
+        return view('frontend.Tickets.edit', compact('ticket', 'categories', 'locations'))->layout('layouts.app');
     }
 
     public function update(Request $request, Ticket $ticket): RedirectResponse
@@ -143,7 +143,7 @@ class TicketController extends Controller
         $categoryName = TicketCategory::find($ticket->category_id)->name;
         $locationName = TicketLocation::find($ticket->location_id)->name;
 
-        return view('frontend.Tickets.show', compact('ticket', 'categoryName', 'locationName'));
+        return view('frontend.Tickets.show', compact('ticket', 'categoryName', 'locationName'))->layout('layouts.app');
     }
 
     public function destroy(Ticket $ticket)

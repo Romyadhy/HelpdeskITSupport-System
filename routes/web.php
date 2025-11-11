@@ -8,6 +8,15 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TicketController;
 use App\Livewire\Dashboard;
+use App\Livewire\Tasks\Create;
+use App\Livewire\Tasks\Daily;
+use App\Livewire\Tasks\Edit;
+use App\Livewire\Tasks\Monthly;
+use App\Livewire\Tasks\Show;
+use App\Livewire\Tickets\CreatePage;
+use App\Livewire\Tickets\EditPage;
+use App\Livewire\Tickets\IndexPage;
+use App\Livewire\Tickets\ShowPage;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -25,13 +34,19 @@ Route::middleware('auth')->group(function () {
     // Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
 
-    // Tickets Route
-    Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');
-    Route::get('/tickets/create', [TicketController::class, 'create'])->name('tickets.create');
+    // Tickets Routes using Livewire Components
+    Route::get('/tickets', IndexPage::class)->name('tickets.index');
+    Route::get('/tickets/create', CreatePage::class)->name('tickets.create');
+    Route::get('/tickets/{ticket}', ShowPage::class)->name('tickets.show');
+    Route::get('/tickets/{ticket}/edit', EditPage::class)->name('tickets.edit');
+
+    // Tickets Routes using Controller
+    // Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');
+    // Route::get('/tickets/create', [TicketController::class, 'create'])->name('tickets.create');
+    // Route::get('/tickets/{ticket}/edit', [TicketController::class, 'edit'])->name('tickets.edit');
+    // Route::get('/tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
     Route::post('/tickets/store', [TicketController::class, 'store'])->name('tickets.store');
-    Route::get('/tickets/{ticket}/edit', [TicketController::class, 'edit'])->name('tickets.edit');
     Route::patch('/tickets/{ticket}', [TicketController::class, 'update'])->name('tickets.update');
-    Route::get('/tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
     Route::delete('/tickets/{ticket}', [TicketController::class, 'destroy'])->name('tickets.destroy');
     Route::post('/tickets/{ticket}/start', [TicketController::class, 'start'])->name('tickets.start');
     Route::post('/tickets/{ticket}/take-over', [TicketController::class, 'takeOver'])->name('tickets.takeOver');
@@ -41,13 +56,19 @@ Route::middleware('auth')->group(function () {
     Route::post('/tickets/{ticket}/cancel', [TicketController::class, 'cancel'])->name('tickets.cancel');
 
     // Tasks Route
-    Route::get('tasks/daily', [TaskController::class, 'daily'])->name('tasks.daily');
-    Route::get('tasks/monthly', [TaskController::class, 'monthly'])->name('tasks.monthly');
-    Route::get('/tasks/create', [TaskController::class, 'create'])->name('tasks.create');
+    Route::get('tasks/daily', Daily::class)->name('tasks.daily');
+    Route::get('tasks/monthly', Monthly::class)->name('tasks.monthly');   
+    Route::get('/tasks/create', Create::class)->name('tasks.create');
+    Route::get('/tasks/{task}', Show::class)->name('tasks.show');
+    Route::get('/tasks/{task}/edit', Edit::class)->name('tasks.edit');
+
+    // Route::get('tasks/daily', [TaskController::class, 'daily'])->name('tasks.daily');
+    // Route::get('tasks/monthly', [TaskController::class, 'monthly'])->name('tasks.monthly');   
+    // Route::get('/tasks/create', [TaskController::class, 'create'])->name('tasks.create');
+    // Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
+    // Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
     Route::post('/tasks/store', [TaskController::class, 'store'])->name('tasks.store');
-    Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
     Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
-    Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
     Route::post('/tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
 

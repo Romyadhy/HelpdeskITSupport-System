@@ -59,7 +59,7 @@ class TaskController extends Controller
             ->unique()
             ->toArray();
 
-        return view('frontend.Tasks.daily', compact('tasks', 'completedTodays'));
+        return view('frontend.Tasks.daily', compact('tasks', 'completedTodays'))->layout('layouts.app');
     }
 
     public function monthly()
@@ -82,7 +82,7 @@ class TaskController extends Controller
             ->pluck('task_id')
             ->toArray();
 
-        return view('frontend.Tasks.monthly', compact('tasks', 'completedMonthlys'));
+        return view('frontend.Tasks.monthly', compact('tasks', 'completedMonthlys'))->layout('layouts.app');
     }
 
     public function show(Task $task)
@@ -96,13 +96,13 @@ class TaskController extends Controller
         // dd($task->title);
         // dd($task->toArray());
 
-        return view('frontend.Tasks.show', compact('task', 'completions', 'completedCountThisMonth'));
+        return view('frontend.Tasks.show', compact('task', 'completions', 'completedCountThisMonth'))->layout('layouts.app');
     }
 
     public function create()
     {
         // Logic to show form to create a task
-        return view('frontend.Tasks.create');
+        return view('frontend.Tasks.create')->layout('layouts.app');
     }
 
     public function store(Request $request)
@@ -135,7 +135,7 @@ class TaskController extends Controller
     public function edit(Task $task)
     {
         // Logic to show form to edit a task
-        return view('frontend.Tasks.edit', compact('task'));
+        return view('frontend.Tasks.edit', compact('task'))->layout('layouts.app');
     }
 
     public function update(Request $request, Task $task)

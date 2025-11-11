@@ -43,7 +43,7 @@
                 <h2 class="text-2xl font-semibold text-gray-800 mb-4">
                     Ada masalah yang ingin kamu laporkan?
                 </h2>
-                <a href="{{ route('tickets.index') }}" 
+                <a href="{{ route('tickets.index') }}" wire:navigate.transition
                    class="inline-flex items-center bg-teal-500 text-white font-medium px-6 py-3 rounded-lg shadow hover:bg-teal-600 transition">
                     <i class="fas fa-plus mr-2"></i> Buat Tiket Baru
                 </a>
