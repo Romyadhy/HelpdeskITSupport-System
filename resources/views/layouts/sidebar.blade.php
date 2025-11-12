@@ -28,12 +28,12 @@
         <!-- Bagian Tengah: Navigasi (Bisa di-scroll) -->
         <nav class="mt-6 flex-1 px-4 space-y-3 overflow-y-auto">
 
-            @php
+            {{-- @php
                 function is_active($routeNames)
                 {
                     return in_array(request()->route()->getName(), (array) $routeNames);
                 }
-            @endphp
+            @endphp --}}
 
             <!-- Dashboard -->
             <a href="{{ route('dashboard') }}"
