@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Handbook;
 use Auth;
 use Illuminate\Http\Request;
-use Spatie\LaravelPdf\Facades\Pdf;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Spatie\LaravelPdf\Facades\Pdf;
 
 class HandbookController extends Controller
 {
@@ -23,19 +23,21 @@ class HandbookController extends Controller
     public function index()
     {
         $handbooks = Handbook::with('uploader')->latest()->get();
-        return view('frontend.Handbook.index', compact('handbooks'));
+
+        return view('frontend.Handbook.index', compact('handbooks'))->layout('layouts.app');
     }
 
     public function show($id)
     {
         $handbook = Handbook::with('uploader')->findOrFail($id);
+
         // dd($handbook);
-        return view('frontend.Handbook.show', compact('handbook'));
+        return view('frontend.Handbook.show', compact('handbook'))->layout('layouts.app');
     }
 
     public function create()
     {
-        return view('frontend.Handbook.create');
+        return view('frontend.Handbook.create')->layout('layouts.app');
     }
 
     public function store(Request $request)
@@ -67,7 +69,8 @@ class HandbookController extends Controller
     public function edit($id)
     {
         $handbook = Handbook::with('uploader')->findOrFail($id);
-        return view('frontend.Handbook.edit', compact('handbook'));
+
+        return view('frontend.Handbook.edit', compact('handbook'))->layout('layouts.app');
     }
 
     public function update(Request $request, $id)
@@ -100,6 +103,7 @@ class HandbookController extends Controller
     public function destroy(Handbook $handbook)
     {
         $handbook->delete();
+
         return redirect()->route('handbook.index')->with('success', 'Handbook berhasil dihapus!');
     }
 
@@ -121,7 +125,7 @@ class HandbookController extends Controller
     {
         $handbook = Handbook::findOrFail($id);
 
-        if (!$handbook->file_path || !Storage::disk('public')->exists($handbook->file_path)) {
+        if (! $handbook->file_path || ! Storage::disk('public')->exists($handbook->file_path)) {
             return back()->with('error', 'File PDF tidak ditemukan.');
         }
 

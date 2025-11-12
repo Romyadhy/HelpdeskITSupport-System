@@ -8,6 +8,10 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TicketController;
 use App\Livewire\Dashboard;
+use App\Livewire\Handbook\CreateHandBook;
+use App\Livewire\Handbook\EditHandBook;
+use App\Livewire\Handbook\IndexHandbook;
+use App\Livewire\Handbook\ShowHandBook;
 use App\Livewire\Tasks\Create;
 use App\Livewire\Tasks\Daily;
 use App\Livewire\Tasks\Edit;
@@ -57,13 +61,13 @@ Route::middleware('auth')->group(function () {
 
     // Tasks Route
     Route::get('tasks/daily', Daily::class)->name('tasks.daily');
-    Route::get('tasks/monthly', Monthly::class)->name('tasks.monthly');   
+    Route::get('tasks/monthly', Monthly::class)->name('tasks.monthly');
     Route::get('/tasks/create', Create::class)->name('tasks.create');
     Route::get('/tasks/{task}', Show::class)->name('tasks.show');
     Route::get('/tasks/{task}/edit', Edit::class)->name('tasks.edit');
 
     // Route::get('tasks/daily', [TaskController::class, 'daily'])->name('tasks.daily');
-    // Route::get('tasks/monthly', [TaskController::class, 'monthly'])->name('tasks.monthly');   
+    // Route::get('tasks/monthly', [TaskController::class, 'monthly'])->name('tasks.monthly');
     // Route::get('/tasks/create', [TaskController::class, 'create'])->name('tasks.create');
     // Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
     // Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
@@ -92,11 +96,16 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/monthly/{id}/pdf', [MonthlyReportController::class, 'exportPdf'])->name('reports.monthly.pdf');
 
     // Handbook Route
-    Route::get('handbook', [HandbookController::class, 'index'])->name('handbook.index');
-    Route::get('handbook/show/{id}', [HandbookController::class, 'show'])->name('handbook.show');
-    Route::get('handbook/create', [HandbookController::class, 'create'])->name('handbook.create');
+    Route::get('handbook', IndexHandbook::class)->name('handbook.index');
+    Route::get('handbook/create', CreateHandBook::class)->name('handbook.create');
+    // Route::get('handbook', [HandbookController::class, 'index'])->name('handbook.index');
+    Route::get('handbook/edit/{Id}', EditHandBook::class)->name('handbook.edit');
+
+    Route::get('handbook/show/{Id}', ShowHandBook::class)->name('handbook.show');
+    /* Route::get('handbook/show/{id}', [HandbookController::class, 'show'])->name('handbook.show'); */
+    // Route::get('handbook/create', [HandbookController::class, 'create'])->name('handbook.create');
     Route::post('handbook/store', [HandbookController::class, 'store'])->name('handbook.store');
-    Route::get('handbook/edit/{id}', [HandbookController::class, 'edit'])->name('handbook.edit');
+    /* Route::get('handbook/edit/{id}', [HandbookController::class, 'edit'])->name('handbook.edit'); */
     Route::put('handbook/update/{id}', [HandbookController::class, 'update'])->name('handbook.update');
     Route::delete('handbook/delete/{handbook}', [HandbookController::class, 'destroy'])->name('handbook.delete');
     Route::get('handbook/download/{id}', [HandbookController::class, 'downloadPdf'])->name('handbook.download');
