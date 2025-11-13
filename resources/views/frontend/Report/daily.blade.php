@@ -20,7 +20,7 @@
                 @else
                     @can('create-daily-report')
                         <a href="{{ route('reports.daily.create') }}"
-                            class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow">
+                           class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow">
                             + Buat Laporan Harian
                         </a>
                     @endcan
@@ -47,13 +47,14 @@
             @if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('manager'))
                 <div class="bg-white shadow rounded-lg p-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">📊 Statistik Support</h3>
+
                     <table class="min-w-full border border-gray-200 text-sm">
                         <thead class="bg-gray-100 text-gray-600">
                             <tr>
                                 <th class="p-2 text-left">Nama Support</th>
                                 <th class="p-2 text-center">Jumlah Laporan</th>
                                 <th class="p-2 text-center">Total Task</th>
-                                <th class="p-2 text-center">Total Ticket</th>
+                                <th class="p-p text-center">Total Ticket</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -76,25 +77,28 @@
 
                 @forelse ($dailyReports as $report)
                     <div class="border-b py-4">
+
                         <div class="flex justify-between items-start">
                             <div>
                                 <p class="font-medium text-gray-800">
                                     {{ \Carbon\Carbon::parse($report->report_date)->format('d M Y') }}
-                                    @if (isset($report->user))
+                                    @if ($report->user)
                                         <span class="text-sm text-gray-500"> oleh {{ $report->user->name }}</span>
                                     @endif
                                 </p>
+
                                 <p class="text-sm text-gray-500 mt-1">{{ Str::limit($report->content, 80) }}</p>
+
                                 <a href="{{ route('reports.daily.show', $report->id) }}"
-                                    class="text-teal-600 hover:underline text-sm">Lihat Detail</a>
+                                   class="text-teal-600 hover:underline text-sm">Lihat Detail</a>
 
                                 <div class="text-xs text-gray-500 mt-2 mb-2">
-                                    @if ($report->tasks->count() > 0)
+                                    @if ($report->tasks->count())
                                         <p><strong>Tasks:</strong> {{ $report->tasks->pluck('title')->join(', ') }}</p>
                                     @endif
-                                    @if ($report->tickets->count() > 0)
-                                        <p><strong>Tickets:</strong> {{ $report->tickets->pluck('title')->join(', ') }}
-                                        </p>
+
+                                    @if ($report->tickets->count())
+                                        <p><strong>Tickets:</strong> {{ $report->tickets->pluck('title')->join(', ') }}</p>
                                     @endif
                                 </div>
                             </div>
@@ -103,34 +107,35 @@
                             @if ($report->verified_at)
                                 <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">Verified</span>
                             @else
-                                <span
-                                    class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">Pending</span>
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">Pending</span>
                             @endif
                         </div>
 
-                        {{-- Tombol Aksi --}}
+                        {{-- Tombol aksi --}}
                         <div class="flex gap-3 mt-3">
+
                             {{-- Export PDF --}}
                             <button onclick="confirmExport('{{ route('reports.daily.pdf', $report->id) }}')"
                                 class="inline-flex items-center gap-2 bg-rose-500 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-rose-600 transition">
                                 <i class="fas fa-file-pdf text-xs"></i> Export PDF
                             </button>
 
-                            {{-- Verifikasi (hanya admin/manager) --}}
-                            @if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('manager'))
-                                @if (!$report->verified_at)
-                                    <form id="verifyForm-{{ $report->id }}"
-                                        action="{{ route('reports.daily.verify', $report->id) }}" method="POST"
-                                        class="inline">
-                                        @csrf
-                                        @method('PUT')
-                                        <button type="button" onclick="confirmVerify({{ $report->id }})"
+                            {{-- Verifikasi --}}
+                            @if (Auth::user()->hasRole('admin') && !$report->verified_at)
+                                <form id="verifyForm-{{ $report->id }}"
+                                      action="{{ route('reports.daily.verify', $report->id) }}"
+                                      method="POST">
+                                    @csrf
+                                    @method('PUT')
+
+                                    <button type="button"
+                                            onclick="confirmVerify('verifyForm-{{ $report->id }}')"
                                             class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow">
-                                            <i class="fas fa-check mr-1"></i> Verify
-                                        </button>
-                                    </form>
-                                @endif
+                                        <i class="fas fa-check mr-1"></i> Verify
+                                    </button>
+                                </form>
                             @endif
+
                         </div>
                     </div>
                 @empty
@@ -144,8 +149,7 @@
     {{-- ============= SWEETALERT ============= --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // ✅ Notifikasi Sukses & Warning
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             @if (session('success'))
                 Swal.fire({
                     icon: 'success',
@@ -167,14 +171,14 @@
             @endif
         });
 
-        // ✅ Konfirmasi Export PDF
+        // Export PDF
         function confirmExport(url) {
             Swal.fire({
                 title: 'Export ke PDF?',
                 text: "Laporan ini akan diunduh dalam format PDF.",
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Ya, Export!',
+                confirmButtonText: 'Export',
                 cancelButtonText: 'Batal',
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#6b7280',
@@ -185,10 +189,10 @@
             });
         }
 
-        // ✅ Konfirmasi Verifikasi
-        function confirmVerify(url) {
+        // Verify
+        function confirmVerify(formId) {
             Swal.fire({
-                title: 'Verifikasi Laporan?',
+                title: 'Verifikasi laporan?',
                 text: 'Laporan ini akan ditandai sebagai sudah diverifikasi.',
                 icon: 'warning',
                 showCancelButton: true,
@@ -198,9 +202,10 @@
                 cancelButtonColor: '#6b7280',
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = url;
+                    document.getElementById(formId).submit();
                 }
             });
         }
     </script>
+
 </x-app-layout>

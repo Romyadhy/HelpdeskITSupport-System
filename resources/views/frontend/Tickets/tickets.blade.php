@@ -1,4 +1,3 @@
-
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -20,6 +19,165 @@
                     </a>
                 @endcan
             </div>
+            {{-- search --}}
+            <div x-data="ticketSearch()" class="mb-6">
+                <form id="searchForm" method="GET" action="{{ route('tickets.index') }}">
+                    <div class="relative max-w-sm">
+
+                        <!-- Input -->
+                        <input type="text" x-model="search" name="search" placeholder="Search tickets..."
+                            class="w-full pl-5 pr-11 py-2.5 rounded-xl bg-white border border-gray-300 
+                       text-gray-700 placeholder-gray-400 shadow-sm
+                       focus:border-teal-500 focus:ring-2 focus:ring-teal-400 transition">
+
+                        <!-- Clear Button -->
+                        <button x-show="search.length > 0" type="button" @click="clearSearch"
+                            class="absolute right-10 top-2.5 text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+
+                        <!-- Search Icon / Spinner -->
+                        <span class="absolute right-3 top-3 text-gray-400 text-lg">
+                            <template x-if="loading">
+                                <i class="fas fa-circle-notch fa-spin"></i>
+                            </template>
+                            <template x-if="!loading">
+                                <i class="fas fa-search"></i>
+                            </template>
+                        </span>
+
+                    </div>
+                </form>
+            </div>
+
+
+            <!-- 🌟 PREMIUM FILTER BAR -->
+            <div x-data="premiumFilter()" class="mb-8">
+
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        Filters
+
+                        <!-- Badge Active Filters -->
+                        <template x-if="activeCount > 0">
+                            <span class="px-2 py-0.5 text-xs bg-teal-500 text-white rounded-full font-semibold"
+                                x-text="activeCount"></span>
+                        </template>
+                    </h3>
+
+                    <!-- Clear All Button -->
+                    <button x-show="activeCount > 0" @click="clearAll()"
+                        class="text-sm text-red-500 hover:text-red-600 underline transition">
+                        Clear All
+                    </button>
+                </div>
+
+                <!-- Filter Container -->
+                <form id="premiumFilterForm" method="GET" action="{{ route('tickets.index') }}"
+                    class="bg-white border border-gray-200 shadow-sm rounded-xl p-5">
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+                        <!-- Status Filter -->
+                        <div class="relative" x-data="{ open: false }">
+                            <label class="text-sm text-gray-600">Status</label>
+                            <button type="button" @click="open = !open"
+                                class="w-full px-3 py-2 mt-1 bg-white border-gray-300 border rounded-xl flex justify-between items-center hover:border-teal-500 transition">
+                                <span x-text="status ? status : 'All'"></span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+
+                            <!-- Dropdown -->
+                            <div x-show="open" @click.outside="open = false" x-transition
+                                class="absolute z-10 mt-2 w-full bg-white shadow-lg border border-gray-200 rounded-xl p-2">
+                                <template x-for="item in statusList">
+                                    <div @click="status = item.value; submitFilters(); open = false"
+                                        class="px-3 py-2 rounded-lg hover:bg-teal-50 cursor-pointer flex items-center justify-between">
+                                        <span x-text="item.label"></span>
+                                        <i class="fas fa-check text-teal-600" x-show="status === item.value"></i>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <input type="hidden" name="status" x-model="status">
+                        </div>
+
+                        <!-- Priority -->
+                        <div class="relative" x-data="{ open: false }">
+                            <label class="text-sm text-gray-600">Priority</label>
+                            <button type="button" @click="open = !open"
+                                class="w-full px-3 py-2 mt-1 bg-white border-gray-300 border rounded-xl flex justify-between items-center hover:border-teal-500 transition">
+                                <span x-text="priority ? priority : 'All'"></span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+
+                            <!-- Dropdown -->
+                            <div x-show="open" @click.outside="open = false" x-transition
+                                class="absolute z-10 mt-2 w-full bg-white shadow-lg border border-gray-200 rounded-xl p-2">
+                                <template x-for="item in priorityList">
+                                    <div @click="priority = item.value; submitFilters(); open = false"
+                                        class="px-3 py-2 rounded-lg hover:bg-teal-50 cursor-pointer flex items-center justify-between">
+                                        <span x-text="item.label"></span>
+                                        <i class="fas fa-check text-teal-600" x-show="priority === item.value"></i>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <input type="hidden" name="priority" x-model="priority">
+                        </div>
+
+                        <!-- Category -->
+                        <div class="relative" x-data="{ open: false }">
+                            <label class="text-sm text-gray-600">Category</label>
+                            <button type="button" @click="open = !open"
+                                class="w-full px-3 py-2 mt-1 bg-white border-gray-300 border rounded-xl flex justify-between items-center hover:border-teal-500 transition">
+                                <span x-text="category ? category : 'All'"></span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+
+                            <!-- Dropdown -->
+                            <div x-show="open" @click.outside="open = false" x-transition
+                                class="absolute z-10 mt-2 w-full bg-white shadow-lg border border-gray-200 rounded-xl p-2">
+                                <template x-for="item in categoryList">
+                                    <div @click="category = item.value; submitFilters(); open = false"
+                                        class="px-3 py-2 rounded-lg hover:bg-teal-50 cursor-pointer flex items-center justify-between">
+                                        <span x-text="item.label"></span>
+                                        <i class="fas fa-check text-teal-600" x-show="category === item.value"></i>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <input type="hidden" name="category" x-model="category">
+                        </div>
+
+                        <!-- Sort By Date -->
+                        <div class="relative" x-data="{ open: false }">
+                            <label class="text-sm text-gray-600">Sort by Date</label>
+                            <button type="button" @click="open = !open"
+                                class="w-full px-3 py-2 mt-1 bg-white border-gray-300 border rounded-xl flex justify-between items-center hover:border-teal-500 transition">
+                                <span x-text="sort ? sort : 'Newest First'"></span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+
+                            <div x-show="open" @click.outside="open = false" x-transition
+                                class="absolute z-10 mt-2 w-full bg-white shadow-lg border border-gray-200 rounded-xl p-2">
+                                <template x-for="item in sortList">
+                                    <div @click="sort = item.value; submitFilters(); open = false"
+                                        class="px-3 py-2 rounded-lg hover:bg-teal-50 cursor-pointer flex items-center justify-between">
+                                        <span x-text="item.label"></span>
+                                        <i class="fas fa-check text-teal-600" x-show="sort === item.value"></i>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <input type="hidden" name="sort" x-model="sort">
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+
 
             <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
                 <div class="overflow-x-auto">
@@ -87,7 +245,8 @@
                                     </td>
 
                                     {{-- ACTIONS --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center space-x-2">
+                                    <td
+                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center space-x-2">
 
                                         {{-- View --}}
                                         <a href="{{ route('tickets.show', $ticket->id) }}" title="View Ticket"
@@ -131,7 +290,6 @@
                                                         <i class="fas fa-wrench mr-1"></i>
                                                     </button>
                                                 </form>
-
                                             @elseif($ticket->status === 'In Progress' && $ticket->assigned_to === auth()->id())
                                                 {{-- Close Ticket --}}
                                                 @can('close-ticket')
@@ -161,11 +319,10 @@
                                                         <i class="fas fa-ban mr-1"></i>
                                                     </button>
                                                 </form>
-
                                             @elseif($ticket->status === 'In Progress' && $ticket->assigned_to !== auth()->id())
                                                 @can('take-over')
-                                                    <form action="{{ route('tickets.takeOver', $ticket->id) }}" method="POST"
-                                                        class="inline">
+                                                    <form action="{{ route('tickets.takeOver', $ticket->id) }}"
+                                                        method="POST" class="inline">
                                                         @csrf
                                                         <button type="submit" title="Take Over Ticket"
                                                             class="text-gray-400 hover:text-yellow-600 p-2 rounded-lg transition">
@@ -203,11 +360,75 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">No tickets found.</td>
+                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">No tickets found.
+                                    </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
+                    <!-- Modern Pagination with Info -->
+                    <div
+                        class="px-6 py-5 border-t bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+
+                        <!-- Left: Showing Info -->
+                        <div class="text-sm text-gray-600">
+                            Showing
+                            <span class="font-semibold text-gray-900">{{ $tickets->firstItem() }}</span>
+                            to
+                            <span class="font-semibold text-gray-900">{{ $tickets->lastItem() }}</span>
+                            of
+                            <span class="font-semibold text-gray-900">{{ $tickets->total() }}</span>
+                            results
+                        </div>
+
+                        <!-- Right: Pagination -->
+                        <div class="flex items-center space-x-1">
+
+                            {{-- Previous --}}
+                            @if ($tickets->onFirstPage())
+                                <span class="px-3 py-2 rounded-xl bg-gray-100 text-gray-400 cursor-not-allowed">
+                                    <i class="fas fa-chevron-left"></i>
+                                </span>
+                            @else
+                                <a href="{{ $tickets->previousPageUrl() }}"
+                                    class="px-3 py-2 rounded-xl bg-white border border-gray-300 
+                      text-gray-600 hover:bg-gray-100 transition">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            @endif
+
+                            {{-- Page Numbers --}}
+                            @foreach ($tickets->links()->elements[0] as $page => $url)
+                                @if ($page == $tickets->currentPage())
+                                    <span class="px-4 py-2 rounded-xl bg-teal-500 text-white font-semibold shadow">
+                                        {{ $page }}
+                                    </span>
+                                @else
+                                    <a href="{{ $url }}"
+                                        class="px-4 py-2 rounded-xl bg-white border border-gray-300
+                          text-gray-700 hover:bg-gray-100 transition">
+                                        {{ $page }}
+                                    </a>
+                                @endif
+                            @endforeach
+
+                            {{-- Next --}}
+                            @if ($tickets->hasMorePages())
+                                <a href="{{ $tickets->nextPageUrl() }}"
+                                    class="px-3 py-2 rounded-xl bg-white border border-gray-300 
+                      text-gray-600 hover:bg-gray-100 transition">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            @else
+                                <span class="px-3 py-2 rounded-xl bg-gray-100 text-gray-400 cursor-not-allowed">
+                                    <i class="fas fa-chevron-right"></i>
+                                </span>
+                            @endif
+
+                        </div>
+                    </div>
+
+
                 </div>
             </div>
         </div>
@@ -244,7 +465,9 @@
                         cancelButtonColor: '#6b7280',
                         confirmButtonText: 'Yes, delete it',
                         cancelButtonText: 'Cancel'
-                    }).then(result => { if (result.isConfirmed) form.submit(); });
+                    }).then(result => {
+                        if (result.isConfirmed) form.submit();
+                    });
                 });
             });
 
@@ -261,7 +484,9 @@
                         confirmButtonText: 'Yes, Handle it',
                         confirmButtonColor: '#3085d6',
                         cancelButtonColor: '#6b7280'
-                    }).then(result => { if (result.isConfirmed) form.submit(); });
+                    }).then(result => {
+                        if (result.isConfirmed) form.submit();
+                    });
                 });
             });
 
@@ -280,7 +505,8 @@
                         confirmButtonColor: '#16a34a',
                         cancelButtonColor: '#6b7280',
                         preConfirm: value => {
-                            if (!value.trim()) Swal.showValidationMessage('Solution is required!');
+                            if (!value.trim()) Swal.showValidationMessage(
+                                'Solution is required!');
                             return value;
                         }
                     }).then(result => {
@@ -289,9 +515,13 @@
                             form.method = 'POST';
                             form.action = actionUrl;
                             const token = document.createElement('input');
-                            token.type = 'hidden'; token.name = '_token'; token.value = '{{ csrf_token() }}';
+                            token.type = 'hidden';
+                            token.name = '_token';
+                            token.value = '{{ csrf_token() }}';
                             const solution = document.createElement('input');
-                            solution.type = 'hidden'; solution.name = 'solution'; solution.value = result.value;
+                            solution.type = 'hidden';
+                            solution.name = 'solution';
+                            solution.value = result.value;
                             form.append(token, solution);
                             document.body.append(form);
                             form.submit();
@@ -350,5 +580,138 @@
             });
 
         });
+
+        //search
+        function ticketSearch() {
+            return {
+                search: '{{ $search }}',
+                loading: false,
+                timeout: null,
+
+                init() {
+                    this.$watch('search', value => {
+                        clearTimeout(this.timeout)
+
+                        this.loading = true
+
+                        this.timeout = setTimeout(() => {
+                            document.getElementById('searchForm').submit()
+                        }, 400)
+                    })
+                },
+
+                clearSearch() {
+                    this.search = ""
+                    this.loading = true
+                    setTimeout(() => {
+                        document.getElementById('searchForm').submit()
+                    }, 200)
+                }
+            }
+        }
+
+        //filters
+        function premiumFilter() {
+            return {
+                status: '{{ $filters['status'] ?? '' }}',
+                priority: '{{ $filters['priority'] ?? '' }}',
+                category: '{{ $filters['category'] ?? '' }}',
+                sort: '{{ request()->sort ?? '' }}',
+
+                statusList: [{
+                        label: "All",
+                        value: ""
+                    },
+                    {
+                        label: "Open",
+                        value: "Open"
+                    },
+                    {
+                        label: "In Progress",
+                        value: "In Progress"
+                    },
+                    {
+                        label: "Closed",
+                        value: "Closed"
+                    },
+                ],
+
+                priorityList: [{
+                        label: "All",
+                        value: ""
+                    },
+                    {
+                        label: "Low",
+                        value: "Low"
+                    },
+                    {
+                        label: "Medium",
+                        value: "Medium"
+                    },
+                    {
+                        label: "High",
+                        value: "High"
+                    },
+                ],
+
+                categoryList: [{
+                        label: "All",
+                        value: ""
+                    },
+                    {
+                        label: "Hardware",
+                        value: "Hardware"
+                    },
+                    {
+                        label: "Software",
+                        value: "Software"
+                    },
+                    {
+                        label: "Network",
+                        value: "Network"
+                    },
+                    {
+                        label: "Other",
+                        value: "Other"
+                    },
+                ],
+
+                sortList: [{
+                        label: "Newest First",
+                        value: ""
+                    },
+                    {
+                        label: "Oldest First",
+                        value: "oldest"
+                    }
+                ],
+
+                get activeCount() {
+                    let count = 0;
+                    if (this.status) count++;
+                    if (this.priority) count++;
+                    if (this.category) count++;
+                    if (this.sort) count++;
+                    return count;
+                },
+
+                submitFilters() {
+                    setTimeout(() => {
+                        document.getElementById("premiumFilterForm").submit();
+                    }, 200);
+                },
+
+                clearAll() {
+                    this.status = '';
+                    this.priority = '';
+                    this.category = '';
+                    this.sort = '';
+                    this.submitFilters();
+                }
+            }
+        }
     </script>
+
+
+
 </x-app-layout>

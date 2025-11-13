@@ -102,6 +102,7 @@ class DashboardController extends Controller
                 ->leftJoin('ticket_categories', 'tickets.category_id', '=', 'ticket_categories.id')
                 ->latest()
                 ->with('user')
+                ->take(5)
                 ->get();
 
             // Statistik tiket
@@ -128,27 +129,35 @@ class DashboardController extends Controller
             ));
         }
 
-        /**
-         * ========================
-         * 👤 USER DASHBOARD
-         * ========================
-         */
-        if ($user->hasRole('user')) {
-            $userTickets = Ticket::where('user_id', $user->id)
-                ->latest()
-                ->get();
+       /**
+     * ========================
+     * 👤 USER DASHBOARD
+     * ========================
+     */
+    if ($user->hasRole('user')) {
 
-            $openTicketsCount = $userTickets->where('status', 'Open')->count();
-            $inProgressTicketsCount = $userTickets->where('status', 'In Progress')->count();
-            $closedTicketsCount = $userTickets->where('status', 'Closed')->count();
+        // semua tiket user
+        $userTickets = Ticket::where('user_id', $user->id)
+            ->latest()
+            ->get();
 
-            return view('frontend.Dashbord.userdahboard', compact(
-                'userTickets',
-                'openTicketsCount',
-                'inProgressTicketsCount',
-                'closedTicketsCount'
-            ));
-        }
+        // statistik
+        $openTicketsCount = $userTickets->where('status', 'Open')->count();
+        $inProgressTicketsCount = $userTickets->where('status', 'In Progress')->count();
+        $closedTicketsCount = $userTickets->where('status', 'Closed')->count();
+
+        // tiket terbaru (limit 5)
+        $recentTickets = $userTickets->take(3);
+
+        return view('frontend.Dashbord.userdahboard', compact(
+            'userTickets',
+            'recentTickets',
+            'openTicketsCount',
+            'inProgressTicketsCount',
+            'closedTicketsCount'
+        ));
+    }
+
 
         /**
          * ========================

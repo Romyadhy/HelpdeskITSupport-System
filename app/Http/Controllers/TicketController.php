@@ -14,19 +14,78 @@ use Illuminate\Support\Facades\Log;
 
 class TicketController extends Controller
 {
-    public function index()
-    {
-        $users = Auth::user();
-        $ticketsQuery = Ticket::with('user')->latest();
+    // public function index(Request $request)
+    // {
+    //     $users = Auth::user();
+    //     $search = $request->input('search');
 
-        if ($users->can('view-any-tickets')) {
-            $tickets = $ticketsQuery->paginate(10);
-        } else {
-            $tickets = $ticketsQuery->where('user_id', $users->id)->paginate(10);
+    //     $ticketsQuery = Ticket::with('user')->latest();
+
+    //     //search
+    //     if ($search) {
+    //         $ticketsQuery->where(function ($q) use ($search) {
+    //             $q->where('title', 'like', "%{$search}%")
+    //             ->orWhere('description', 'like', "%{$search}%");
+    //         });
+    //     }
+
+    //     if ($users->can('view-any-tickets')) {
+    //         $tickets = $ticketsQuery->paginate(10);
+    //     } else {
+    //         $tickets = $ticketsQuery->where('user_id', $users->id)->paginate(10);
+    //     }
+
+    //     $tickets->appends(['search' => $search]);
+    //     return view('frontend.Tickets.tickets', ['tickets' => $tickets, 'search' => $search]);
+    // }
+
+    public function index(Request $request)
+    {
+        $query = Ticket::query()
+            ->with(['user', 'category']);
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%$search%")
+                ->orWhere('description', 'like', "%$search%");
+            });
         }
 
-        return view('frontend.Tickets.tickets', ['tickets' => $tickets]);
+        // Status Filter
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Priority Filter
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->priority);
+        }
+
+        // Category Filter (berdasarkan nama kategori)
+        if ($request->filled('category')) {
+            $query->whereHas('category', function ($cat) use ($request) {
+                $cat->where('name', $request->category);
+            });
+        }
+
+        $user = Auth::user();
+        if(!$user->can('view-any-tickets')){
+            $query->where('user_id', $user->id);
+        }
+
+        $tickets = $query->orderBy('created_at', 'desc')->paginate(10);
+        $tickets->appends($request->query());
+
+        return view('frontend.Tickets.tickets', [
+            'tickets' => $tickets,
+            'search' => $request->search,
+            'filters' => $request->only(['status', 'priority', 'category']),
+        ]);
     }
+
+
 
     public function create()
     {
@@ -38,7 +97,6 @@ class TicketController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-
         try {
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
@@ -47,7 +105,6 @@ class TicketController extends Controller
                 'status' => 'nullable|string|in:Open,Closed,In Progress',
                 'category_id' => 'required|exists:ticket_categories,id',
                 'location_id' => 'required|exists:ticket_locations,id',
-
             ]);
 
             $ticket = Ticket::create([
@@ -64,13 +121,7 @@ class TicketController extends Controller
 
             $telegram = app(TelegramService::class);
 
-            $message = "📩 <b>Ticket Baru Masuk</b>\n"
-                . "Judul     : {$ticket->title}\n"
-                . "Prioritas : {$ticket->priority}\n"
-                . "Kategori  : {$ticket->category->name}\n"
-                . "Lokasi    : {$ticket->location->name}\n"
-                . 'Dari      : ' . auth()->user()->name . "\n\n"
-                . 'Silakan mengecek detailnya pada sistem 😊';
+            $message = "📩 <b>Ticket Baru Masuk</b>\n" . "Judul     : {$ticket->title}\n" . "Prioritas : {$ticket->priority}\n" . "Kategori  : {$ticket->category->name}\n" . "Lokasi    : {$ticket->location->name}\n" . 'Dari      : ' . auth()->user()->name . "\n\n" . 'Silakan mengecek detailnya pada sistem 😊';
 
             $telegram->sendMessage($message);
 
@@ -88,7 +139,7 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        if ($ticket->user_id !== $user->id && ! $user->can('edit-own-ticket')) {
+        if ($ticket->user_id !== $user->id && !$user->can('edit-own-ticket')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -102,7 +153,7 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        if ($ticket->user_id !== $user->id && ! $user->can('edit-own-ticket')) {
+        if ($ticket->user_id !== $user->id && !$user->can('edit-own-ticket')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -129,7 +180,7 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        if (! $user->can('view-any-tickets') && $ticket->user_id !== $user->id) {
+        if (!$user->can('view-any-tickets') && $ticket->user_id !== $user->id) {
             abort(403, 'Unauthorized action.');
         }
         // dd($ticket);
@@ -150,7 +201,7 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        if ($ticket->user_id !== $user->id && ! $user->can('delete-own-ticket')) {
+        if ($ticket->user_id !== $user->id && !$user->can('delete-own-ticket')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -164,7 +215,7 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        if (! $user->can('handle-ticket')) {
+        if (!$user->can('handle-ticket')) {
             abort(403, 'Unauthorized action.');
         }
         try {
@@ -204,7 +255,7 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        if (! $user->can('close-ticket')) {
+        if (!$user->can('close-ticket')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -240,7 +291,7 @@ class TicketController extends Controller
         $user = Auth::user();
 
         // Pastikan user punya izin
-        if (! $user->can('escalate-ticket')) {
+        if (!$user->can('escalate-ticket')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -266,20 +317,14 @@ class TicketController extends Controller
         try {
             $telegram = app(TelegramService::class);
 
-            $message = "⚠️ <b>Ticket DIESKALASIKAN</b>\n"
-                . "Judul     : {$ticket->title}\n"
-                . "Prioritas : {$ticket->priority}\n"
-                . "Dari      : {$ticket->user->name}\n"
-                . 'Eskalasi Oleh: ' . $user->name . "\n\n"
-                . '🛠️ <i>Tiket ini memerlukan perhatian admin untuk tindak lanjut.</i>';
+            $message = "⚠️ <b>Ticket DIESKALASIKAN</b>\n" . "Judul     : {$ticket->title}\n" . "Prioritas : {$ticket->priority}\n" . "Dari      : {$ticket->user->name}\n" . 'Eskalasi Oleh: ' . $user->name . "\n\n" . '🛠️ <i>Tiket ini memerlukan perhatian admin untuk tindak lanjut.</i>';
 
             $telegram->sendMessage($message);
         } catch (\Exception $e) {
             \Log::error('Gagal mengirim notifikasi Telegram: ' . $e->getMessage());
         }
 
-        return redirect()->route('tickets.index')
-            ->with('success', 'Ticket has been escalated to Admin and notification sent.');
+        return redirect()->route('tickets.index')->with('success', 'Ticket has been escalated to Admin and notification sent.');
     }
 
     // Admin menangani tiket yang di-escalate
@@ -328,7 +373,6 @@ class TicketController extends Controller
         // ]);
 
         // Redirect ke halaman daftar ticket dengan pesan sukses
-        return redirect()->route('tickets.index')
-            ->with('success', 'Ticket has been released and is now available for other support members.');
+        return redirect()->route('tickets.index')->with('success', 'Ticket has been released and is now available for other support members.');
     }
 }
