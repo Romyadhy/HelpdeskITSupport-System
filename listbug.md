@@ -4,8 +4,9 @@
 
 -   [ ] Ticket->show->duration its weired check agian
 -   [ ] Task->monthly->status not consistent yet like in every month its must reset again into pending
--   [ ] DailyRerport verify by admin, in index and in show, not has sweetalert and return redirect
-
+-   [ ] DailyReport verify by admin, in index and in show, not has sweetalert and return redirect
+-   [ ] DailyReport->create in status tickets not consistent yet
+ 
 
 ## Unfinished Features
 
