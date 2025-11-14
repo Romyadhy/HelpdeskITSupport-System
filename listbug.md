@@ -12,17 +12,18 @@
 ## Unfinished Features
 
 -   [ ] Pdf structure
--   [ ] Corn Job Daily Report Telegram bot in every 4pm 
+-   [x] Corn Job Daily Report Telegram bot in every 4pm, (not optimum yet) 
 -   [x] Fix Every Table, add paginate and add searching 
 -   [ ] Make every create, edit and show, like pop up or alert and we can interact it
 -   [ ] API Monthly Report didn't created yet
 -   [ ] UI login
 -   [ ] Logs
 -   [x] Fix dashboard User, Support
--   [ ] Fix dashboard Manager, Admin
+-   [x] Fix dashboard Manager, Admin
 -   [ ] Fix logo
 
  
 ## Other Notes
 
 -   Create API or others Documentations
+-   Create supper admin that can CRUD

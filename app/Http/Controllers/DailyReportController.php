@@ -35,7 +35,8 @@ class DailyReportController extends Controller
         // =====================================================
         $dailyReports = DailyReport::with(['user', 'tasks', 'tickets', 'verifier'])
             ->latest()
-            ->get(); // PERBAIKAN: hilangkan filter user_id
+            ->take(3)
+            ->get(); 
 
 
         // =====================================================

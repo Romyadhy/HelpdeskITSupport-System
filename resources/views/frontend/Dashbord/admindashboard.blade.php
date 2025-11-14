@@ -1,164 +1,281 @@
 <x-app-layout>
+
+    {{-- =========================== --}}
+    {{-- HEADER --}}
+    {{-- =========================== --}}
     <x-slot name="header">
-        <h2 class="font-semibold text-2xl text-gray-800 leading-tight flex items-center gap-2">
-            🧭 Admin Dashboard
-        </h2>
+        <div class="flex flex-col gap-1">
+            <h2 class="font-semibold text-2xl text-gray-800 tracking-tight">
+                Admin Dashboard
+            </h2>
+            <p class="text-sm text-gray-500">Welcome back, Admin 👋</p>
+        </div>
     </x-slot>
 
-    <div class="py-10 px-6 max-w-7xl mx-auto space-y-10">
-        {{-- Statistik Utama --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-            <div
-                class="bg-indigo-50 border border-indigo-200 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition">
-                <div class="text-4xl mb-2">📊</div>
-                <h3 class="text-gray-700 font-semibold text-sm">Total Tiket</h3>
-                <p class="text-2xl font-bold text-gray-900">{{ $totalTickets ?? 0 }}</p>
+    <div class="p-6 space-y-10">
+
+        {{-- =========================== --}}
+        {{-- KPI CARDS (Premium Style) --}}
+        {{-- =========================== --}}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            {{-- CARD ITEM --}}
+            <div class="flex items-center gap-4 border rounded-xl bg-white shadow-sm p-5">
+                <div class="p-3 rounded-lg bg-blue-100 text-blue-700 text-xl">
+                    📊
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Total Tickets</p>
+                    <h3 class="text-3xl font-semibold">{{ $totalTickets }}</h3>
+                </div>
             </div>
 
-            <div
-                class="bg-green-50 border border-green-200 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition">
-                <div class="text-4xl mb-2">✅</div>
-                <h3 class="text-gray-700 font-semibold text-sm">Tiket Selesai</h3>
-                <p class="text-2xl font-bold text-gray-900">{{ $closedTickets ?? 0 }}</p>
+            <div class="flex items-center gap-4 border rounded-xl bg-white shadow-sm p-5">
+                <div class="p-3 rounded-lg bg-green-100 text-green-700 text-xl">
+                    ✅
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Closed Tickets</p>
+                    <h3 class="text-3xl font-semibold">{{ $closedTickets }}</h3>
+                </div>
             </div>
 
-            <div
-                class="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition">
-                <div class="text-4xl mb-2">🕓</div>
-                <h3 class="text-gray-700 font-semibold text-sm">Tiket Pending</h3>
-                <p class="text-2xl font-bold text-gray-900">{{ $pendingTickets ?? 0 }}</p>
+            <div class="flex items-center gap-4 border rounded-xl bg-white shadow-sm p-5">
+                <div class="p-3 rounded-lg bg-yellow-100 text-yellow-700 text-xl">
+                    🕓
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">In Progress</p>
+                    <h3 class="text-3xl font-semibold">{{ $pendingTickets }}</h3>
+                </div>
             </div>
 
-            <div
-                class="bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition">
-                <div class="text-4xl mb-2">🟢</div>
-                <h3 class="text-gray-700 font-semibold text-sm">Tiket Open</h3>
-                <p class="text-2xl font-bold text-gray-900">{{ $openTickets ?? 0 }}</p>
+            <div class="flex items-center gap-4 border rounded-xl bg-white shadow-sm p-5">
+                <div class="p-3 rounded-lg bg-indigo-100 text-indigo-700 text-xl">
+                    🔓
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Open Tickets</p>
+                    <h3 class="text-3xl font-semibold">{{ $openTickets }}</h3>
+                </div>
             </div>
 
-            <div
-                class="bg-purple-50 border border-purple-200 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition">
-                <div class="text-4xl mb-2">👥</div>
-                <h3 class="text-gray-700 font-semibold text-sm">Total User</h3>
-                <p class="text-2xl font-bold text-gray-900">{{ $totalUsers ?? 0 }}</p>
+            <div class="flex items-center gap-4 border rounded-xl bg-white shadow-sm p-5">
+                <div class="p-3 rounded-lg bg-purple-100 text-purple-700 text-xl">
+                    👥
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Total Users</p>
+                    <h3 class="text-3xl font-semibold">{{ $totalUsers }}</h3>
+                </div>
             </div>
+
+            <div class="flex items-center gap-4 border rounded-xl bg-white shadow-sm p-5">
+                <div class="p-3 rounded-lg bg-pink-100 text-pink-700 text-xl">
+                    ⏱️
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Avg SLA Resolution</p>
+                    <h3 class="text-xl font-semibold">{{ $avgSlaFormatted }}</h3>
+                </div>
+            </div>
+
         </div>
 
-        {{-- Chart SLA --}}
-        <div class="bg-white shadow-md rounded-2xl border border-gray-100 p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold text-gray-800">📈 Statistik SLA Tiket Bulan Ini</h3>
-                <span class="text-sm text-gray-500">{{ now()->translatedFormat('F Y') }}</span>
-            </div>
-            <canvas id="slaChart" height="120"></canvas>
 
-            @if ($slaCategories->isEmpty())
-                <p class="text-center text-gray-500 text-sm mt-4 italic">Belum ada data SLA untuk bulan ini.</p>
-            @endif
+
+        {{-- =========================== --}}
+        {{-- CHART SECTION --}}
+        {{-- =========================== --}}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            {{-- TICKET TREND --}}
+            <div class="lg:col-span-2 border rounded-xl bg-white shadow-sm p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800">Ticket Trend</h3>
+                        <p class="text-sm text-gray-500">Last 30 days activity</p>
+                    </div>
+                </div>
+
+                <canvas id="ticketTrendChart" height="110"></canvas>
+            </div>
+
+            {{-- SLA CHART --}}
+            <div class="border rounded-xl bg-white shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800">SLA by Category</h3>
+                <p class="text-sm text-gray-500 mb-4">Average resolution duration</p>
+
+                {{-- <canvas id="slaChart" height="180" class="pt-4"></canvas> --}}
+                <div class="relative" style="height: 220px;">
+                    <canvas id="slaChart"></canvas>
+                </div>
+            </div>
+
         </div>
 
-        {{-- Tiket Terbaru --}}
-        <div class="bg-white shadow-md rounded-2xl border border-gray-100 overflow-hidden">
-            <div class="flex justify-between items-center px-6 py-4 border-b bg-gray-50">
-                <h3 class="text-lg font-semibold text-gray-800">🧾 Tiket Terbaru</h3>
-                <a href="{{ route('tickets.index') }}"
-                    class="px-4 py-2 text-sm font-medium bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition">
-                    Lihat Semua
-                </a>
-            </div>
+
+
+        {{-- =========================== --}}
+        {{-- RECENT TICKETS TABLE --}}
+        {{-- =========================== --}}
+        <div class="border rounded-xl bg-white shadow-sm p-6">
+            <h3 class="text-lg font-semibold mb-4">Recent Tickets</h3>
+
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
-                    <thead class="bg-gray-100">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b text-gray-600">
                         <tr>
-                            <th class="px-6 py-3 text-gray-600 font-semibold">#</th>
-                            <th class="px-6 py-3 text-gray-600 font-semibold">Judul</th>
-                            <th class="px-6 py-3 text-gray-600 font-semibold">Kategori</th>
-                            <th class="px-6 py-3 text-gray-600 font-semibold">User</th>
-                            <th class="px-6 py-3 text-gray-600 font-semibold text-center">Status</th>
-                            <th class="px-6 py-3 text-gray-600 font-semibold text-center">Tanggal</th>
+                            <th class="p-3 text-left">User</th>
+                            <th class="p-3 text-left">Title</th>
+                            <th class="p-3 text-left">Category</th>
+                            <th class="p-3 text-left">Status</th>
+                            <th class="p-3 text-left">Created</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @forelse ($tickets as $index => $ticket)
-                            <tr class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-3 text-gray-700">{{ $index + 1 }}</td>
-                                <td class="px-6 py-3 text-gray-900 font-medium">{{ $ticket->title ?? '-' }}</td>
-                                <td class="px-6 py-3 text-gray-700">{{ $ticket->category_name ?? '-' }}</td>
-                                <td class="px-6 py-3 text-gray-700">{{ $ticket->user->name ?? '-' }}</td>
-                                <td class="px-6 py-3 text-center">
-                                    @if ($ticket->status === 'Open')
-                                        <span
-                                            class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-black">Open</span>
-                                    @elseif ($ticket->status === 'In Progress')
-                                        <span
-                                            class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-black">In
-                                            Progress</span>
-                                    @elseif ($ticket->status === 'Closed')
-                                        <span
-                                            class="px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-black">Closed</span>
-                                    @else
-                                        <span
-                                            class="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700">
-                                            {{ ucfirst($ticket->status) }}
-                                        </span>
-                                    @endif
+
+                    <tbody>
+                        @foreach ($tickets as $ticket)
+                            <tr class="border-b hover:bg-gray-50 transition">
+                                <td class="p-3">{{ $ticket->user->name }}</td>
+                                <td class="p-3">{{ $ticket->title }}</td>
+                                <td class="p-3">{{ $ticket->category_name }}</td>
+                                <td class="p-3">
+                                    <span
+                                        class="px-3 py-1 rounded-full text-xs
+                                    @if ($ticket->status == 'Open') bg-blue-100 text-blue-700
+                                    @elseif($ticket->status == 'In Progress') bg-yellow-100 text-yellow-700
+                                    @else bg-green-100 text-green-700 @endif">
+                                        {{ $ticket->status }}
+                                    </span>
                                 </td>
-                                <td class="px-6 py-3 text-center text-gray-600">
-                                    {{ \Carbon\Carbon::parse($ticket->created_at)->format('d M Y') }}
-                                </td>
+                                <td class="p-3">{{ $ticket->created_at->format('d M Y') }}</td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="px-6 py-4 text-center text-gray-500 italic">
-                                    Belum ada tiket terbaru.
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>
+
         </div>
+
     </div>
 
-    {{-- Chart.js --}}
+
+
+    {{-- =========================== --}}
+    {{-- CHART JS --}}
+    {{-- =========================== --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
-        const ctx = document.getElementById('slaChart').getContext('2d');
+        // Ticket Trend Chart
+        new Chart(document.getElementById('ticketTrendChart'), {
+            type: 'line',
+            data: {
+                labels: @json($trendLabels),
+                datasets: [{
+                        label: "Tickets Created",
+                        data: @json($trendCreated),
+                        borderColor: "#2563eb",
+                        backgroundColor: "rgba(37,99,235,0.15)",
+                        borderWidth: 2,
+                        tension: 0.4
+                    },
+                    {
+                        label: "Tickets Closed",
+                        data: @json($trendClosed),
+                        borderColor: "#059669",
+                        backgroundColor: "rgba(5,150,105,0.15)",
+                        borderWidth: 2,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        position: "bottom"
+                    }
+                },
+                responsive: true,
+            }
+        });
 
-        const labels = @json($slaCategories ?? []);
-        const dataValues = @json($slaDurations ?? []);
 
-        const slaChart = new Chart(ctx, {
+        // // SLA Chart
+        // new Chart(document.getElementById('slaChart'), {
+        //     type: 'bar',
+        //     data: {
+        //         labels: @json($slaCategories),
+        //         datasets: [{
+        //             data: @json($slaDurations),
+        //             backgroundColor: "#6366f1",
+        //             borderRadius: 6
+        //         }]
+        //     },
+        //     options: { plugins: { legend: { display: false } } }
+        // });
+
+        function formatDuration(totalMinutes) {
+            const days = Math.floor(totalMinutes / 1440);
+            const hours = Math.floor((totalMinutes % 1440) / 60);
+            const minutes = totalMinutes % 60;
+
+            let result = [];
+
+            if (days > 0) result.push(`${days} hari`);
+            if (hours > 0) result.push(`${hours} jam`);
+            if (minutes > 0) result.push(`${minutes} menit`);
+
+            return result.join(" ");
+        }
+
+        new Chart(document.getElementById('slaChart'), {
             type: 'bar',
             data: {
-                labels: labels.length > 0 ? labels : ['Tidak Ada Data'],
+                labels: @json($slaCategories),
                 datasets: [{
-                    label: 'Rata-rata Durasi (menit)',
-                    data: dataValues.length > 0 ? dataValues : [0],
-                    backgroundColor: ['#10b981', '#3b82f6', '#facc15', '#ef4444', '#a855f7'],
+                    label: "Avg SLA",
+                    data: @json($slaDurations), // masih dalam menit
+                    backgroundColor: "#818cf8",
                     borderRadius: 8,
+                    barThickness: 40,
                 }]
             },
             options: {
-                responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         display: false
                     },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.raw;
+                                return " " + formatDuration(value);
+                            }
+                        }
+                    }
+                },
+                layout: {
+                    padding: {
+                        top: 20,
+                        bottom: 10,
+                        left: 0,
+                        right: 0
+                    }
                 },
                 scales: {
                     y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Durasi (menit)'
-                        },
                         ticks: {
-                            stepSize: 10
+                            callback: function(value) {
+                                return formatDuration(value);
+                            }
                         }
                     }
                 }
             }
         });
     </script>
+
 </x-app-layout>
