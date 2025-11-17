@@ -139,9 +139,9 @@
             @endhasanyrole
 
             @hasanyrole('admin|manager')
-                <a href="{{ route('ticket.log') }}"
+                <a href="{{ route('activity.log') }}"
                     class="flex items-center px-4 py-3 rounded-lg transition-all duration-200
-        {{ request()->routeIs('ticket.log') ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+        {{ request()->routeIs('activity.log') ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
 
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />

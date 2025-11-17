@@ -29,6 +29,11 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));
+
+        activity('auth')
+            ->causedBy(auth()->user())
+            ->event('login')
+            ->log('User login');
     }
 
     
@@ -45,5 +50,10 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+
+        activity('auth')
+            ->causedBy(auth()->user())
+            ->event('logout')
+            ->log('User logout');
     }
 }

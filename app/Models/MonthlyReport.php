@@ -6,10 +6,14 @@ use Filament\Panel\Concerns\HasFont;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class MonthlyReport extends Model
 {
     use HasFactory;
+    use LogsActivity;
+
     protected $table = 'monthly_reports';
     protected $fillable = [
         'user_id', 
@@ -64,5 +68,13 @@ class MonthlyReport extends Model
     public function scopePending($query)
     {
         return $query->whereIn('status', ['Draft', 'Pending Verification']);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->useLogName('report_monthly');
     }
 }

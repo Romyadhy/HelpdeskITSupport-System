@@ -3,6 +3,7 @@
 use App\Http\Controllers\DailyReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HandbookController;
+use App\Http\Controllers\Logs\ActivityLogController;
 use App\Http\Controllers\Logs\TicketActivityLog;
 use App\Http\Controllers\MonthlyReportController;
 use App\Http\Controllers\ProfileController;
@@ -81,7 +82,8 @@ Route::middleware('auth')->group(function () {
     // Route::get('handbook/export/pdf', [HandbookController::class, 'exportPdf'])->name('handbook.export.pdf');
 
     // Logs
-    Route::get('ticket/activity-log', [TicketActivityLog::class, 'index'])->name('ticket.log');
+    // Route::get('ticket/activity-log', [TicketActivityLog::class, 'index'])->name('ticket.log');
+    Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity.log');
 });
 
 require __DIR__ . '/auth.php';
