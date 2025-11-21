@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Logs;
 
 use App\Http\Controllers\Controller;
+use App\Models\TaskCompletion;
 use Illuminate\Http\Request;
 use Spatie\Activitylog\Models\Activity;
 use App\Models\User;
@@ -45,13 +46,13 @@ class ActivityLogController extends Controller
     }
 
     // === PAGINATION ===
-    $logs = $query->paginate(15)->withQueryString();
-
+    $logs = $query->paginate(10)->withQueryString();
+    // dd($logs);
     foreach ($logs as $log) {
 
         if ($log->log_name === 'task_done') {
 
-            $completion = \App\Models\TaskCompletion::with('task', 'user')
+            $completion = TaskCompletion::with('task', 'user')
                 ->find($log->subject_id);
 
             if ($completion) {

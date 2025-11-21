@@ -6,13 +6,11 @@ use Carbon\CarbonInterval;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 class Ticket extends Model
 {
     use HasFactory;
-    use LogsActivity;
+    // use LogsActivity;
 
     protected $fillable = [
         'title',
@@ -88,11 +86,11 @@ class Ticket extends Model
     }
 
     // log
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->useLogName('ticket')
-            ->logAll()
-            ->logOnlyDirty();
-    }
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //         ->useLogName('ticket')
+    //         ->logAll()
+    //         ->logOnlyDirty();
+    // }
 }

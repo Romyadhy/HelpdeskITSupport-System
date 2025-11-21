@@ -5,13 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+
 
 class Task extends Model
 {
     use HasFactory;
-    use LogsActivity;
+    // use LogsActivity;
     // protected $table = 'tasks';
     protected $fillable = [
         'title',
@@ -31,11 +30,11 @@ class Task extends Model
         return $this->belongsToMany(DailyReport::class, 'daily_report_tasks');
     }
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logAll()
-            ->logOnlyDirty()
-            ->useLogName('task');
-    }
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //         ->logAll()
+    //         ->logOnlyDirty()
+    //         ->useLogName('task');
+    // }
 }

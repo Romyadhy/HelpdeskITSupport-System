@@ -45,6 +45,7 @@
                     <input type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}"
                         class="w-full border-gray-300 rounded-md text-sm focus:ring-emerald-500 focus:border-emerald-500">
                 </div>
+
             </div>
 
             <div class="flex justify-end mt-4 space-x-2">
@@ -61,7 +62,6 @@
 
         {{-- TIMELINE --}}
         <div class="relative">
-
             <div class="hidden md:block absolute left-4 top-0 bottom-0 border-l-2 border-gray-200"></div>
 
             <div class="space-y-6">
@@ -69,36 +69,45 @@
 
                     @php
                         $props = $log->properties ?? [];
-                        $attributes = $props['attributes'] ?? [];
                         $old = $props['old'] ?? [];
+                        $new = $props['new'] ?? [];
 
-                        // Subject (Ticket / Task / Report)
-                        $ticketId = $log->subject->id ?? ($props['ticket_id'] ?? null);
-                        $ticketTitle = $log->subject->title ?? ($props['ticket_title'] ?? null);
+                        $ticketId = $log->subject->id ?? null;
+                        $ticketTitle = $log->subject->title ?? null;
 
-                        // Identify module
                         $module = $log->log_name ?? 'activity';
 
-                        // DEFAULT FIELDS FOR TICKET
-                        $displayOnlyBase = [
-                            'title',
-                            'description',
-                            'status',
-                            'priority',
-                            'category_id',
-                            'location_id',
-                            'assigned_to',
-                            'solution',
+                        // Mapping event label
+                        $eventLabels = [
+                            'created' => 'Dibuat',
+                            'updated' => 'Diperbarui',
+                            'deleted' => 'Dihapus',
+                            'start' => 'Mulai Ditangani',
+                            'takeover' => 'Diambil alih',
+                            'close' => 'Ditutup',
+                            'escalate' => 'Dieskalasi',
+                            'cancel' => 'Dibatalkan',
+                            'handle-escalated' => 'Tangani Eskalasi',
                         ];
 
-                        if ($module === 'task_done') {
-                            $displayOnly = ['complated_at', 'notes'];
-                        } elseif ($module === 'report_daily' || $module === 'daily_report') {
-                            $displayOnly = ['date', 'report_type', 'notes'];
-                        } else {
-                            $displayOnly = $displayOnlyBase;
-                        }
+                        $eventLabel = $eventLabels[$log->event] ?? ucfirst($log->event ?? 'Aktivitas');
 
+                        // ICON + COLORS
+                        $eventIcons = [
+                            'created' => ['icon' => 'fa-plus', 'bg' => 'bg-blue-100 text-blue-600'],
+                            'updated' => ['icon' => 'fa-pen', 'bg' => 'bg-yellow-100 text-yellow-600'],
+                            'deleted' => ['icon' => 'fa-trash', 'bg' => 'bg-red-100 text-red-600'],
+                            'start' => ['icon' => 'fa-play', 'bg' => 'bg-green-100 text-green-700'],
+                            'takeover' => ['icon' => 'fa-handshake', 'bg' => 'bg-purple-100 text-purple-700'],
+                            'close' => ['icon' => 'fa-check', 'bg' => 'bg-emerald-100 text-emerald-700'],
+                            'escalate' => ['icon' => 'fa-arrow-up', 'bg' => 'bg-orange-100 text-orange-700'],
+                            'cancel' => ['icon' => 'fa-xmark', 'bg' => 'bg-gray-200 text-gray-700'],
+                            'handle-escalated' => ['icon' => 'fa-user-shield', 'bg' => 'bg-teal-100 text-teal-700'],
+                        ];
+
+                        $info = $eventIcons[$log->event] ?? ['icon' => 'fa-info', 'bg' => 'bg-gray-100 text-gray-600'];
+
+                        // Format waktu
                         $witaTime = $log->created_at
                             ? $log->created_at->setTimezone('Asia/Makassar')->format('d M Y, H:i')
                             : '';
@@ -106,7 +115,7 @@
 
                     <div class="md:pl-10 flex space-x-3">
 
-                        {{-- Bullet --}}
+                        {{-- BULLET --}}
                         <div class="hidden md:flex flex-col items-center">
                             <div class="w-3 h-3 rounded-full bg-emerald-500 border-2 border-white shadow"></div>
                         </div>
@@ -114,29 +123,20 @@
                         {{-- CARD --}}
                         <div class="flex-1 bg-white shadow-sm rounded-xl p-4 border border-gray-200">
 
-                            {{-- Header --}}
+                            {{-- HEADER --}}
                             <div class="flex justify-between items-start">
                                 <div class="flex items-center space-x-3">
-                                    <div
-                                        class="w-9 h-9 flex items-center justify-center rounded-full
-                                        @if ($log->event === 'created') bg-blue-100 text-blue-600
-                                        @elseif($log->event === 'deleted') bg-red-100 text-red-600
-                                        @elseif($log->event === 'updated') bg-yellow-100 text-yellow-600
-                                        @else bg-gray-100 text-gray-600 @endif">
 
-                                        @if ($log->event === 'created')
-                                            <i class="fa-solid fa-plus"></i>
-                                        @elseif($log->event === 'deleted')
-                                            <i class="fa-solid fa-trash"></i>
-                                        @else
-                                            <i class="fa-solid fa-pen"></i>
-                                        @endif
+                                    {{-- ICON --}}
+                                    <div class="w-9 h-9 flex items-center justify-center rounded-full {{ $info['bg'] }}">
+                                        <i class="fa-solid {{ $info['icon'] }}"></i>
                                     </div>
 
+                                    {{-- TEXT --}}
                                     <div>
                                         <div class="flex items-center space-x-2">
                                             <span class="font-semibold text-gray-800 text-sm">
-                                                {{ $log->description ?? ucfirst($log->event ?? 'Activity') }}
+                                                {{ $log->description ?? $eventLabel }}
                                             </span>
 
                                             <span
@@ -146,14 +146,17 @@
                                         </div>
 
                                         <div class="text-xs text-gray-500 mt-1">
-                                            oleh <span class="font-medium">
-                                                {{ optional($log->causer)->name ?? 'System' }}
-                                            </span>
+                                            oleh <span class="font-medium">{{ optional($log->causer)->name ?? 'System' }}</span>
                                             • {{ $witaTime }} WITA
+                                        </div>
+
+                                        <div class="text-[11px] text-gray-400">
+                                            Aksi: <b>{{ $eventLabel }}</b> ({{ $log->event }})
                                         </div>
                                     </div>
                                 </div>
 
+                                {{-- SUBJECT --}}
                                 <div class="text-right text-xs">
                                     @if ($ticketId)
                                         <div class="text-blue-700 font-semibold">#{{ $ticketId }}</div>
@@ -166,7 +169,7 @@
                                 </div>
                             </div>
 
-                            {{-- DETAIL COLLAPSE --}}
+                            {{-- COLLAPSE DETAIL --}}
                             <div x-data="{ open: false }" class="mt-3">
 
                                 <button @click="open = !open"
@@ -178,41 +181,16 @@
 
                                 <div x-show="open" class="mt-3 space-y-3">
 
-                                    {{-- TASK COMPLETION --}}
-                                    @if ($module === 'task_done' && isset($log->completion))
-                                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                            <div class="text-xs font-semibold text-blue-700 mb-1">
-                                                Task Completion Details
-                                            </div>
-
-                                            <ul class="text-xs text-blue-800 space-y-1">
-                                                <li><b>Task:</b> {{ $log->task->title ?? 'Unknown Task' }}</li>
-                                                <li><b>Diselesaikan oleh:</b>
-                                                    {{ $log->completion->user->name ?? 'Unknown' }}
-                                                </li>
-                                                <li><b>Tanggal Selesai:</b>
-                                                    {{ optional($log->completion->complated_at)?->setTimezone('Asia/Makassar')->format('d M Y, H:i') }}
-                                                    WITA
-                                                </li>
-                                                <li><b>Catatan:</b> {{ $log->completion->notes ?? '-' }}</li>
-                                            </ul>
-                                        </div>
-                                    @endif
-
                                     {{-- NEW VALUES --}}
-                                    @if (!empty($attributes))
+                                    @if (!empty($new))
                                         <div class="bg-green-50 border border-green-200 rounded-lg p-3">
-                                            <div class="text-xs font-semibold text-green-700 mb-1">
-                                                Perubahan Baru
-                                            </div>
+                                            <div class="text-xs font-semibold text-green-700 mb-1">Perubahan Baru</div>
                                             <ul class="text-xs text-green-800 space-y-1">
-                                                @foreach ($attributes as $key => $value)
-                                                    @if (in_array($key, $displayOnly))
-                                                        <li>
-                                                            <b>{{ ucfirst(str_replace('_', ' ', $key)) }}:</b>
-                                                            {{ is_array($value) ? json_encode($value) : $value }}
-                                                        </li>
-                                                    @endif
+                                                @foreach ($new as $key => $value)
+                                                    <li>
+                                                        <b>{{ ucfirst(str_replace('_', ' ', $key)) }}:</b>
+                                                        {{ is_array($value) ? json_encode($value) : $value }}
+                                                    </li>
                                                 @endforeach
                                             </ul>
                                         </div>
@@ -221,27 +199,21 @@
                                     {{-- OLD VALUES --}}
                                     @if (!empty($old))
                                         <div class="bg-red-50 border border-red-200 rounded-lg p-3">
-                                            <div class="text-xs font-semibold text-red-700 mb-1">
-                                                Sebelumnya
-                                            </div>
+                                            <div class="text-xs font-semibold text-red-700 mb-1">Sebelumnya</div>
                                             <ul class="text-xs text-red-800 space-y-1">
                                                 @foreach ($old as $key => $value)
-                                                    @if (in_array($key, $displayOnly))
-                                                        <li>
-                                                            <b>{{ ucfirst(str_replace('_', ' ', $key)) }}:</b>
-                                                            {{ is_array($value) ? json_encode($value) : $value }}
-                                                        </li>
-                                                    @endif
+                                                    <li>
+                                                        <b>{{ ucfirst(str_replace('_', ' ', $key)) }}:</b>
+                                                        {{ is_array($value) ? json_encode($value) : $value }}
+                                                    </li>
                                                 @endforeach
                                             </ul>
                                         </div>
                                     @endif
 
-                                    {{-- EMPTY --}}
-                                    @if (empty($attributes) && empty($old))
-                                        <div class="text-xs text-gray-400">
-                                            Tidak ada detail perubahan yang direkam.
-                                        </div>
+                                    {{-- NO DETAILS --}}
+                                    @if (empty($old) && empty($new))
+                                        <div class="text-xs text-gray-400">Tidak ada detail perubahan yang direkam.</div>
                                     @endif
 
                                 </div>
@@ -256,10 +228,88 @@
                     </div>
                 @endforelse
             </div>
-
-            <div class="mt-6">
-                {{ $logs->links() }}
-            </div>
         </div>
+
+        {{-- PAGINATION --}}
+        @if ($logs->hasPages())
+            <div
+                class="mt-6 px-6 py-5 border-t rounded-xl bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+
+                <div class="text-sm text-gray-600">
+                    Showing <span class="font-semibold text-gray-900">{{ $logs->firstItem() ?? 0 }}</span>
+                    to <span class="font-semibold text-gray-900">{{ $logs->lastItem() ?? 0 }}</span>
+                    of <span class="font-semibold text-gray-900">{{ $logs->total() }}</span> results
+                </div>
+
+                <div class="flex items-center space-x-1">
+                    {{-- Previous --}}
+                    @if ($logs->onFirstPage())
+                        <span class="px-3 py-2 rounded-xl bg-gray-100 text-gray-400 cursor-not-allowed">
+                            <i class="fas fa-chevron-left"></i>
+                        </span>
+                    @else
+                        <a href="{{ $logs->previousPageUrl() }}"
+                            class="px-3 py-2 rounded-xl bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    @endif
+
+                    {{-- Page Numbers --}}
+                    @php
+                        $current = $logs->currentPage();
+                        $last = $logs->lastPage();
+                        $start = max(1, $current - 2);
+                        $end = min($last, $current + 2);
+                    @endphp
+
+                    @if ($start > 1)
+                        <a href="{{ $logs->url(1) }}"
+                            class="px-3 py-2 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 transition">
+                            1
+                        </a>
+                        @if ($start > 2)
+                            <span class="px-2 text-gray-500">...</span>
+                        @endif
+                    @endif
+
+                    @for ($page = $start; $page <= $end; $page++)
+                        @if ($page == $current)
+                            <span class="px-4 py-2 rounded-xl bg-emerald-500 text-white font-semibold shadow">
+                                {{ $page }}
+                            </span>
+                        @else
+                            <a href="{{ $logs->url($page) }}"
+                                class="px-4 py-2 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 transition">
+                                {{ $page }}
+                            </a>
+                        @endif
+                    @endfor
+
+                    @if ($end < $last)
+                        @if ($end < $last - 1)
+                            <span class="px-2 text-gray-500">...</span>
+                        @endif
+                        <a href="{{ $logs->url($last) }}"
+                            class="px-3 py-2 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 transition">
+                            {{ $last }}
+                        </a>
+                    @endif
+
+                    {{-- Next --}}
+                    @if ($logs->hasMorePages())
+                        <a href="{{ $logs->nextPageUrl() }}"
+                            class="px-3 py-2 rounded-xl bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    @else
+                        <span class="px-3 py-2 rounded-xl bg-gray-100 text-gray-400 cursor-not-allowed">
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                    @endif
+                </div>
+
+            </div>
+        @endif
+
     </div>
 </x-app-layout>

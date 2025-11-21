@@ -178,18 +178,18 @@ class TaskController extends Controller
             'complated_at' => now(),
             'notes' => $request->notes,
         ]);
-        $completion->load('task');
+        // $completion->load('task');
 
         // 🔥 LOG MANUAL SUPAYA DETAIL LEBIH JELAS
-        activity('task_done')
-            ->performedOn($completion)
-            ->causedBy(auth()->user())
-            ->withProperties([
-                'task_title'   => $completion->task->title ?? null,
-                'notes'        => $completion->notes,
-                'complated_at' => $completion->complated_at,
-            ])
-        ->log('Task completion created');
+        // activity('task_done')
+        //     ->performedOn($completion)
+        //     ->causedBy(auth()->user())
+        //     ->withProperties([
+        //         'task_title'   => $completion->task->title ?? null,
+        //         'notes'        => $completion->notes,
+        //         'complated_at' => $completion->complated_at,
+        //     ])
+        // ->log('Task completion created');
 
         return back()->with('success', 'Task Complated');
     }

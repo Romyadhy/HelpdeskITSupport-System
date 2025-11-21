@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\logActivity;
 use App\Models\Ticket;
 use App\Models\TicketCategory;
 use App\Models\TicketLocation;
@@ -22,8 +23,7 @@ class TicketController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%$search%")
-                    ->orWhere('description', 'like', "%$search%");
+                $q->where('title', 'like', "%$search%")->orWhere('description', 'like', "%$search%");
             });
         }
 
@@ -59,8 +59,6 @@ class TicketController extends Controller
         ]);
     }
 
-
-
     public function create()
     {
         $categories = TicketCategory::where('is_active', true)->get();
@@ -68,8 +66,6 @@ class TicketController extends Controller
 
         return view('frontend.Tickets.create', compact('categories', 'locations'));
     }
-
-
 
     public function store(Request $request): RedirectResponse
     {
@@ -92,25 +88,20 @@ class TicketController extends Controller
                 'status' => 'Open',
             ]);
 
-            // === Activity Log ===
-        //    activity('ticket')
-        //     ->performedOn($ticket)
-        //     ->causedBy(auth()->user())
-        //     ->withProperties($validated)
-        //     ->log('Ticket dibuat');
+            // Log
+            logActivity::add('ticket', 'created', $ticket, 'Ticket dibuat', [
+                'new' => [
+                    'title' => $ticket->title,
+                    'priority' => $ticket->priority,
+                    'status' => $ticket->status,
+                ],
+            ]);
 
             // Telegram notification
             $ticket->load(['category', 'location']);
             $telegram = app(TelegramService::class);
 
-            $message =
-                "📩 <b>Ticket Baru Masuk</b>\n" .
-                "Judul     : {$ticket->title}\n" .
-                "Prioritas : {$ticket->priority}\n" .
-                "Kategori  : {$ticket->category->name}\n" .
-                "Lokasi    : {$ticket->location->name}\n" .
-                'Dari      : ' . auth()->user()->name . "\n\n" .
-                'Silakan mengecek detailnya pada sistem 😊';
+            $message = "📩 <b>Ticket Baru Masuk</b>\n" . "Judul     : {$ticket->title}\n" . "Prioritas : {$ticket->priority}\n" . "Kategori  : {$ticket->category->name}\n" . "Lokasi    : {$ticket->location->name}\n" . 'Dari      : ' . auth()->user()->name . "\n\n" . 'Silakan mengecek detailnya pada sistem 😊';
 
             $telegram->sendMessage($message);
 
@@ -120,8 +111,6 @@ class TicketController extends Controller
             return back()->withErrors('An error occurred while creating the ticket.');
         }
     }
-
-
 
     public function edit(Ticket $ticket)
     {
@@ -136,8 +125,6 @@ class TicketController extends Controller
 
         return view('frontend.Tickets.edit', compact('ticket', 'categories', 'locations'));
     }
-
-
 
     public function update(Request $request, Ticket $ticket): RedirectResponse
     {
@@ -156,23 +143,26 @@ class TicketController extends Controller
                 'location_id' => 'required|exists:ticket_locations,id',
             ]);
 
+            //old value
+            $old = $ticket->only(['title', 'description', 'priority', 'category_id', 'location_id', 'status']);
+
             $ticket->update($validated);
 
-            // === Activity Log ===
-            // activity('ticket')
-            //     ->performedOn($ticket)
-            //     ->causedBy($user)
-            //     ->withProperties($validated)
-            //     ->log('Ticket diperbarui');
+            $new = $ticket->only(['title', 'description', 'priority', 'category_id', 'location_id', 'status']);
 
+            // Log
+            logActivity::add('ticket', 'updated', $ticket, 'Ticket diperbarui', [
+                'old' => $old,
+                'new' => $new,
+            ]);
+
+            
             return redirect()->route('tickets.index')->with('success', 'Ticket updated successfully.');
         } catch (Exception $e) {
             Log::error('Error updating ticket: ' . $e->getMessage());
             return back()->withErrors('Error updating ticket.');
         }
     }
-
-
 
     public function show(Ticket $ticket)
     {
@@ -188,8 +178,6 @@ class TicketController extends Controller
         return view('frontend.Tickets.show', compact('ticket', 'categoryName', 'locationName'));
     }
 
-
-
     public function destroy(Ticket $ticket)
     {
         $user = Auth::user();
@@ -200,16 +188,13 @@ class TicketController extends Controller
 
         $ticket->delete();
 
-        // === Activity Log ===
-        // activity('ticket')
-        //     ->performedOn($ticket)
-        //     ->causedBy($user)
-        //     ->log('Ticket dihapus');
+        //Log
+        logActivity::add('ticket', 'deleted', $ticket, 'Ticket dihapus', [
+            'old' => $ticket->getOriginal(),
+        ]);
 
         return redirect()->route('tickets.index')->with('success', 'Ticket deleted successfully.');
     }
-
-
 
     // IT Support start
     public function start(Request $request, Ticket $ticket): RedirectResponse
@@ -224,17 +209,20 @@ class TicketController extends Controller
             'assigned_to' => auth()->id(),
         ]);
 
-        // // === Activity Log ===
-        // activity('ticket')
-        //     ->performedOn($ticket)
-        //     ->causedBy(auth()->user())
-        //     ->withProperties(['status' => 'In Progress'])
-        //     ->log('Ticket mulai ditangani IT Support');
+        //Log
+        logActivity::add('ticket', 'start', $ticket, 'Ticket mulai ditangani', [
+            'old' => [
+                'status' => 'Open',
+                'assigned_to' => null,
+            ],
+            'new' => [
+                'status' => 'In Progress',
+                'assigned_to' => auth()->id()
+            ],
+        ]);
 
         return redirect()->route('tickets.index')->with('success', 'Ticket started successfully.');
     }
-
-
 
     public function takeOver($id)
     {
@@ -246,19 +234,22 @@ class TicketController extends Controller
                     'assigned_to' => auth()->id(),
                 ]);
 
-                // === Activity Log ===
-                // activity('ticket')
-                //     ->performedOn($ticket)
-                //     ->causedBy(auth()->user())
-                //     ->withProperties(['assigned_to' => auth()->id()])
-                //     ->log('Ticket diambil alih oleh IT Support lain');
+                //Log
+                logActivity::add('ticket', 'takeover', $ticket, 'Ticket di take over', [
+                    'old'=> [
+                        'assigned_to' => $ticket->assigned_to,
+                        'status' => $ticket->status,
+                    ],
+                    'new' => [
+                        'assigned_to' => auth()->id(),
+                        'status' => $ticket->status,
+                    ],
+                ]);
 
                 return redirect()->route('tickets.index')->with('success', 'You have taken over the ticket.');
             }
         }
     }
-
-
 
     public function close(Request $request, Ticket $ticket): RedirectResponse
     {
@@ -281,20 +272,18 @@ class TicketController extends Controller
             'duration' => $duration,
         ]);
 
-        // === Activity Log ===
-        // activity('ticket')
-        //     ->performedOn($ticket)
-        //     ->causedBy(auth()->user())
-        //     ->withProperties([
-        //         'solution' => $data['solution'],
-        //         'duration' => $duration,
-        //     ])
-        //     ->log('Ticket ditutup');
+        //Log
+        logActivity::add('ticket', 'close', $ticket, 'Ticket diselesaikan', [
+            'new' => [
+                'status' => 'Closed',
+                'solution' => $ticket->solution,
+                'solved_by' => auth()->id(),
+                'duration' => $duration,
+            ],
+        ]);
 
         return redirect()->route('tickets.index')->with('success', 'Ticket closed successfully.');
     }
-
-
 
     public function escalate(Request $request, Ticket $ticket): RedirectResponse
     {
@@ -315,25 +304,26 @@ class TicketController extends Controller
             'assigned_to' => null,
         ]);
 
-        // === Activity Log ===
-        // activity('ticket')
-        //     ->performedOn($ticket)
-        //     ->causedBy($user)
-        //     ->withProperties(['is_escalation' => true])
-        //     ->log('Ticket dieskalasi ke Admin');
+        // Log
+        logActivity::add('ticket', 'escalate', $ticket, 'Ticket dieskalasi', [
+            'old'=>[
+                'is_escalation' => false,
+                'status' => 'In Progress',
+                'assigned_to' => $ticket->assigned_to,
+            ],
+            'new'=>[
+                'is_escalation' => true,
+                'status' => 'In Progress',
+                'assigned_to' => null,
+            ],
+        ]);
 
         // Telegram
         try {
             $ticket->load(['category', 'location', 'user']);
             $telegram = app(TelegramService::class);
 
-            $message =
-                "⚠️ <b>Ticket DIESKALASIKAN</b>\n" .
-                "Judul     : {$ticket->title}\n" .
-                "Prioritas : {$ticket->priority}\n" .
-                "Dari      : {$ticket->user->name}\n" .
-                'Eskalasi Oleh: ' . $user->name . "\n\n" .
-                '🛠️ <i>Tiket ini memerlukan perhatian admin untuk tindak lanjut.</i>';
+            $message = "⚠️ <b>Ticket DIESKALASIKAN</b>\n" . "Judul     : {$ticket->title}\n" . "Prioritas : {$ticket->priority}\n" . "Dari      : {$ticket->user->name}\n" . 'Eskalasi Oleh: ' . $user->name . "\n\n" . '🛠️ <i>Tiket ini memerlukan perhatian admin untuk tindak lanjut.</i>';
 
             $telegram->sendMessage($message);
         } catch (Exception $e) {
@@ -342,8 +332,6 @@ class TicketController extends Controller
 
         return redirect()->route('tickets.index')->with('success', 'Ticket escalated and notification sent.');
     }
-
-
 
     public function handleEscalated(Ticket $ticket): RedirectResponse
     {
@@ -355,17 +343,20 @@ class TicketController extends Controller
             'is_escalation' => false,
         ]);
 
-        // === Activity Log ===
-        // activity('ticket')
-        //     ->performedOn($ticket)
-        //     ->causedBy($user)
-        //     ->withProperties(['assigned_to' => $user->id])
-        //     ->log('Admin menangani tiket eskalasi');
+        //Log
+        logActivity::add('ticket', 'handle-escalated', $ticket, 'Ticket eskalasi ditangani oleh Admin', [
+            'old' => [
+                'is_escalation' => true,
+                'assigned_to' => null,
+            ],
+            'new' => [
+                'is_escalation' => false,
+                'assigned_to' => $user->id,
+            ],
+        ]);
 
         return redirect()->route('tickets.index')->with('success', 'Escalated ticket now handled by Admin.');
     }
-
-
 
     public function cancel(Ticket $ticket)
     {
@@ -378,12 +369,17 @@ class TicketController extends Controller
             'assigned_to' => null,
         ]);
 
-        // === Activity Log ===
-        // activity('ticket')
-        //     ->performedOn($ticket)
-        //     ->causedBy(auth()->user())
-        //     ->withProperties(['status' => 'Open'])
-        //     ->log('Ticket dibatalkan oleh IT Support & dibuka kembali');
+        // Log
+        logActivity::add('ticket', 'cancel', $ticket, 'Ticket ditunda', [
+            'old' => [
+                'status' => 'In Progress',
+                'assigned_to' => $ticket->assigned_to,
+            ],
+            'new' => [
+                'status' => 'Open',
+                'assigned_to' => null,
+            ],
+        ]);
 
         return redirect()->route('tickets.index')->with('success', 'Ticket has been released.');
     }
