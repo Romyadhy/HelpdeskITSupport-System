@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Ticket extends Model
 {
     use HasFactory;
+    // use LogsActivity;
 
     protected $fillable = [
         'title',
@@ -83,4 +84,13 @@ class Ticket extends Model
     {
         return $this->belongsToMany(DailyReport::class, 'daily_report_tickets');
     }
+
+    // log
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //         ->useLogName('ticket')
+    //         ->logAll()
+    //         ->logOnlyDirty();
+    // }
 }

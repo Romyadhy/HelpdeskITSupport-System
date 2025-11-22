@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class MonthlyReport extends Model
 {
     use HasFactory;
+    // use LogsActivity;
+
     protected $table = 'monthly_reports';
     protected $fillable = [
         'user_id', 
@@ -65,4 +67,12 @@ class MonthlyReport extends Model
     {
         return $query->whereIn('status', ['Draft', 'Pending Verification']);
     }
+
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //         ->logAll()
+    //         ->logOnlyDirty()
+    //         ->useLogName('report_monthly');
+    // }
 }

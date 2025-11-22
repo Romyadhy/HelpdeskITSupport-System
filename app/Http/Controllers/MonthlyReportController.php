@@ -7,6 +7,7 @@ use App\Models\DailyReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Spatie\LaravelPdf\Facades\Pdf;
+use App\Helpers\logActivity;
 
 class MonthlyReportController extends Controller
 {
@@ -103,8 +104,13 @@ class MonthlyReportController extends Controller
             'daily_report_ids' => array_values($pickedIds),
             //ini kalo misal mau matikan dan aktifkan verif
             'status' => 'Verified',
-            'verified_by' => Auth::id(),
             'verified_at' => now(),
+        ]);
+
+        // Log
+        logActivity::add('monthly_report', 'created', $monthly, 'Laporan bulanan dibuat', [
+            'new' => $monthly->toArray(),
+            'created_at_wita' => now()->setTimezone('Asia/Makassar')->toDateTimeString(),
         ]);
 
         return redirect()
@@ -160,6 +166,8 @@ class MonthlyReportController extends Controller
             ->with(['tasks', 'tickets'])
             ->get();
 
+        $old = $report->toArray();
+
         $report->update([
             'content' => $validated['content'],
             'daily_report_ids' => $dailyReportIds,
@@ -167,6 +175,15 @@ class MonthlyReportController extends Controller
             'total_tasks' => $dailyReports->flatMap->tasks->count(),
             'total_tickets' => $dailyReports->flatMap->tickets->count(),
             'status' => 'Verified',
+        ]);
+
+        $new = $report->toArray();
+
+        // Log
+        logActivity::add('monthly_report', 'updated', $report, 'Laporan bulanan diperbarui', [
+            'old' => $old,
+            'new' => $new,
+            'updated_at_wita' => now()->setTimezone('Asia/Makassar')->toDateTimeString(),
         ]);
 
         return redirect()->route('reports.monthly.show', $report->id)->with('success', 'Laporan bulanan berhasil diperbarui.');
@@ -194,7 +211,14 @@ class MonthlyReportController extends Controller
     public function destroy($id)
     {
         $report = MonthlyReport::findOrFail($id);
+        $old = $report->toArray();
         $report->delete();
+
+        // Log
+        logActivity::add('monthly_report', 'deleted', $report, 'Laporan bulanan dihapus', [
+            'old' => $old,
+            'deleted_at_wita' => now()->setTimezone('Asia/Makassar')->toDateTimeString(),
+        ]);
 
         return redirect()->route('reports.monthly')->with('success', 'Laporan bulanan berhasil dihapus.');
     }
@@ -215,6 +239,14 @@ class MonthlyReportController extends Controller
                 ->orderBy('report_date')
                 ->get();
         }
+
+        // Log
+        logActivity::add('monthly_report', 'exported', $report, 'Laporan bulanan diexport ke PDF', [
+            'new' => [
+                'exported_by' => auth()->user()->name,
+                'exported_at' => now()->setTimezone('Asia/Makassar')->toDateTimeString(),
+            ]
+        ]);
 
         return Pdf::view('pdf.monthly-report', [
                 'report'       => $report,

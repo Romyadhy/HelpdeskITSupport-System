@@ -6,6 +6,7 @@ use App\Models\DailyReport;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -19,27 +20,59 @@ class DashboardController extends Controller
          * ========================
          */
         if ($user->hasRole('admin')) {
+
+            // --- Tiket terbaru (untuk tabel) ---
+            // $tickets = Ticket::with(['user', 'category'])
+            //     ->latest()
+            //     ->take(5)
+            //     ->get();
             $tickets = Ticket::select('tickets.*', 'ticket_categories.name as category_name')
-                ->leftJoin('ticket_categories', 'tickets.category_id', '=', 'ticket_categories.id')
-                ->with('user')
-                ->latest()
-                ->take(5)
+                ->leftJoin('ticket_categories', 'tickets.category_id', '=', 'ticket_categories.id') 
+                ->with('user') 
+                ->latest() 
+                ->take(5) 
                 ->get();
 
-            $totalTickets = Ticket::count();
-            $closedTickets = Ticket::where('status', 'Closed')->count();
-            $pendingTickets = Ticket::where('status', 'In Progress')->count();
-            $openTickets = Ticket::where('status', 'Open')->count();
-            $totalUsers = User::count();
 
-            // SLA per kategori (rata-rata durasi)
+   
+            // --- KPI utama ---
+            $totalTickets   = Ticket::count();
+            $closedTickets  = Ticket::where('status', 'Closed')->count();
+            $pendingTickets = Ticket::where('status', 'In Progress')->count();
+            $openTickets    = Ticket::where('status', 'Open')->count();
+            $totalUsers     = User::count();
+
+            // --- SLA per kategori (rata-rata durasi dalam menit) ---
             $slaData = Ticket::selectRaw('category_id, AVG(duration) as avg_duration')
                 ->groupBy('category_id')
                 ->with('category')
                 ->get();
 
             $slaCategories = $slaData->map(fn ($t) => $t->category->name ?? 'Unknown');
-            $slaDurations = $slaData->map(fn ($t) => round($t->avg_duration, 2));
+            $slaDurations  = $slaData->map(fn ($t) => round($t->avg_duration ?? 0, 2));
+
+            // Rata-rata SLA keseluruhan (menit -> hari/jam/menit)
+            $avgSlaMinutes   = (int) round($slaDurations->avg() ?? 0);
+            $avgSlaFormatted = $this->formatDuration($avgSlaMinutes);
+
+            // --- Ticket Trend 30 hari terakhir ---
+            $trendData = Ticket::selectRaw("
+                    DATE(created_at) as date,
+                    COUNT(*) as total_created,
+                    SUM(CASE WHEN status = 'Closed' THEN 1 ELSE 0 END) as total_closed
+                ")
+                ->where('created_at', '>=', Carbon::now()->subDays(30))
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+
+            // label tanggal dibuat lebih enak dibaca (mis: 01 Nov)
+            $trendLabels  = $trendData->pluck('date')->map(function ($date) {
+                return Carbon::parse($date)->format('d M');
+            });
+
+            $trendCreated = $trendData->pluck('total_created');
+            $trendClosed  = $trendData->pluck('total_closed');
 
             return view('frontend.Dashbord.admindashboard', compact(
                 'tickets',
@@ -49,7 +82,12 @@ class DashboardController extends Controller
                 'openTickets',
                 'totalUsers',
                 'slaCategories',
-                'slaDurations'
+                'slaDurations',
+                'avgSlaMinutes',
+                'avgSlaFormatted',
+                'trendLabels',
+                'trendCreated',
+                'trendClosed'
             ));
         }
 
@@ -60,25 +98,25 @@ class DashboardController extends Controller
          */
         if ($user->hasRole('manager')) {
             $tickets = Ticket::select('tickets.*', 'ticket_categories.name as category_name')
-                ->leftJoin('ticket_categories', 'tickets.category_id', '=', 'ticket_categories.id')
-                ->with('user')
-                ->latest()
-                ->take(5)
+                ->leftJoin('ticket_categories', 'tickets.category_id', '=', 'ticket_categories.id') 
+                ->with('user') 
+                ->latest() 
+                ->take(5) 
                 ->get();
 
-            $totalTickets = Ticket::count();
-            $closedTickets = Ticket::where('status', 'Closed')->count();
+            $totalTickets   = Ticket::count();
+            $closedTickets  = Ticket::where('status', 'Closed')->count();
             $pendingTickets = Ticket::where('status', 'In Progress')->count();
-            $openTickets = Ticket::where('status', 'Open')->count();
+            $openTickets    = Ticket::where('status', 'Open')->count();
 
-            // SLA Statistik
+            // SLA Statistik (kalau mau pakai juga tinggal pakai formatDuration di blade)
             $slaData = Ticket::selectRaw('category_id, AVG(duration) as avg_duration')
                 ->groupBy('category_id')
                 ->with('category')
                 ->get();
 
             $slaCategories = $slaData->map(fn ($t) => $t->category->name ?? 'Unknown');
-            $slaDurations = $slaData->map(fn ($t) => round($t->avg_duration, 2));
+            $slaDurations  = $slaData->map(fn ($t) => round($t->avg_duration ?? 0, 2));
 
             return view('frontend.Dashbord.menagerdashboard', compact(
                 'tickets',
@@ -97,22 +135,18 @@ class DashboardController extends Controller
          * ========================
          */
         if ($user->hasRole('support')) {
-            // Ambil semua tiket yang ditugaskan ke user
             $assignedTickets = Ticket::select('tickets.*', 'ticket_categories.name as category_name')
                 ->leftJoin('ticket_categories', 'tickets.category_id', '=', 'ticket_categories.id')
                 ->latest()
                 ->with('user')
+                ->take(5)
                 ->get();
 
-            // Statistik tiket
-            $openTickets = $assignedTickets->where('status', 'Open')->count();
-            $inProgressTickets = $assignedTickets->where('status', 'In Progress')->count();
-            $closedTickets = $assignedTickets->where('status', 'Closed')->count();
+            $openTickets        = Ticket::where('status', 'Open')->count();
+            $inProgressTickets  = Ticket::where('status', 'In Progress')->count();
+            $closedTickets      = Ticket::where('status', 'Closed')->count();
+            $todayTickets       = Ticket::where('created_at', '>=', now()->startOfDay())->count();
 
-            // Tiket yang dibuat hari ini
-            $todayTickets = $assignedTickets->where('created_at', '>=', now()->startOfDay())->count();
-
-            // Laporan harian user
             $myReports = DailyReport::where('user_id', $user->id)
                 ->orderByDesc('created_at')
                 ->take(5)
@@ -134,16 +168,20 @@ class DashboardController extends Controller
          * ========================
          */
         if ($user->hasRole('user')) {
+
             $userTickets = Ticket::where('user_id', $user->id)
                 ->latest()
                 ->get();
 
-            $openTicketsCount = $userTickets->where('status', 'Open')->count();
-            $inProgressTicketsCount = $userTickets->where('status', 'In Progress')->count();
-            $closedTicketsCount = $userTickets->where('status', 'Closed')->count();
+            $openTicketsCount        = $userTickets->where('status', 'Open')->count();
+            $inProgressTicketsCount  = $userTickets->where('status', 'In Progress')->count();
+            $closedTicketsCount      = $userTickets->where('status', 'Closed')->count();
+
+            $recentTickets = $userTickets->take(3);
 
             return view('frontend.Dashbord.userdahboard', compact(
                 'userTickets',
+                'recentTickets',
                 'openTicketsCount',
                 'inProgressTicketsCount',
                 'closedTicketsCount'
@@ -156,5 +194,42 @@ class DashboardController extends Controller
          * ========================
          */
         abort(403, 'Unauthorized');
+    }
+
+    /**
+     * Format durasi (menit) menjadi teks yang lebih manusiawi.
+     * Contoh:
+     *  - 45  -> "45 menit"
+     *  - 130 -> "2 jam 10 menit"
+     *  - 1600 -> "1 hari 2 jam 40 menit"
+     */
+    private function formatDuration($minutes): string
+    {
+        $minutes = (int) round($minutes);
+
+        if ($minutes <= 0) {
+            return '0 menit';
+        }
+
+        $minutesInDay = 60 * 24;
+
+        $days  = intdiv($minutes, $minutesInDay);
+        $hours = intdiv($minutes % $minutesInDay, 60);
+        $mins  = $minutes % 60;
+
+        $parts = [];
+
+        if ($days > 0) {
+            $parts[] = $days . ' hari';
+        }
+        if ($hours > 0) {
+            $parts[] = $hours . ' jam';
+        }
+        if ($mins > 0 && $days === 0) {
+            // kalau sudah ada hari, biasanya jam sudah cukup informatif
+            $parts[] = $mins . ' menit';
+        }
+
+        return implode(' ', $parts);
     }
 }

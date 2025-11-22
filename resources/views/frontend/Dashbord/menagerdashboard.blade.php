@@ -91,8 +91,8 @@
                                     <td class="px-4 py-2">
                                         <span
                                             class="px-3 py-1 text-xs font-semibold rounded-full
-                                            @if ($ticket->status === 'closed') bg-green-100 text-green-700
-                                            @elseif($ticket->status === 'pending') bg-yellow-100 text-yellow-700
+                                            @if ($ticket->status === 'Closed') bg-green-100 text-green-700
+                                            @elseif($ticket->status === 'In Progress') bg-yellow-100 text-yellow-700
                                             @else bg-gray-100 text-gray-700 @endif">
                                             {{ ucfirst($ticket->status) }}
                                         </span>

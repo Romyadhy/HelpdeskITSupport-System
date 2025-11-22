@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
 class DailyReport extends Model
 {
     use HasFactory;
+    // use LogsActivity;
 
     protected $table = 'daily_reports';
 
@@ -43,4 +45,12 @@ class DailyReport extends Model
     {
         return $this->belongsToMany(Ticket::class, 'daily_report_tickets');
     }
+
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //         ->logAll()
+    //         ->logOnlyDirty()
+    //         ->useLogName('report_daily');
+    // }
 }

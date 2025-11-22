@@ -9,37 +9,10 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use App\Helpers\logActivity;
 
 class TaskController extends Controller
 {
-    // public function index()
-    // {
-    //     // Logic to list tasks
-    //     // $dailyTasks = Task::where('frequency', 'daily')->get();
-    //     // $monthlyTasks = Task::where('frequency', 'monthly')->get();
-
-    //     // return view('frontend.Tasks.index', compact('dailyTasks', 'monthlyTasks'));
-
-    //     Gate::authorize('view-tasks');
-
-    //     $dailyTasks = Task::where('frequency', 'daily')->get();
-    //     $monthlyTasks = Task::where('frequency', 'monthly')->get();
-
-    //     $completedTodayIds = TaskCompletion::where('user_id', auth()->id())
-    //         ->whereDate('complated_at', today())
-    //         ->pluck('task_id')
-    //         ->toArray();
-
-    //     $complatedMonthly = TaskCompletion::where('user_id', auth()->id())
-    //         // ->whereDate('complate_at', monthly())
-    //         ->whereMonth('complated_at', now()->month)
-    //         ->whereYear('complated_at', now()->year)
-    //         ->pluck('task_id')
-    //         ->toArray();
-
-    //     return view('frontend.Tasks.index', compact('dailyTasks', 'monthlyTasks',  'completedTodayIds', 'complatedMonthly'));
-    // }
-
     public function daily()
     {
         // $tasks = Task::where('frequency', 'daily')->orderBy('title')->get()->where('is_active', true);
@@ -64,11 +37,6 @@ class TaskController extends Controller
 
     public function monthly()
     {
-        // $tasks = Task::where('frequency', 'monthly')
-        //     ->orderBy('title')
-        //     ->where('is_active', true)
-        //     ->get();
-
         $isAdmin = auth()->user()->hasRole('admin');
 
         $tasksQuery = Task::where('frequency', 'monthly')->orderBy('title');
@@ -115,11 +83,16 @@ class TaskController extends Controller
                 'is_active' => 'nullable|boolean',
             ]);
 
-            Task::create([
+            $task = Task::create([
                 'title' => $validated['title'],
                 'description' => $validated['description'],
                 'frequency' => $validated['frequency'],
                 'is_active' => $validated['is_active'],
+            ]);
+
+            // Log
+            logActivity::add('task', 'created', $task, 'Task dibuat', [
+                'new' => $task->toArray(),
             ]);
 
             return redirect()->route('tasks.daily')->with('success', 'Task created successfully');
@@ -148,7 +121,17 @@ class TaskController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
+        $old = $task->only(['title', 'description', 'frequency', 'is_active']);
+
         $task->update($validated);
+
+        $new = $task->only(['title', 'description', 'frequency', 'is_active']);
+
+        // Log
+        logActivity::add('task', 'updated', $task, 'Task diperbarui', [
+            'old' => $old,
+            'new' => $new,
+        ]);
 
         return redirect()->route('tasks.show', $task->id)->with('success', 'Task updated successfully!');
     }
@@ -156,7 +139,13 @@ class TaskController extends Controller
     public function destroy(Task $task)
     {
         // Logic to delete a task
+        $old = $task->toArray();
         $task->delete();
+
+        // Log
+        logActivity::add('task', 'deleted', $task, 'Task dihapus', [
+            'old' => $old,
+        ]);
 
         return redirect()->route('tasks.daily')->with('success', 'Task deleted successfully!');
     }
@@ -172,11 +161,27 @@ class TaskController extends Controller
             return back()->with('error', 'task is already complated');
         }
 
-        TaskCompletion::create([
+        $completion = TaskCompletion::create([
             'task_id' => $task->id,
             'user_id' => auth()->id(),
             'complated_at' => now(),
             'notes' => $request->notes,
+        ]);
+
+        // Log
+        logActivity::add('task', 'completed', $task, 'Task diselesaikan', [
+            'new' => [
+                'task_title' => $task->title,
+                'completion_id' => $completion->id,
+                // 'notes' => $completion->notes,
+                'completed_at' => $completion->complated_at,
+                'completed_by' => auth()->user()->name,
+            ],
+
+            'old' => [
+                'task_title' => $task->title,
+                'task_frequency' => $task->frequency,
+            ],
         ]);
 
         return back()->with('success', 'Task Complated');

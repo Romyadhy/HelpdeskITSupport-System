@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Spatie\LaravelPdf\Facades\Pdf;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use App\Helpers\logActivity;
 
 class HandbookController extends Controller
 {
@@ -53,12 +54,18 @@ class HandbookController extends Controller
             $filePath = $request->file('file')->storeAs('handbooks', $fileName, 'public');
         }
 
-        Handbook::create([
+        $handbook = Handbook::create([
             'title' => $request->title,
             'description' => $request->description,
             'category' => $request->category,
             'uploaded_by' => Auth::id(),
             'file_path' => $filePath,
+        ]);
+
+        // Log
+        logActivity::add('handbook', 'created', $handbook, 'Handbook dibuat', [
+            'new' => $handbook->toArray(),
+            'created_at_wita' => now()->setTimezone('Asia/Makassar')->toDateTimeString(),
         ]);
 
         return redirect()->route('handbook.index')->with('success', 'Handbook berhasil ditambahkan');
@@ -92,14 +99,33 @@ class HandbookController extends Controller
             $validated['file_path'] = $filePath;
         }
 
+        $old = $handbook->toArray();
+
         $handbook->update($validated);
+
+        $new = $handbook->toArray();
+
+        // Log
+        logActivity::add('handbook', 'updated', $handbook, 'Handbook diperbarui', [
+            'old' => $old,
+            'new' => $new,
+            'updated_at_wita' => now()->setTimezone('Asia/Makassar')->toDateTimeString(),
+        ]);
 
         return redirect()->route('handbook.index')->with('success', 'Handbook berhasil diperbarui!');
     }
 
     public function destroy(Handbook $handbook)
     {
+        $old = $handbook->toArray();
         $handbook->delete();
+
+        // Log
+        logActivity::add('handbook', 'deleted', $handbook, 'Handbook dihapus', [
+            'old' => $old,
+            'deleted_at_wita' => now()->setTimezone('Asia/Makassar')->toDateTimeString(),
+        ]);
+
         return redirect()->route('handbook.index')->with('success', 'Handbook berhasil dihapus!');
     }
 
@@ -124,6 +150,14 @@ class HandbookController extends Controller
         if (!$handbook->file_path || !Storage::disk('public')->exists($handbook->file_path)) {
             return back()->with('error', 'File PDF tidak ditemukan.');
         }
+
+        // Log
+        logActivity::add('handbook', 'downloaded', $handbook, 'Handbook diunduh', [
+            'new' => [
+                'downloaded_by' => auth()->user()->name,
+                'downloaded_at' => now()->setTimezone('Asia/Makassar')->toDateTimeString(),
+            ]
+        ]);
 
         return response()->download(storage_path('app/public/' . $handbook->file_path));
     }

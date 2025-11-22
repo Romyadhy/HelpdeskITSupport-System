@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class TaskCompletion extends Model
 {
     use HasFactory;
+    // use LogsActivity;
     // protected $table = 'task_completions';
     protected $fillable = [
         'task_id',
@@ -28,4 +29,22 @@ class TaskCompletion extends Model
     public function user() :BelongsTo  {
         return $this->belongsTo(User::class);
     }
+
+    //  public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //         // supaya properties->attributes berisi kolom yang kita butuhkan saja
+    //         ->logOnly([
+    //             'task_id',
+    //             'user_id',
+    //             'complated_at',
+    //             'notes',
+    //         ])
+    //         ->logOnlyDirty()
+    //         ->useLogName('task_done')
+    //         ->setDescriptionForEvent(function ($eventName) {
+    //             return "Task completion {$eventName}";
+    //         });
+    // }
+
 }
