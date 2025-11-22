@@ -49,13 +49,20 @@ class TicketController extends Controller
             $query->where('user_id', $user->id);
         }
 
-        $tickets = $query->orderBy('created_at', 'desc')->paginate(10);
+        // Sort by date filter
+        if ($request->sort === 'oldest') {
+            $query->orderBy('created_at', 'asc');
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $tickets = $query->paginate(10);
         $tickets->appends($request->query());
 
         return view('frontend.Tickets.tickets', [
             'tickets' => $tickets,
             'search' => $request->search,
-            'filters' => $request->only(['status', 'priority', 'category']),
+            'filters' => $request->only(['status', 'priority', 'category', 'sort']),
         ]);
     }
 

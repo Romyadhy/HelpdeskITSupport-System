@@ -142,10 +142,10 @@ class DashboardController extends Controller
                 ->take(5)
                 ->get();
 
-            $openTickets        = $assignedTickets->where('status', 'Open')->count();
-            $inProgressTickets  = $assignedTickets->where('status', 'In Progress')->count();
-            $closedTickets      = $assignedTickets->where('status', 'Closed')->count();
-            $todayTickets       = $assignedTickets->where('created_at', '>=', now()->startOfDay())->count();
+            $openTickets        = Ticket::where('status', 'Open')->count();
+            $inProgressTickets  = Ticket::where('status', 'In Progress')->count();
+            $closedTickets      = Ticket::where('status', 'Closed')->count();
+            $todayTickets       = Ticket::where('created_at', '>=', now()->startOfDay())->count();
 
             $myReports = DailyReport::where('user_id', $user->id)
                 ->orderByDesc('created_at')

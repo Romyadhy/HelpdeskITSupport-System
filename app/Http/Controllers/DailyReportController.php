@@ -9,6 +9,7 @@ use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Spatie\LaravelPdf\Facades\Pdf;
+use App\Helpers\logActivity;
 
 class DailyReportController extends Controller
 {
@@ -100,8 +101,7 @@ class DailyReportController extends Controller
             ->orderBy('title')
             ->get();
 
-        $ticketsClosedToday = Ticket::where('assigned_to', $user->id)
-            ->where('status', 'Closed')
+        $ticketsClosedToday = Ticket::where('status', 'Closed')
             ->whereDate('solved_at', $today)
             ->orderBy('updated_at', 'desc')
             ->get();
@@ -155,8 +155,7 @@ class DailyReportController extends Controller
         }
 
         if (empty($ticketIds)) {
-            $idsClosed = Ticket::where('assigned_to', $user->id)
-                ->where('status', 'Closed')
+            $idsClosed = Ticket::where('status', 'Closed')
                 ->whereDate('solved_at', $today)
                 ->pluck('id');
 
@@ -189,6 +188,12 @@ class DailyReportController extends Controller
 
         $telegram->sendMessage($text);
 
+        // Log
+        logActivity::add('daily_report', 'created', $report, 'Laporan harian dibuat', [
+            'new' => $report->toArray(),
+            'created_at_wita' => now()->setTimezone('Asia/Makassar')->toDateTimeString(),
+        ]);
+
         return redirect()->route('reports.daily')->with('success', 'Laporan harian berhasil dikirim.');
     }
 
@@ -217,6 +222,19 @@ class DailyReportController extends Controller
 
         $telegram->sendMessage($text);
 
+        // Log
+        logActivity::add('daily_report', 'verified', $report, 'Laporan harian diverifikasi', [
+            'old' => [
+                'verified_by' => null,
+                'verified_at' => null,
+            ],
+            'new' => [
+                'verified_by' => Auth::id(),
+                'verified_at' => now(),
+            ],
+            'verified_at_wita' => now()->setTimezone('Asia/Makassar')->toDateTimeString(),
+        ]);
+
         return redirect()->back()->with('success', 'Laporan berhasil diverifikasi.');
     }
 
@@ -233,6 +251,14 @@ class DailyReportController extends Controller
         if (!$user->hasRole(['admin', 'manager']) && $report->user_id !== $user->id) {
             abort(403, 'Unauthorized to export this report');
         }
+
+        // Log
+        logActivity::add('daily_report', 'exported', $report, 'Laporan harian diexport ke PDF', [
+            'new' => [
+                'exported_by' => auth()->user()->name,
+                'exported_at' => now()->setTimezone('Asia/Makassar')->toDateTimeString(),
+            ],
+        ]);
 
         return Pdf::view('pdf.daily-report', [
             'report' => $report,

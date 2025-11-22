@@ -88,6 +88,12 @@
                             'escalate' => 'Dieskalasi',
                             'cancel' => 'Dibatalkan',
                             'handle-escalated' => 'Tangani Eskalasi',
+                            'completed' => 'Task Selesai',
+                            'verified' => 'Diverifikasi',
+                            'exported' => 'Export PDF',
+                            'downloaded' => 'Diunduh',
+                            'login' => 'Login',
+                            'logout' => 'Logout',
                         ];
 
                         $eventLabel = $eventLabels[$log->event] ?? ucfirst($log->event ?? 'Aktivitas');
@@ -103,6 +109,12 @@
                             'escalate' => ['icon' => 'fa-arrow-up', 'bg' => 'bg-orange-100 text-orange-700'],
                             'cancel' => ['icon' => 'fa-xmark', 'bg' => 'bg-gray-200 text-gray-700'],
                             'handle-escalated' => ['icon' => 'fa-user-shield', 'bg' => 'bg-teal-100 text-teal-700'],
+                            'completed' => ['icon' => 'fa-check', 'bg' => 'bg-emerald-100 text-emerald-700'],
+                            'verified' => ['icon' => 'fa-check-double', 'bg' => 'bg-blue-100 text-blue-700'],
+                            'exported' => ['icon' => 'fa-file-pdf', 'bg' => 'bg-red-100 text-red-700'],
+                            'downloaded' => ['icon' => 'fa-download', 'bg' => 'bg-indigo-100 text-indigo-700'],
+                            'login' => ['icon' => 'fa-door-open', 'bg' => 'bg-green-100 text-green-700'],
+                            'logout' => ['icon' => 'fa-door-closed', 'bg' => 'bg-gray-200 text-gray-700'],
                         ];
 
                         $info = $eventIcons[$log->event] ?? ['icon' => 'fa-info', 'bg' => 'bg-gray-100 text-gray-600'];
