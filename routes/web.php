@@ -82,7 +82,6 @@ Route::middleware('auth')->group(function () {
     // Route::get('handbook/export/pdf', [HandbookController::class, 'exportPdf'])->name('handbook.export.pdf');
 
     // Logs
-    // Route::get('ticket/activity-log', [TicketActivityLog::class, 'index'])->name('ticket.log');
     Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity.log');
 });
 

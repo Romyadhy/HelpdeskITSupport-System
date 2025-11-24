@@ -26,9 +26,12 @@
 - [x] Fix dashboard for User and Support roles.
 - [x] Fix dashboard for Manager and Admin roles.
 - [ ] Fix logo.
-- [ ] Animate in logs detail/show.
-- [ ] In Tickets → Take over, handle-escalated not yet has sweet alert.
-- [ ] In Monthly Report → edit, create, destroy not yet has sweet alert.
+- [x] Animate in logs detail/show.
+- [x] In Tickets → Take over, handle-escalated not yet has sweet alert.
+- [x] In Monthly Report → edit, create, destroy not yet has sweet alert.
+- [ ] In every show page, add edit and delete button.
+- [ ] Make consistent language in alert dan other text.
+- [ ] Make responsive for any device.
 
 ## Other Notes
 

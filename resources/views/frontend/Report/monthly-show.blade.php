@@ -19,14 +19,14 @@
             </div>
 
             {{-- Statistik Utama --}}
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                 <div class="bg-indigo-50 p-5 rounded-xl text-center shadow-sm hover:shadow-md transition">
                     <div class="text-3xl mb-2">👤</div>
                     <h3 class="text-gray-700 text-sm font-semibold">Pembuat</h3>
                     <p class="text-gray-900 font-bold">{{ $report->user->name ?? '-' }}</p>
                 </div>
 
-                <div class="bg-green-50 p-5 rounded-xl text-center shadow-sm hover:shadow-md transition">
+                <!-- <div class="bg-green-50 p-5 rounded-xl text-center shadow-sm hover:shadow-md transition">
                     <div class="text-3xl mb-2">🧾</div>
                     <h3 class="text-gray-700 text-sm font-semibold">Status</h3>
                     @if ($report->status == 'Verified')
@@ -34,7 +34,7 @@
                     @else
                         <p class="text-yellow-700 font-bold">Pending</p>
                     @endif
-                </div>
+                </div> -->
 
                 <div class="bg-blue-50 p-5 rounded-xl text-center shadow-sm hover:shadow-md transition">
                     <div class="text-3xl mb-2">✅</div>

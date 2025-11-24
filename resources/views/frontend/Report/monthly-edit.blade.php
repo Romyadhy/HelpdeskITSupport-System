@@ -29,7 +29,7 @@
             @endif
 
             {{-- Form Edit --}}
-            <form method="POST" action="{{ route('reports.monthly.update', $report->id) }}" class="space-y-8">
+            <form id="update-monthly-report-form" method="POST" action="{{ route('reports.monthly.update', $report->id) }}" class="space-y-8">
                 @csrf
                 @method('PUT')
 
@@ -98,3 +98,26 @@
         </div>
     </div>
 </x-app-layout>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('update-monthly-report-form');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Simpan Perubahan?',
+                text: "Pastikan data yang Anda masukkan sudah benar.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0d9488', // teal-600
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Simpan',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>

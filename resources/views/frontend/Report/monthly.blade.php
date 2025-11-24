@@ -46,7 +46,7 @@
                                     <th class="px-4 py-3 border">Total Hari</th>
                                     <th class="px-4 py-3 border">Total Tugas</th>
                                     <th class="px-4 py-3 border">Total Tiket</th>
-                                    <th class="px-4 py-3 border">Status</th>
+                                    <!-- <th class="px-4 py-3 border">Status</th> -->
                                     <th class="px-4 py-3 border text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -65,7 +65,7 @@
                                         <td class="px-4 py-3 border text-center text-gray-600">{{ $report->total_tickets }}</td>
 
                                         {{-- Status dengan Warna Dinamis --}}
-                                        <td class="px-4 py-3 border text-center">
+                                        <!-- <td class="px-4 py-3 border text-center">
                                             @if ($report->status === 'Verified')
                                                 <span class="px-2.5 py-1 bg-green-100 text-green-700 text-xs rounded-full font-semibold">
                                                     <i class="fas fa-check-circle"></i> Verified
@@ -79,7 +79,7 @@
                                                     <i class="fas fa-pencil-alt"></i> Draft
                                                 </span>
                                             @endif
-                                        </td>
+                                        </td> -->
 
                                         {{-- Aksi --}}
                                         <td class="px-4 py-3 border text-center">
@@ -102,12 +102,12 @@
                                                 @endcan
 
                                                 {{-- Verifikasi --}}
-                                                @can('verify-daily-report')
+                                                <!-- @can('verify-daily-report')
                                                     @if ($report->status !== 'Verified')
                                                         <form action="{{ route('reports.monthly.verify', $report->id) }}"
                                                             method="POST"
                                                             onsubmit="return confirm('Verifikasi laporan ini?')"
-                                                            class="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 transition-all">
+                                                            class="verify-report-btn flex items-center gap-1 text-indigo-600 hover:text-indigo-800 transition-all">
                                                             @csrf
                                                             @method('PUT')
                                                             <button type="submit">
@@ -115,14 +115,13 @@
                                                             </button>
                                                         </form>
                                                     @endif
-                                                @endcan
+                                                @endcan -->
 
                                                 {{-- Hapus --}}
                                                 @can('delete-monthly-report')
                                                     <form action="{{ route('reports.monthly.destroy', $report->id) }}"
                                                         method="POST"
-                                                        onsubmit="return confirm('Yakin ingin menghapus laporan ini?')"
-                                                        class="flex items-center gap-1 text-red-600 hover:text-red-800 transition-all">
+                                                        class="delete-report-btn flex items-center gap-1 text-red-600 hover:text-red-800 transition-all">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit">
@@ -141,4 +140,30 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Delete confirmation
+            document.querySelectorAll('.delete-report-btn').forEach(form => {
+                form.addEventListener('submit', e => {
+                    e.preventDefault(); // Prevent default form submission
+                    
+                    Swal.fire({
+                        title: 'Hapus Laporan?',
+                        text: 'Yakin ingin menghapus laporan ini?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444', // Red color for delete
+                        cancelButtonColor: '#6b7280', // Gray for cancel
+                        confirmButtonText: 'Ya, hapus',
+                        cancelButtonText: 'Batal'
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            form.submit(); // Submit the form if confirmed
+                        }
+                    });
+                });
+            });
+        });
+      
+    </script>
 </x-app-layout>

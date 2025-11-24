@@ -103,8 +103,8 @@ class MonthlyReportController extends Controller
             'total_tickets' => $pickedDaily->flatMap->tickets->count(),
             'daily_report_ids' => array_values($pickedIds),
             //ini kalo misal mau matikan dan aktifkan verif
-            'status' => 'Verified',
-            'verified_at' => now(),
+            // 'status' => 'Verified',
+            // 'verified_at' => now(),
         ]);
 
         // Log
@@ -174,7 +174,7 @@ class MonthlyReportController extends Controller
             'total_days_reported' => $dailyReports->count(),
             'total_tasks' => $dailyReports->flatMap->tasks->count(),
             'total_tickets' => $dailyReports->flatMap->tickets->count(),
-            'status' => 'Verified',
+            // 'status' => 'Verified',
         ]);
 
         $new = $report->toArray();
@@ -199,7 +199,7 @@ class MonthlyReportController extends Controller
         $report->update([
             'verified_by' => Auth::id(),
             'verified_at' => now(),
-            'status' => 'Verified',
+            // 'status' => 'Verified',
         ]);
 
         return redirect()->route('reports.monthly.show', $report->id)->with('success', 'Laporan bulanan berhasil diverifikasi.');
