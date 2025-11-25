@@ -20,7 +20,8 @@
 - [x] Fix every table, add pagination, and add searching.
 - [ ] Make all create/edit/show actions a popup or alert so we can interact with them.
 - [ ] API for Monthly Report has not been created.
-- [ ] UI login.
+- [x] UI login.
+- [x] Profile UI.
 - [x] Logs for tickets.
 - [x] Logs for task and reports, add like tickets feature, when necessary add the handbooks also.
 - [x] Fix dashboard for User and Support roles.
