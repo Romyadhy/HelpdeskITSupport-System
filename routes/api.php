@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DailyReportController;
+use App\Http\Controllers\Api\MonthlyReportController;
 use App\Http\Controllers\Api\SupportController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\TicketController;
@@ -34,13 +35,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/tasks/{id}', [TaskController::class, 'update']);
     Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
     Route::post('/tasks/{id}/complete', [TaskController::class, 'complete']);
-    // DailyReport
 
+    // DailyReport
     Route::get('/reports/daily', [DailyReportController::class, 'index']);
     Route::get('/reports/daily/{id}', [DailyReportController::class, 'show']);
     Route::post('/reports/daily', [DailyReportController::class, 'store']);
     Route::put('/reports/daily/{id}/verify', [DailyReportController::class, 'verify']);
     Route::delete('/reports/daily/{id}', [DailyReportController::class, 'destroy']);
+
+    // Monthly Report
+    Route::get('reports/monthly', [MonthlyReportController::class, 'index']);
+    Route::get('reports/monthly/{id}', [MonthlyReportController::class, 'show']);
+    Route::post('reports/monthly', [MonthlyReportController::class, 'store']);
+    Route::put('reports/monthly/{id}', [MonthlyReportController::class, 'update']);
+    Route::delete('reports/monthly/{id}', [MonthlyReportController::class, 'destroy']);
 });
 
 // Route::get('/tes', [SupportController::class, 'index']);

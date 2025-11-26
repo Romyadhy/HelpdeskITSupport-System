@@ -44,7 +44,7 @@
             inset: 0;
             background: url("data:image/svg+xml,%3Csvg width='1440' height='600' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 150 Q360 260 720 150 T1440 150 V600 H0Z' fill='rgba(255,255,255,.35)'/%3E%3C/svg%3E");
             background-size: cover;
-            animation: waveFloat 10s ease-in-out infinite alternate;
+            animation: waveFloat 5s ease-in-out infinite alternate;
             pointer-events: none;
         }
 
@@ -54,7 +54,7 @@
             }
 
             100% {
-                transform: translateY(15px);
+                transform: translateY(100px);
             }
         }
     </style>
