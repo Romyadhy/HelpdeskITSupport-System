@@ -15,13 +15,13 @@ class SupportUserSeeder extends Seeder
      */
     public function run(): void
     {
-        $role = Role::where('name', 'support')->first();
-        
+        $role = Role::where('name', 'manager')->first();
+
         $user = User::create([
-            'name' => 'Support Agent 4',
-            'email' => 'support4@gmail.com',
-            'password' => Hash::make('support123'),
-            'role' => 'support',
+            'name' => 'Manager IT',
+            'email' => 'managerit@gmail.com',
+            'password' => Hash::make('manager123'),
+            'role' => 'manager',
         ]);
         $user->assignRole($role);
     }

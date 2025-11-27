@@ -8,18 +8,13 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-lg rounded-lg overflow-hidden">
 
-                {{-- ================= Tabs header ================= --}}
-                <div class="border-b flex">
-                    <a href="{{ route('tasks.daily') }}"
-                        class="flex-1 py-3 text-center text-sm font-semibold border-b-2 {{ request()->routeIs('tasks.daily') ? 'text-emerald-600 border-emerald-600' : 'text-gray-500 border-transparent hover:text-emerald-600 hover:border-emerald-300' }}">
-                        Daily Tasks
-                    </a>
-                </div>
-
                 {{-- ================= CONTENT ================= --}}
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-700">📅 Daily Tasks</h3>
+                        <div class="p-2">
+                            <h3 class="text-lg font-semibold text-gray-700">📅 Daily Tasks</h3>
+                            <p class="text-sm font-thin text-gray-400">Aktivitas yang dilakukan secara periodik untuk menjaga stabilitas dan keamanan sistem</p>
+                        </div>
                         @can('create-task')
                             <a href="{{ route('tasks.create') }}"
                                 class="inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">

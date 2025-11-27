@@ -53,6 +53,7 @@
                     @yield('tickets') --}}
                     {{ $slot }}
                 </div>
+                @include('layouts.footer')
             </main>
         </div>
     </div>

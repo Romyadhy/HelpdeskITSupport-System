@@ -10,18 +10,6 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-lg rounded-lg overflow-hidden">
 
-                {{-- ================= Tabs Navigation ================= --}}
-                <div class="border-b flex">
-                    <button onclick="showTab('daily')" id="tab-daily"
-                        class="flex-1 py-3 text-center text-sm font-semibold text-emerald-600 border-b-2 border-emerald-600">
-                        Daily Tasks
-                    </button>
-                    <button onclick="showTab('monthly')" id="tab-monthly"
-                        class="flex-1 py-3 text-center text-sm font-semibold text-gray-500 hover:text-emerald-600 border-b-2 border-transparent hover:border-emerald-300">
-                        Monthly Tasks
-                    </button>
-                </div>
-
                 {{-- ================= DAILY TASKS ================= --}}
                 <div id="daily" class="p-6">
                     <div class="flex items-center justify-between mb-4">

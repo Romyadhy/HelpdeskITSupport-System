@@ -34,7 +34,7 @@
 - [ ] In every show page, add edit and delete button.
 - [ ] Make consistent language in alert dan other text.
 - [ ] Make responsive for any device.
-- [ ] Add footer and fix structure of the folder/file in source.
+- [x] Add footer and fix structure of the folder/file in source.
 
 ## Other Notes
 

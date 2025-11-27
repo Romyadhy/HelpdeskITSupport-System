@@ -8,18 +8,13 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-lg rounded-lg overflow-hidden">
 
-                {{-- ================= Tabs Header ================= --}}
-                <div class="border-b flex">
-                    <a href="{{ route('tasks.monthly') }}"
-                        class="flex-1 py-3 text-center text-sm font-semibold border-b-2 {{ request()->routeIs('tasks.monthly') ? 'text-emerald-600 border-emerald-600' : 'text-gray-500 border-transparent hover:text-emerald-600 hover:border-emerald-300' }}">
-                        Monthly Tasks
-                    </a>
-                </div>
-
                 {{-- ================= CONTENT ================= --}}
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-700">🗓️ Monthly Tasks</h3>
+                        <div class="p-2">
+                            <h3 class="text-lg font-semibold text-gray-700">🗓️ Monthly Tasks</h3>
+                            <p class="text-sm font-thin text-gray-400">Aktivitas yang dilakukan secara periodik untuk menjaga stabilitas dan keamanan sistem</p>
+                        </div>
                         @can('create-task')
                             <a href="{{ route('tasks.create') }}"
                                 class="inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
@@ -168,13 +163,13 @@
                     e.preventDefault();
                     const form = this.closest('form');
                     Swal.fire({
-                        title: 'Mark this task as complete?',
-                        text: "You can’t undo this action for this month.",
+                        title: 'Tandai sebagai selesai?',
+                        text: "Aksi ini tidak bisa dikembalikan lagi.",
                         icon: 'question',
                         showCancelButton: true,
                         confirmButtonColor: '#16a34a',
                         cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Yes, complete it'
+                        confirmButtonText: 'Ya, Selesai'
                     }).then(result => {
                         if (result.isConfirmed) form.submit();
                     });
@@ -187,13 +182,13 @@
                     e.preventDefault();
                     const form = this.closest('form');
                     Swal.fire({
-                        title: 'Delete this task?',
-                        text: "This action cannot be undone.",
+                        title: 'Yakin Hapis Task Ini?',
+                        text: "Aksi ini tidak bisa dikembalikan.",
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#d33',
                         cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Yes, delete it'
+                        confirmButtonText: 'Ya, Hapus'
                     }).then(result => {
                         if (result.isConfirmed) form.submit();
                     });

@@ -4,7 +4,6 @@ use App\Http\Controllers\DailyReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HandbookController;
 use App\Http\Controllers\Logs\ActivityLogController;
-use App\Http\Controllers\Logs\TicketActivityLog;
 use App\Http\Controllers\MonthlyReportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskController;
@@ -12,7 +11,6 @@ use App\Http\Controllers\TicketController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    // return view('welcome');
     return redirect()->route('login');
 });
 
@@ -79,7 +77,6 @@ Route::middleware('auth')->group(function () {
     Route::put('handbook/update/{id}', [HandbookController::class, 'update'])->name('handbook.update');
     Route::delete('handbook/delete/{handbook}', [HandbookController::class, 'destroy'])->name('handbook.delete');
     Route::get('handbook/download/{id}', [HandbookController::class, 'downloadPdf'])->name('handbook.download');
-    // Route::get('handbook/export/pdf', [HandbookController::class, 'exportPdf'])->name('handbook.export.pdf');
 
     // Logs
     Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity.log');

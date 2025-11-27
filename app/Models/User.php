@@ -12,8 +12,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Panel;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
@@ -41,7 +39,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static Builder<static>|User whereUpdatedAt($value)
  * @mixin \Eloquent
  */
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasRoles, HasApiTokens;
@@ -58,10 +56,7 @@ class User extends Authenticatable implements FilamentUser
         // 'role', // 'admin', 'support', 'user'
     ];
 
-    public function canAccessPanel(Panel $panel): bool
-    {
-        return $this->hasAnyRole(['admin', 'manager', 'support']);
-    }
+
 
     /**
      * The attributes that should be hidden for serialization.
