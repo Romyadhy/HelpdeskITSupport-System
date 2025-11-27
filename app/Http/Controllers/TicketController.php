@@ -45,7 +45,7 @@ class TicketController extends Controller
         }
 
         $user = Auth::user();
-        if (!$user->can('view-any-tickets')) {
+        if (! $user->can('view-any-tickets')) {
             $query->where('user_id', $user->id);
         }
 
@@ -108,13 +108,14 @@ class TicketController extends Controller
             $ticket->load(['category', 'location']);
             $telegram = app(TelegramService::class);
 
-            $message = "📩 <b>Ticket Baru Masuk</b>\n" . "Judul     : {$ticket->title}\n" . "Prioritas : {$ticket->priority}\n" . "Kategori  : {$ticket->category->name}\n" . "Lokasi    : {$ticket->location->name}\n" . 'Dari      : ' . auth()->user()->name . "\n\n" . 'Silakan mengecek detailnya pada sistem 😊';
+            $message = "📩 <b>Ticket Baru Masuk</b>\n"."Judul     : {$ticket->title}\n"."Prioritas : {$ticket->priority}\n"."Kategori  : {$ticket->category->name}\n"."Lokasi    : {$ticket->location->name}\n".'Dari      : '.auth()->user()->name."\n\n".'Silakan mengecek detailnya pada sistem 😊';
 
             $telegram->sendMessage($message);
 
             return redirect()->route('tickets.index')->with('success', 'Ticket created successfully.');
         } catch (Exception $e) {
-            Log::error('Error creating ticket: ' . $e->getMessage());
+            Log::error('Error creating ticket: '.$e->getMessage());
+
             return back()->withErrors('An error occurred while creating the ticket.');
         }
     }
@@ -123,7 +124,7 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        if ($ticket->user_id !== $user->id && !$user->can('edit-own-ticket')) {
+        if ($ticket->user_id !== $user->id && ! $user->can('edit-own-ticket')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -137,7 +138,7 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        if ($ticket->user_id !== $user->id && !$user->can('edit-own-ticket')) {
+        if ($ticket->user_id !== $user->id && ! $user->can('edit-own-ticket')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -150,7 +151,7 @@ class TicketController extends Controller
                 'location_id' => 'required|exists:ticket_locations,id',
             ]);
 
-            //old value
+            // old value
             $old = $ticket->only(['title', 'description', 'priority', 'category_id', 'location_id', 'status']);
 
             $ticket->update($validated);
@@ -163,10 +164,10 @@ class TicketController extends Controller
                 'new' => $new,
             ]);
 
-            
             return redirect()->route('tickets.index')->with('success', 'Ticket updated successfully.');
         } catch (Exception $e) {
-            Log::error('Error updating ticket: ' . $e->getMessage());
+            Log::error('Error updating ticket: '.$e->getMessage());
+
             return back()->withErrors('Error updating ticket.');
         }
     }
@@ -175,7 +176,7 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('view-any-tickets') && $ticket->user_id !== $user->id) {
+        if (! $user->can('view-any-tickets') && $ticket->user_id !== $user->id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -189,13 +190,13 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        if ($ticket->user_id !== $user->id && !$user->can('delete-own-ticket')) {
+        if ($ticket->user_id !== $user->id && ! $user->can('delete-own-ticket')) {
             abort(403, 'Unauthorized action.');
         }
 
         $ticket->delete();
 
-        //Log
+        // Log
         logActivity::add('ticket', 'deleted', $ticket, 'Ticket dihapus', [
             'old' => $ticket->getOriginal(),
         ]);
@@ -206,7 +207,7 @@ class TicketController extends Controller
     // IT Support start
     public function start(Request $request, Ticket $ticket): RedirectResponse
     {
-        if (!auth()->user()->can('handle-ticket')) {
+        if (! auth()->user()->can('handle-ticket')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -216,7 +217,7 @@ class TicketController extends Controller
             'assigned_to' => auth()->id(),
         ]);
 
-        //Log
+        // Log
         logActivity::add('ticket', 'start', $ticket, 'Ticket mulai ditangani', [
             'old' => [
                 'status' => 'Open',
@@ -224,7 +225,7 @@ class TicketController extends Controller
             ],
             'new' => [
                 'status' => 'In Progress',
-                'assigned_to' => auth()->id()
+                'assigned_to' => auth()->id(),
             ],
         ]);
 
@@ -241,9 +242,9 @@ class TicketController extends Controller
                     'assigned_to' => auth()->id(),
                 ]);
 
-                //Log
+                // Log
                 logActivity::add('ticket', 'takeover', $ticket, 'Ticket di take over', [
-                    'old'=> [
+                    'old' => [
                         'assigned_to' => $ticket->assigned_to,
                         'status' => $ticket->status,
                     ],
@@ -260,7 +261,7 @@ class TicketController extends Controller
 
     public function close(Request $request, Ticket $ticket): RedirectResponse
     {
-        if (!auth()->user()->can('close-ticket')) {
+        if (! auth()->user()->can('close-ticket')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -279,7 +280,7 @@ class TicketController extends Controller
             'duration' => $duration,
         ]);
 
-        //Log
+        // Log
         logActivity::add('ticket', 'close', $ticket, 'Ticket diselesaikan', [
             'new' => [
                 'status' => 'Closed',
@@ -296,7 +297,7 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('escalate-ticket')) {
+        if (! $user->can('escalate-ticket')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -313,12 +314,12 @@ class TicketController extends Controller
 
         // Log
         logActivity::add('ticket', 'escalate', $ticket, 'Ticket dieskalasi', [
-            'old'=>[
+            'old' => [
                 'is_escalation' => false,
                 'status' => 'In Progress',
                 'assigned_to' => $ticket->assigned_to,
             ],
-            'new'=>[
+            'new' => [
                 'is_escalation' => true,
                 'status' => 'In Progress',
                 'assigned_to' => null,
@@ -330,11 +331,11 @@ class TicketController extends Controller
             $ticket->load(['category', 'location', 'user']);
             $telegram = app(TelegramService::class);
 
-            $message = "⚠️ <b>Ticket DIESKALASIKAN</b>\n" . "Judul     : {$ticket->title}\n" . "Prioritas : {$ticket->priority}\n" . "Dari      : {$ticket->user->name}\n" . 'Eskalasi Oleh: ' . $user->name . "\n\n" . '🛠️ <i>Tiket ini memerlukan perhatian admin untuk tindak lanjut.</i>';
+            $message = "⚠️ <b>Ticket DIESKALASIKAN</b>\n"."Judul     : {$ticket->title}\n"."Prioritas : {$ticket->priority}\n"."Dari      : {$ticket->user->name}\n".'Eskalasi Oleh: '.$user->name."\n\n".'🛠️ <i>Tiket ini memerlukan perhatian admin untuk tindak lanjut.</i>';
 
             $telegram->sendMessage($message);
         } catch (Exception $e) {
-            Log::error('Gagal mengirim notifikasi Telegram: ' . $e->getMessage());
+            Log::error('Gagal mengirim notifikasi Telegram: '.$e->getMessage());
         }
 
         return redirect()->route('tickets.index')->with('success', 'Ticket escalated and notification sent.');
@@ -350,7 +351,7 @@ class TicketController extends Controller
             'is_escalation' => false,
         ]);
 
-        //Log
+        // Log
         logActivity::add('ticket', 'handle-escalated', $ticket, 'Ticket eskalasi ditangani oleh Admin', [
             'old' => [
                 'is_escalation' => true,

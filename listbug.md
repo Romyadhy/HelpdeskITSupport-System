@@ -12,6 +12,7 @@
 - [x] Support Dashboard → ticket aktif didn't show the right value, and maybe we must fix it and need more effisien informations.
 - [x] DailyReport → ticket dikerjakan → its not yet showing the same output like the others role supports, expecially for the "close tickets".
 - [x] Admin escalated tickets also we need to fix it and create idea how to display it on the reports, remember the close tickets in here only for supports role and not yet implements as admin.
+- [ ] Admin Dashboard, in UI chart fix the width between Ticket Trends, and SLA Category.
 
 ## Unfinished Features
 
@@ -19,16 +20,21 @@
 - [x] Cron Job for Daily Report Telegram bot at 4 PM (not optimal yet).
 - [x] Fix every table, add pagination, and add searching.
 - [ ] Make all create/edit/show actions a popup or alert so we can interact with them.
-- [ ] API for Monthly Report has not been created.
-- [ ] UI login.
+- [x] API for Monthly Report has not been created.
+- [x] UI login.
+- [x] Profile UI.
 - [x] Logs for tickets.
 - [x] Logs for task and reports, add like tickets feature, when necessary add the handbooks also.
 - [x] Fix dashboard for User and Support roles.
 - [x] Fix dashboard for Manager and Admin roles.
 - [ ] Fix logo.
-- [ ] Animate in logs detail/show.
-- [ ] In Tickets → Take over, handle-escalated not yet has sweet alert.
-- [ ] In Monthly Report → edit, create, destroy not yet has sweet alert.
+- [x] Animate in logs detail/show.
+- [x] In Tickets → Take over, handle-escalated not yet has sweet alert.
+- [x] In Monthly Report → edit, create, destroy not yet has sweet alert.
+- [ ] In every show page, add edit and delete button.
+- [ ] Make consistent language in alert dan other text.
+- [ ] Make responsive for any device.
+- [ ] Add footer and fix structure of the folder/file in source.
 
 ## Other Notes
 

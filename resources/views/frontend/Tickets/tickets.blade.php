@@ -325,7 +325,7 @@
                                                         method="POST" class="inline">
                                                         @csrf
                                                         <button type="submit" title="Take Over Ticket"
-                                                            class="text-gray-400 hover:text-yellow-600 p-2 rounded-lg transition">
+                                                            class="take-over-ticket-btn text-gray-400 hover:text-yellow-600 p-2 rounded-lg transition">
                                                             <i class="fas fa-hand-paper mr-1"></i>
                                                         </button>
                                                     </form>
@@ -350,7 +350,7 @@
                                                     @csrf
                                                     @method('PUT')
                                                     <button type="submit" title="Handle Escalated Ticket"
-                                                        class="text-gray-400 hover:text-blue-600 p-2 rounded-lg transition">
+                                                        class="handle-escalated-ticket-btn text-gray-400 hover:text-blue-600 p-2 rounded-lg transition">
                                                         <i class="fas fa-user-check mr-1"></i>
                                                     </button>
                                                 </form>
@@ -573,6 +573,42 @@
                         confirmButtonColor: '#f59e0b',
                         cancelButtonColor: '#6b7280',
                         confirmButtonText: 'Yes, release it'
+                    }).then(result => {
+                        if (result.isConfirmed) form.submit();
+                    });
+                });
+            });
+
+            document.querySelectorAll('.take-over-ticket-btn').forEach(button => {
+                button.addEventListener('click', e => {
+                    e.preventDefault();
+                    const form = button.closest('form');
+                    Swal.fire({
+                        title: 'Take Over Ticket?',
+                        text: 'This ticket will be taken over by you.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#f59e0b',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Yes, take over it'
+                    }).then(result => {
+                        if (result.isConfirmed) form.submit();
+                    });
+                });
+            });
+
+            document.querySelectorAll('.handle-escalated-ticket-btn').forEach(button => {
+                button.addEventListener('click', e => {
+                    e.preventDefault();
+                    const form = button.closest('form');
+                    Swal.fire({
+                        title: 'Handle Escalated Ticket?',
+                        text: 'This ticket will be handled by you.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#f59e0b',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Yes, handle it'
                     }).then(result => {
                         if (result.isConfirmed) form.submit();
                     });

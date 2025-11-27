@@ -191,7 +191,14 @@
                                     <i class="fa-solid fa-chevron-down text-[10px]" :class="{ 'rotate-180': open }"></i>
                                 </button>
 
-                                <div x-show="open" class="mt-3 space-y-3">
+                                <div x-show="open"
+                                    x-transition:enter="transition ease-out duration-500"
+                                    x-transition:enter-start="opacity-0 -translate-y-2"
+                                    x-transition:enter-end="opacity-100 translate-y-0"
+                                    x-transition:leave="transition ease-in duration-300"
+                                    x-transition:leave-start="opacity-100 translate-y-0"
+                                    x-transition:leave-end="opacity-0 -translate-y-2"
+                                    class="mt-3 space-y-3">
 
                                     {{-- NEW VALUES --}}
                                     @if (!empty($new))

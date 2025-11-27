@@ -60,7 +60,7 @@
                 </div>
 
                 {{-- Form Create --}}
-                <form method="POST" action="{{ route('reports.monthly.store') }}" class="space-y-10">
+                <form id="create-monthly-report-form" method="POST" action="{{ route('reports.monthly.store') }}" class="space-y-10">
                     @csrf
 
                     {{-- Ringkasan --}}
@@ -141,6 +141,27 @@
             const checks = document.querySelectorAll('.dr-check');
             const allChecked = Array.from(checks).every(c => c.checked);
             checks.forEach(c => c.checked = !allChecked);
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('create-monthly-report-form');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Simpan Laporan?',
+                    text: "Pastikan data yang Anda masukkan sudah benar.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#4f46e5', // indigo-600
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Ya, Simpan',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
         });
     </script>
 </x-app-layout>
