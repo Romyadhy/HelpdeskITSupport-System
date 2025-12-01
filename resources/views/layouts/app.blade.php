@@ -25,7 +25,12 @@
 
 <body class="font-sans antialiased bg-gray-100">
     {{-- sidebar --}}
-    <div x-data="{ sidebarOpen: false }" class="flex h-screen bg-gray-100">
+    <div x-data="{ 
+        sidebarOpen: false, 
+        sidebarExpanded: localStorage.getItem('sidebar-expanded') == 'true' 
+    }" 
+    x-init="$watch('sidebarExpanded', value => localStorage.setItem('sidebar-expanded', value))"
+    class="flex h-screen bg-gray-100">
 
         @include('layouts.sidebar')
 
@@ -48,11 +53,8 @@
 
             <!-- Page Content -->
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-                <div class="container mx-auto px-6 py-8">
-                    {{-- @yield('content')
-                    @yield('tickets') --}}
-                    {{ $slot }}
-                </div>
+                {{-- Page Content --}}
+                {{ $slot }}
                 @include('layouts.footer')
             </main>
         </div>

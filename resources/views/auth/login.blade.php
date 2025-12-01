@@ -6,7 +6,7 @@
         <p class="text-gray-500 text-sm">Masuk untuk melanjutkan pekerjaanmu</p>
     </div>
 
-    <form method="POST" action="{{ route('login') }}" id="loginForm">
+    <form method="POST" action="{{ route('login') }}" id="loginForm" onsubmit="this.querySelector('button').disabled = true;">
         @csrf
 
         {{-- Email --}}
@@ -37,19 +37,44 @@
         {{-- </label> --}}
 
         {{-- Button --}}
-        <button id="loginBtn" type="submit"
-            class="w-full flex justify-center items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow-md transition">
-            <span id="loginBtnText">Masuk ke Sistem</span>
-            <span id="spinner" class="hidden items-center gap-2">
-                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-                    viewBox="0 0 24 24">
-                    <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor"
-                        stroke-width="4"></circle>
-                    <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                </svg>
-                Loading...
-            </span>
-        </button>
+        {{-- <button id="loginBtn" type="submit" --}}
+        {{--     class="w-full flex justify-center items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow-md transition"> --}}
+        {{--     <span id="loginBtnText">Masuk ke Sistem</span> --}}
+        {{--     <span id="spinner" class="hidden flex-col items-center justify-center mr-3 size-5 animate-spin"> --}}
+        {{--         <svg class="" xmlns="http://www.w3.org/2000/svg" fill="none" --}}
+        {{--             viewBox="0 0 24 24"> --}}
+        {{--             <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" --}}
+        {{--                 stroke-width="4"></circle> --}}
+        {{--             <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path> --}}
+        {{--         </svg> --}}
+        {{--         Loading... --}}
+        {{--     </span> --}}
+        {{-- </button> --}}
+
+
+<button id="loginBtn" type="submit"
+    class="w-full flex justify-center items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700
+           text-white font-semibold rounded-lg shadow-md transition">
+
+    <!-- Normal text -->
+    <span id="loginBtnText">Masuk ke Sistem</span>
+
+    <!-- Spinner wrapper -->
+    <span id="spinner" class="hidden flex items-center gap-2">
+        <svg class="w-5 h-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+            viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10"
+                stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        </svg>
+        <span>Loading...</span>
+    </span>
+</button>
+
+
+
+
 
         {{-- {{-- Forgot --}}
         {{-- @if (Route::has('password.request')) --}}

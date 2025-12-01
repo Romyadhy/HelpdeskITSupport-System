@@ -13,6 +13,8 @@
 - [x] DailyReport → ticket dikerjakan → its not yet showing the same output like the others role supports, expecially for the "close tickets".
 - [x] Admin escalated tickets also we need to fix it and create idea how to display it on the reports, remember the close tickets in here only for supports role and not yet implements as admin.
 - [ ] Admin Dashboard, in UI chart fix the width between Ticket Trends, and SLA Category.
+- [x] Login Button loading bugs.
+- [ ] Bugs in sidebar size, its diff when username has long text the other way around.
 
 ## Unfinished Features
 
@@ -35,6 +37,8 @@
 - [ ] Make consistent language in alert dan other text.
 - [ ] Make responsive for any device.
 - [x] Add footer and fix structure of the folder/file in source.
+- [ ] Create a buttton to close sidebar.
+- [x] Add admin page that can create new category, locations and user.
 
 ## Other Notes
 

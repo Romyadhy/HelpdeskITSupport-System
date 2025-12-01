@@ -8,6 +8,9 @@ use App\Http\Controllers\MonthlyReportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\TicketCategoryController as AdminTicketCategoryController;
+use App\Http\Controllers\Admin\TicketLocationController as AdminTicketLocationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -80,6 +83,13 @@ Route::middleware('auth')->group(function () {
 
     // Logs
     Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity.log');
+
+    // === ADMIN ROUTES ===
+    Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
+        Route::resource('users', AdminUserController::class);
+        Route::resource('categories', AdminTicketCategoryController::class);
+        Route::resource('locations', AdminTicketLocationController::class);
+    });
 });
 
 require __DIR__ . '/auth.php';

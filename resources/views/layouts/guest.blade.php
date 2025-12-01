@@ -94,16 +94,30 @@
             }
 
             // loading button
-            const form = document.getElementById("loginForm");
-            const btn = document.getElementById("loginBtn");
-            if (form && btn) {
-                form.addEventListener("submit", () => {
-                    btn.disabled = true;
-                    btn.classList.add("opacity-70", "cursor-not-allowed");
-                    document.getElementById("loginBtnText").classList.add("hidden");
-                    document.getElementById("spinner").classList.remove("hidden");
-                });
-            }
+            // const form = document.getElementById("loginForm");
+            // const btn = document.getElementById("loginBtn");
+            // if (form && btn) {
+            //     form.addEventListener("submit", () => {
+            //         btn.disabled = true;
+            //         btn.classList.add("opacity-70", "cursor-not-allowed");
+            //         document.getElementById("loginBtnText").classList.add("hidden");
+            //         document.getElementById("spinner").classList.remove("hidden");
+            //     });
+            // }
+            const form = document.querySelector("#loginForm");
+            const loginBtn = document.querySelector("#loginBtn");
+            const loginText = document.querySelector("#loginBtnText");
+            const spinner = document.querySelector("#spinner");
+
+        if (form && loginBtn) {
+            form.addEventListener("submit", () => {
+                loginBtn.disabled = true;
+                loginBtn.classList.add("opacity-70", "cursor-not-allowed");
+
+                loginText.classList.add("hidden");   // hide "Masuk ke Sistem"
+                spinner.classList.remove("hidden");  // show spinner
+            });
+        }
         });
     </script>
 

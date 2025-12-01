@@ -6,7 +6,7 @@
         </h2>
     </x-slot>
 
-    <div class="py-10">
+    <div class="py-10 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
             {{-- Tombol Buat Laporan Bulanan --}}

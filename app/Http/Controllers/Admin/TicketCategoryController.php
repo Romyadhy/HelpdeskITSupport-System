@@ -1,0 +1,103 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\TicketCategory;
+use Illuminate\Http\Request;
+use App\Helpers\logActivity;
+use Illuminate\Support\Facades\Auth;
+
+class TicketCategoryController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        $categories = TicketCategory::latest()->paginate(10);
+        return view('admin.categories.index', compact('categories'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return view('admin.categories.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:ticket_categories,name',
+            'is_active' => 'boolean',
+        ]);
+
+        $category = TicketCategory::create([
+            'name' => $request->name,
+            'is_active' => $request->has('is_active'),
+        ]);
+
+        logActivity::add('category', 'created', $category, 'Category created', ['name' => $category->name]);
+
+        return redirect()->route('admin.categories.index')
+            ->with('success', 'Category created successfully.');
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(TicketCategory $category)
+    {
+        return view('admin.categories.edit', compact('category'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, TicketCategory $category)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:ticket_categories,name,' . $category->id,
+            'is_active' => 'boolean',
+        ]);
+
+        $old = $category->toArray();
+
+        $category->update([
+            'name' => $request->name,
+            'is_active' => $request->has('is_active'),
+        ]);
+
+        logActivity::add('category', 'updated', $category, 'Category updated', [
+            'old' => $old,
+            'new' => $category->toArray()
+        ]);
+
+        return redirect()->route('admin.categories.index')
+            ->with('success', 'Category updated successfully.');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(TicketCategory $category)
+    {
+        // Check if used in tickets
+        if ($category->tickets()->exists()) {
+            return redirect()->route('admin.categories.index')
+                ->with('error', 'Cannot delete category because it is used in existing tickets. Disable it instead.');
+        }
+
+        $category->delete();
+
+        logActivity::add('category', 'deleted', $category, 'Category deleted');
+
+        return redirect()->route('admin.categories.index')
+            ->with('success', 'Category deleted successfully.');
+    }
+}

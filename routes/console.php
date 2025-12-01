@@ -8,6 +8,6 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('app:send-report-reminder')
-    ->everyMinute();    
-    // ->dailyAt('11:20')
-    // ->timezone('Asia/Makassar');
+    // ->everyMinute()
+    ->dailyAt('16:00')
+    ->timezone('Asia/Makassar');

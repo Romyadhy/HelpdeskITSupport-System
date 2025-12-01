@@ -1,7 +1,7 @@
 <x-app-layout>
-    <div class="container mx-auto mt-6">
+    <div class="container mx-auto mt-6 pl-6">
 
-        <h1 class="text-3xl font-bold mb-6 text-gray-800">Activity Log</h1>
+        <h1 class="text-3xl font-bold mb-6 text-teal-800">Activity Log</h1>
 
         {{-- FILTER BAR --}}
         <form method="GET" action="{{ route('activity.log') }}"

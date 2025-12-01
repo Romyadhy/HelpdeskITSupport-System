@@ -31,7 +31,7 @@ class SendReportReminder extends Command
 
         $message = "⏰ <b>Reminder Daily Report</b>\n\n"
             . "Tanggal: <b>{$today}</b>\n"
-            . "Jangan lupa mengisi laporan harian IT Support ya.";
+            . "Jangan lupa mengisi laporan harian.";
 
         $success = $telegramService->sendMessage($message);
 

@@ -53,7 +53,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        // 'role', // 'admin', 'support', 'user'
+        'role', // 'admin', 'support', 'user'
     ];
 
 

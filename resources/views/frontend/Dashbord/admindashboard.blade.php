@@ -12,7 +12,7 @@
         </div>
     </x-slot>
 
-    <div class="p-6 space-y-10">
+    <div class="py-10 px-6 max-w-7xl mx-auto space-y-10">
 
         {{-- =========================== --}}
         {{-- KPI CARDS (Premium Style) --}}
