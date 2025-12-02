@@ -19,8 +19,10 @@ class UserController extends Controller
     public function index()
     {
         $users = User::with('roles')->latest()->paginate(10);
-        return view('admin.users.index', compact('users'));
+        $roles = Role::pluck('name', 'name')->all();
+        return view('admin.users.index', compact('users', 'roles'));
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -61,9 +63,18 @@ class UserController extends Controller
             ]
         ]);
 
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'User created successfully.'
+            ], 200);
+        }
+
         return redirect()->route('admin.users.index')
             ->with('success', 'User created successfully.');
     }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -114,9 +125,18 @@ class UserController extends Controller
             ]
         ]);
 
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'User updated successfully.'
+            ], 200);
+        }
+
         return redirect()->route('admin.users.index')
             ->with('success', 'User updated successfully');
     }
+
 
     /**
      * Remove the specified resource from storage.

@@ -39,10 +39,23 @@ class TicketLocationController extends Controller
 
         $location = TicketLocation::create([
             'name' => $request->name,
-            'is_active' => $request->has('is_active'),
+            'is_active' => $request->is_active ?? false,
         ]);
 
-        logActivity::add('location', 'created', $location, 'Location created', ['name' => $location->name]);
+        logActivity::add('location', 'created', $location, 'Location created', [
+            'new' => [
+                'name' => $location->name,
+                'is_active' => $location->is_active,
+            ]
+        ]);
+
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Location created successfully.'
+            ], 200);
+        }
 
         return redirect()->route('admin.locations.index')
             ->with('success', 'Location created successfully.');
@@ -70,13 +83,21 @@ class TicketLocationController extends Controller
 
         $location->update([
             'name' => $request->name,
-            'is_active' => $request->has('is_active'),
+            'is_active' => $request->is_active ?? false,
         ]);
 
         logActivity::add('location', 'updated', $location, 'Location updated', [
             'old' => $old,
             'new' => $location->toArray()
         ]);
+
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Location updated successfully.'
+            ], 200);
+        }
 
         return redirect()->route('admin.locations.index')
             ->with('success', 'Location updated successfully.');
@@ -95,7 +116,9 @@ class TicketLocationController extends Controller
 
         $location->delete();
 
-        logActivity::add('location', 'deleted', $location, 'Location deleted');
+        logActivity::add('location', 'deleted', $location, 'Location deleted', [
+            'old' => $location->toArray()
+        ]);
 
         return redirect()->route('admin.locations.index')
             ->with('success', 'Location deleted successfully.');

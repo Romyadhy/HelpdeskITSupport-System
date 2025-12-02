@@ -39,10 +39,23 @@ class TicketCategoryController extends Controller
 
         $category = TicketCategory::create([
             'name' => $request->name,
-            'is_active' => $request->has('is_active'),
+            'is_active' => $request->is_active ?? false,
         ]);
 
-        logActivity::add('category', 'created', $category, 'Category created', ['name' => $category->name]);
+        logActivity::add('category', 'created', $category, 'Category created', [
+            'new' => [
+                'name' => $category->name,
+                'is_active' => $category->is_active,
+            ]
+        ]);
+
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Category created successfully.'
+            ], 200);
+        }
 
         return redirect()->route('admin.categories.index')
             ->with('success', 'Category created successfully.');
@@ -70,13 +83,21 @@ class TicketCategoryController extends Controller
 
         $category->update([
             'name' => $request->name,
-            'is_active' => $request->has('is_active'),
+            'is_active' => $request->is_active ?? false,
         ]);
 
         logActivity::add('category', 'updated', $category, 'Category updated', [
             'old' => $old,
             'new' => $category->toArray()
         ]);
+
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Category updated successfully.'
+            ], 200);
+        }
 
         return redirect()->route('admin.categories.index')
             ->with('success', 'Category updated successfully.');
@@ -95,7 +116,9 @@ class TicketCategoryController extends Controller
 
         $category->delete();
 
-        logActivity::add('category', 'deleted', $category, 'Category deleted');
+        logActivity::add('category', 'deleted', $category, 'Category deleted', [
+            'old' => $category->toArray()
+        ]);
 
         return redirect()->route('admin.categories.index')
             ->with('success', 'Category deleted successfully.');

@@ -61,6 +61,27 @@ class TaskController extends Controller
 
         $completedCountThisMonth = $task->completions()->whereMonth('complated_at', now()->month)->whereYear('complated_at', now()->year)->count();
 
+        // Return JSON for AJAX requests
+        if (request()->expectsJson() || request()->ajax()) {
+            return response()->json([
+                'id' => $task->id,
+                'title' => $task->title,
+                'description' => $task->description,
+                'frequency' => ucfirst($task->frequency),
+                'is_active' => $task->is_active,
+                'created_at' => $task->created_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') . ' WITA',
+                'completed_count_this_month' => $completedCountThisMonth,
+                'completions' => $completions->map(function($completion, $index) {
+                    return [
+                        'number' => $index + 1,
+                        'user_name' => $completion->user->name ?? 'Unknown',
+                        'completed_at' => $completion->complated_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') . ' WITA',
+                        'notes' => $completion->notes
+                    ];
+                })
+            ]);
+        }
+
         // dd($task->title);
         // dd($task->toArray());
 
@@ -87,7 +108,7 @@ class TaskController extends Controller
                 'title' => $validated['title'],
                 'description' => $validated['description'],
                 'frequency' => $validated['frequency'],
-                'is_active' => $validated['is_active'],
+                'is_active' => $validated['is_active'] ?? true,
             ]);
 
             // Log
@@ -95,14 +116,28 @@ class TaskController extends Controller
                 'new' => $task->toArray(),
             ]);
 
+            // Return JSON for AJAX requests
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Task created successfully',
+                    'task' => $task
+                ]);
+            }
+
             return redirect()->route('tasks.daily')->with('success', 'Task created successfully');
         } catch (Exception $e) {
-            \Log::error('Eror creating ticket: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
+            \Log::error('Error creating task: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while creating the task.'
+                ], 500);
+            }
 
             return back()->withErrors('An error occurred while creating the task.');
         }
-
-        return back()->withErrors('error', 'Something went wrong while creating the task');
     }
 
     public function edit(Task $task)
@@ -113,27 +148,50 @@ class TaskController extends Controller
 
     public function update(Request $request, Task $task)
     {
-        // Logic to update a task
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'frequency' => 'required|in:daily,monthly',
-            'is_active' => 'nullable|boolean',
-        ]);
+        try {
+            // Logic to update a task
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'frequency' => 'required|in:daily,monthly',
+                'is_active' => 'nullable|boolean',
+            ]);
 
-        $old = $task->only(['title', 'description', 'frequency', 'is_active']);
+            $old = $task->only(['title', 'description', 'frequency', 'is_active']);
 
-        $task->update($validated);
+            $task->update($validated);
 
-        $new = $task->only(['title', 'description', 'frequency', 'is_active']);
+            $new = $task->only(['title', 'description', 'frequency', 'is_active']);
 
-        // Log
-        logActivity::add('task', 'updated', $task, 'Task diperbarui', [
-            'old' => $old,
-            'new' => $new,
-        ]);
+            // Log
+            logActivity::add('task', 'updated', $task, 'Task diperbarui', [
+                'old' => $old,
+                'new' => $new,
+            ]);
 
-        return redirect()->route('tasks.show', $task->id)->with('success', 'Task updated successfully!');
+            // Return JSON for AJAX requests
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Task updated successfully',
+                    'task' => $task
+                ]);
+            }
+
+            return redirect()->route('tasks.show', $task->id)->with('success', 'Task updated successfully!');
+        } catch (Exception $e) {
+            \Log::error('Error updating task: ' . $e->getMessage());
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while updating the task.',
+                    'errors' => $e->getMessage()
+                ], 500);
+            }
+
+            return back()->withErrors('An error occurred while updating the task.');
+        }
     }
 
     public function destroy(Task $task)

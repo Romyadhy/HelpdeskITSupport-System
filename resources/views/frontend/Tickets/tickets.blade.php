@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="py-10 bg-gray-50 min-h-screen">
+    <div class="py-10 bg-gray-50 min-h-screen" x-data="ticketManagement()">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
                 <div>
@@ -13,10 +13,10 @@
                     <p class="text-gray-500 mt-1">Manage and track all support requests.</p>
                 </div>
                 @can('create-ticket')
-                    <a href="{{ route('tickets.create') }}"
+                    <button @click="openCreateModal()"
                         class="mt-4 sm:mt-0 inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
                         + New Ticket
-                    </a>
+                    </button>
                 @endcan
             </div>
             {{-- search --}}
@@ -26,7 +26,7 @@
 
                         <!-- Input -->
                         <input type="text" x-model="search" name="search" placeholder="Search tickets..."
-                            class="w-full pl-5 pr-11 py-2.5 rounded-xl bg-white border border-gray-300 
+                            class="w-full pl-5 pr-11 py-2.5 rounded-xl bg-white border border-gray-300
                        text-gray-700 placeholder-gray-400 shadow-sm
                        focus:border-teal-500 focus:ring-2 focus:ring-teal-400 transition">
 
@@ -249,18 +249,20 @@
                                         class="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center space-x-2">
 
                                         {{-- View --}}
-                                        <a href="{{ route('tickets.show', $ticket->id) }}" title="View Ticket"
+                                        <button @click="openShowModal({{ $ticket->id }})" title="View Ticket"
                                             class="text-gray-400 hover:text-indigo-600 p-2 rounded-lg transition">
                                             <i class="fas fa-eye"></i>
-                                        </a>
+                                        </button>
 
                                         {{-- ==== User ==== --}}
                                         @can('edit-own-ticket', $ticket)
                                             @if ($ticket->status === 'Open')
-                                                <a href="{{ route('tickets.edit', $ticket->id) }}" title="Edit Ticket"
+                                                <button
+                                                    @click="openEditModal({{ $ticket->id }}, '{{ addslashes($ticket->title) }}', '{{ addslashes($ticket->description) }}', '{{ $ticket->priority }}', {{ $ticket->category_id }}, {{ $ticket->location_id }})"
+                                                    title="Edit Ticket"
                                                     class="text-gray-400 hover:text-blue-600 p-2 rounded-lg transition">
                                                     <i class="fas fa-edit"></i>
-                                                </a>
+                                                </button>
                                             @endif
                                         @endcan
 
@@ -343,6 +345,15 @@
                                                         <i class="fas fa-check mr-1"></i>
                                                     </button>
                                                 @endcan
+                                                <form action="{{ route('tickets.cancel', $ticket->id) }}" method="POST"
+                                                    class="inline cancel-ticket-form">
+                                                    @csrf
+                                                    <button type="button" title="Cancel Handling"
+                                                        class="cancel-ticket-btn text-gray-400 hover:text-orange-600 p-2 rounded-lg transition"
+                                                        data-ticket-id="{{ $ticket->id }}">
+                                                        <i class="fas fa-ban mr-1"></i>
+                                                    </button>
+                                                </form>
                                             @endif
                                             @if ($ticket->is_escalation && $ticket->status === 'In Progress')
                                                 <form action="{{ route('tickets.handleEscalated', $ticket->id) }}"
@@ -355,6 +366,7 @@
                                                     </button>
                                                 </form>
                                             @endif
+
                                         @endcan
                                     </td>
                                 </tr>
@@ -391,7 +403,7 @@
                                 </span>
                             @else
                                 <a href="{{ $tickets->previousPageUrl() }}"
-                                    class="px-3 py-2 rounded-xl bg-white border border-gray-300 
+                                    class="px-3 py-2 rounded-xl bg-white border border-gray-300
                       text-gray-600 hover:bg-gray-100 transition">
                                     <i class="fas fa-chevron-left"></i>
                                 </a>
@@ -415,7 +427,7 @@
                             {{-- Next --}}
                             @if ($tickets->hasMorePages())
                                 <a href="{{ $tickets->nextPageUrl() }}"
-                                    class="px-3 py-2 rounded-xl bg-white border border-gray-300 
+                                    class="px-3 py-2 rounded-xl bg-white border border-gray-300
                       text-gray-600 hover:bg-gray-100 transition">
                                     <i class="fas fa-chevron-right"></i>
                                 </a>
@@ -432,10 +444,621 @@
                 </div>
             </div>
         </div>
+        {{-- Create Ticket Modal --}}
+        <div x-show="showCreateModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" role="dialog"
+            aria-modal="true">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <!-- Background overlay -->
+                <div x-show="showCreateModal" x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                    x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeModals()"></div>
+
+                <!-- Modal panel -->
+                <div x-show="showCreateModal" x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                    <form @submit.prevent="submitCreate()">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Create New Ticket</h3>
+
+                            <!-- Error Display -->
+                            <div x-show="Object.keys(errors).length > 0"
+                                class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                                <strong>Whoops!</strong> There were some problems with your input.<br><br>
+                                <ul>
+                                    <template x-for="(error, field) in errors" :key="field">
+                                        <li x-text="error[0]"></li>
+                                    </template>
+                                </ul>
+                            </div>
+
+                            <!-- Title -->
+                            <div class="mb-4">
+                                <label for="create-title"
+                                    class="block text-sm font-medium text-gray-700">Title</label>
+                                <input type="text" x-model="createFormData.title" id="create-title"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                                    required>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mb-4">
+                                <label for="create-description"
+                                    class="block text-sm font-medium text-gray-700">Description</label>
+                                <textarea x-model="createFormData.description" id="create-description" rows="4"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500" required></textarea>
+                            </div>
+
+                            <!-- Priority -->
+                            <div class="mb-4">
+                                <label for="create-priority"
+                                    class="block text-sm font-medium text-gray-700">Priority</label>
+                                <select x-model="createFormData.priority" id="create-priority"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+
+                            <!-- Category -->
+                            <div class="mb-4">
+                                <label for="create-category"
+                                    class="block text-sm font-medium text-gray-700">Category</label>
+                                <select x-model="createFormData.category_id" id="create-category"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                                    required>
+                                    <option value="">-- Select Category --</option>
+                                    @foreach ($categories as $cat)
+                                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Location -->
+                            <div class="mb-4">
+                                <label for="create-location"
+                                    class="block text-sm font-medium text-gray-700">Location</label>
+                                <select x-model="createFormData.location_id" id="create-location"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                                    required>
+                                    <option value="">-- Select Location --</option>
+                                    @foreach ($locations as $loc)
+                                        <option value="{{ $loc->id }}">{{ $loc->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="submit" :disabled="isSubmitting"
+                                :class="isSubmitting ? 'opacity-50 cursor-not-allowed' : ''"
+                                class="w-full inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-teal-500 text-base font-medium text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                <svg x-show="isSubmitting" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span x-text="isSubmitting ? 'Creating...' : 'Create Ticket'"></span>
+                            </button>
+                            <button type="button" @click="closeModals()"
+                                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {{-- Edit Ticket Modal --}}
+        <div x-show="showEditModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" role="dialog"
+            aria-modal="true">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <!-- Background overlay -->
+                <div x-show="showEditModal" x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                    x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeModals()"></div>
+
+                <!-- Modal panel -->
+                <div x-show="showEditModal" x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                    <form @submit.prevent="submitEdit()">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Edit Ticket</h3>
+
+                            <!-- Error Display -->
+                            <div x-show="Object.keys(errors).length > 0"
+                                class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                                <strong>Whoops!</strong> There were some problems with your input.<br><br>
+                                <ul>
+                                    <template x-for="(error, field) in errors" :key="field">
+                                        <li x-text="error[0]"></li>
+                                    </template>
+                                </ul>
+                            </div>
+
+                            <!-- Title -->
+                            <div class="mb-4">
+                                <label for="edit-title" class="block text-sm font-medium text-gray-700">Title</label>
+                                <input type="text" x-model="editFormData.title" id="edit-title"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                                    required>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mb-4">
+                                <label for="edit-description"
+                                    class="block text-sm font-medium text-gray-700">Description</label>
+                                <textarea x-model="editFormData.description" id="edit-description" rows="4"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500" required></textarea>
+                            </div>
+
+                            <!-- Priority -->
+                            <div class="mb-4">
+                                <label for="edit-priority"
+                                    class="block text-sm font-medium text-gray-700">Priority</label>
+                                <select x-model="editFormData.priority" id="edit-priority"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+
+                            <!-- Category -->
+                            <div class="mb-4">
+                                <label for="edit-category"
+                                    class="block text-sm font-medium text-gray-700">Category</label>
+                                <select x-model="editFormData.category_id" id="edit-category"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                                    required>
+                                    <option value="">-- Select Category --</option>
+                                    @foreach ($categories as $cat)
+                                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Location -->
+                            <div class="mb-4">
+                                <label for="edit-location"
+                                    class="block text-sm font-medium text-gray-700">Location</label>
+                                <select x-model="editFormData.location_id" id="edit-location"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                                    required>
+                                    <option value="">-- Select Location --</option>
+                                    @foreach ($locations as $loc)
+                                        <option value="{{ $loc->id }}">{{ $loc->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="submit" :disabled="isSubmitting"
+                                :class="isSubmitting ? 'opacity-50 cursor-not-allowed' : ''"
+                                class="w-full inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-teal-500 text-base font-medium text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                <svg x-show="isSubmitting" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span x-text="isSubmitting ? 'Updating...' : 'Update Ticket'"></span>
+                            </button>
+                            <button type="button" @click="closeModals()"
+                                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {{-- Show Ticket Modal (Detail View) --}}
+        <div x-show="showShowModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" role="dialog"
+            aria-modal="true">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <!-- Background overlay -->
+                <div x-show="showShowModal" x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                    x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeModals()"></div>
+
+                <!-- Modal panel -->
+                <div x-show="showShowModal" x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full max-h-[90vh] overflow-y-auto">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900">Ticket Details</h3>
+                            <button @click="closeModals()" class="text-gray-400 hover:text-gray-500">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <div x-show="loading" class="text-center py-8">
+                            <i class="fas fa-circle-notch fa-spin text-4xl text-teal-500"></i>
+                            <p class="mt-2 text-gray-600">Loading ticket details...</p>
+                        </div>
+
+                        <!-- Ticket Details Display -->
+                        <div x-show="!loading" class="space-y-6">
+                            <!-- Header with Title & Status -->
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between pb-4 border-b">
+                                <h4 class="text-3xl font-extrabold text-teal-600 uppercase" x-text="showData.title"></h4>
+                                <span class="mt-2 md:mt-0 px-4 py-1.5 text-sm font-semibold rounded-full shadow-sm"
+                                    :class="{
+                                        'bg-blue-100 text-blue-800': showData.status === 'Open',
+                                        'bg-yellow-100 text-yellow-800': showData.status === 'In Progress',
+                                        'bg-green-100 text-green-800': showData.status === 'Closed',
+                                    }"
+                                    x-text="showData.status"></span>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                <h5 class="text-lg font-semibold text-gray-800 mb-2">
+                                    <i class="fas fa-file-alt text-teal-500 mr-2"></i>Deskripsi Masalah:
+                                </h5>
+                                <p class="text-gray-700 leading-relaxed" x-text="showData.description"></p>
+                            </div>
+
+                            <!-- Info Grid -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-gray-700">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-layer-group text-teal-500"></i>
+                                    <span><strong>Category:</strong> <span x-text="showData.category || '-'"></span></span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-map-marker-alt text-teal-500"></i>
+                                    <span><strong>Location:</strong> <span x-text="showData.location || '-'"></span></span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-user text-teal-500"></i>
+                                    <span><strong>Created By:</strong> <span x-text="showData.user || 'Unknown'"></span></span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-calendar text-teal-500"></i>
+                                    <span><strong>Created At:</strong> <span x-text="showData.created_at"></span></span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-flag text-teal-500"></i>
+                                    <span><strong>Priority:</strong>
+                                        <span class="px-2 py-0.5 rounded text-xs font-medium"
+                                            :class="{
+                                                'bg-yellow-100 text-yellow-800': showData.priority === 'Low',
+                                                'bg-orange-100 text-orange-800': showData.priority === 'Medium',
+                                                'bg-red-100 text-red-800': showData.priority === 'High'
+                                            }"
+                                            x-text="showData.priority"></span>
+                                    </span>
+                                </div>
+                                    {{-- ini belum selesaiya bung --}}
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-stopwatch text-teal-500"></i>
+                                        <span><strong>Duration:</strong></span>
+                                        @if ($ticket->status === 'Closed')
+                                            <span class="text-gray-700">
+                                                {{ $ticket->duration_human }}
+                                                <small class="text-gray-500 block text-xs mt-0.5">
+                                                ({{ $ticket->started_at
+                                                    ? $ticket->started_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i')
+                                                    : $ticket->created_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i')
+                                                }}
+                                                →
+                                                {{ $ticket->solved_at
+                                                    ? $ticket->solved_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i')
+                                                    : '—' }})
+                                                </small>
+                                            </span>
+                                        @elseif($ticket->status === 'In Progress' && $ticket->started_at)
+                                            @php
+                                                $minutes = $ticket->started_at->diffInMinutes(now());
+                                                $live = \Carbon\CarbonInterval::minutes($minutes)->cascade();
+                                            @endphp
+                                            <span class="text-yellow-700">
+                                                {{ $live->hours ? $live->hours . 'h ' : '' }}{{ $live->minutes }}m (running)
+                                            </span>
+                                        @else
+                                            <span class="text-gray-500">-</span>
+                                        @endif
+                                </div>
+                            </div>
+
+                            <!-- Solution Section (only if Closed) -->
+                            <div x-show="showData.status === 'Closed' && showData.solution"
+                                 class="bg-green-50 border-l-4 border-green-500 rounded-lg p-5">
+                                <h5 class="text-lg font-semibold text-green-700 mb-2 flex items-center">
+                                    <i class="fas fa-tools mr-2"></i> Solusi dari Tim IT Support
+                                </h5>
+                                <p class="text-gray-700 leading-relaxed" x-text="showData.solution || 'Belum ada solusi yang tercatat.'"></p>
+                            </div>
+
+                            <!-- Assigned To -->
+                            <div x-show="showData.assigned_to"
+                                 class="bg-teal-50 border-l-4 border-teal-500 rounded-lg p-5">
+                                <h5 class="text-lg font-semibold text-teal-700 mb-2 flex items-center">
+                                    <i class="fas fa-user-cog mr-2"></i> Ditangani Oleh
+                                </h5>
+                                <p class="text-gray-700" x-text="showData.assigned_to || 'Unknown'"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="button" @click="closeModals()"
+                            class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
+     {{-- Ticket Management Modals --}}
+    <script>
+        // Define ticketManagement in global scope for Alpine.js
+        window.ticketManagement = function() {
+            return {
+                // Modal states
+                showCreateModal: false,
+                showEditModal: false,
+                showShowModal: false,
+
+                // Form data
+                createFormData: {
+                    title: '',
+                    description: '',
+                    priority: 'Medium',
+                    category_id: '',
+                    location_id: ''
+                },
+
+                editFormData: {
+                    id: null,
+                    title: '',
+                    description: '',
+                    priority: '',
+                    category_id: '',
+                    location_id: ''
+                },
+
+                showData: {},
+                errors: {},
+                loading: false,
+                isSubmitting: false, // NEW: Prevent double submissions
+
+                // Methods
+                openCreateModal() {
+                    this.createFormData = {
+                        title: '',
+                        description: '',
+                        priority: 'Medium',
+                        category_id: '',
+                        location_id: ''
+                    };
+                    this.errors = {};
+                    this.showCreateModal = true;
+                },
+
+                openEditModal(id, title, description, priority, categoryId, locationId) {
+                    this.editFormData = {
+                        id: id,
+                        title: title,
+                        description: description,
+                        priority: priority,
+                        category_id: categoryId,
+                        location_id: locationId
+                    };
+                    this.errors = {};
+                    this.showEditModal = true;
+                },
+
+                async openShowModal(ticketId) {
+                    this.loading = true;
+                    this.showShowModal = true;
+
+                    try {
+                        // Fetch ticket data as JSON instead of HTML
+                        const response = await fetch(`/tickets/${ticketId}`, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            console.error('Error response:', errorText);
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+
+                        const ticket = await response.json();
+
+                        // Store ticket data for display
+                        this.showData = ticket;
+                    } catch (error) {
+                        console.error('Error fetching ticket:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Failed to load ticket details.'
+                        });
+                        this.showShowModal = false;
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                closeModals() {
+                    this.showCreateModal = false;
+                    this.showEditModal = false;
+                    this.showShowModal = false;
+                    this.errors = {};
+                },
+
+                async submitCreate() {
+                    // Show confirmation dialog
+                    const result = await Swal.fire({
+                        title: 'Create Ticket?',
+                        text: 'Are you sure you want to create this ticket?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#14b8a6',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Yes, create it!',
+                        cancelButtonText: 'Cancel'
+                    });
+
+                    if (!result.isConfirmed) {
+                        return; // User cancelled
+                    }
+
+                    this.errors = {};
+                    this.isSubmitting = true; // Start loading
+
+                    try {
+                        const response = await fetch('{{ route('tickets.store') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(this.createFormData)
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            this.closeModals();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Ticket created successfully.',
+                                showConfirmButton: false,
+                                timer: 2000
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            if (data.errors) {
+                                this.errors = data.errors;
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error!',
+                                    text: data.message || 'An error occurred.'
+                                });
+                            }
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An unexpected error occurred.'
+                        });
+                    } finally {
+                        this.isSubmitting = false; // Stop loading
+                    }
+                },
+
+                async submitEdit() {
+                    // Show confirmation dialog
+                    const result = await Swal.fire({
+                        title: 'Update Ticket?',
+                        text: 'Are you sure you want to update this ticket?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#14b8a6',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Yes, update it!',
+                        cancelButtonText: 'Cancel'
+                    });
+
+                    if (!result.isConfirmed) {
+                        return; // User cancelled
+                    }
+
+                    this.errors = {};
+                    this.isSubmitting = true; // Start loading
+
+                    try {
+                        const response = await fetch(`/tickets/${this.editFormData.id}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                title: this.editFormData.title,
+                                description: this.editFormData.description,
+                                priority: this.editFormData.priority,
+                                category_id: this.editFormData.category_id,
+                                location_id: this.editFormData.location_id
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            this.closeModals();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Ticket updated successfully.',
+                                showConfirmButton: false,
+                                timer: 2000
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            if (data.errors) {
+                                this.errors = data.errors;
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error!',
+                                    text: data.message || 'An error occurred.'
+                                });
+                            }
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An unexpected error occurred.'
+                        });
+                    } finally {
+                        this.isSubmitting = false; // Stop loading
+                    }
+                }
+            }
+        }
+    </script>
     {{-- ✅ SweetAlert Scripts --}}
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {{-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
@@ -749,5 +1372,11 @@
     </script>
 
 
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
 
 </x-app-layout>

@@ -72,7 +72,7 @@
                                     <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">#</th>
                                     <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Nama User</th>
                                     <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Tanggal Selesai</th>
-                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Catatan</th>
+                                    {{-- <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Catatan</th> --}}
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
@@ -86,9 +86,9 @@
                                             {{ $completion->complated_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') }}
                                             WITA
                                         </td>
-                                        <td class="px-4 py-2 text-sm text-gray-700">
+                                        {{-- <td class="px-4 py-2 text-sm text-gray-700">
                                             {{ $completion->notes ?? '-' }}
-                                        </td>
+                                        </td> --}}
                                     </tr>
                                 @endforeach
                             </tbody>

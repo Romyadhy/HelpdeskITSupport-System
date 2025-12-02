@@ -59,10 +59,16 @@ class TicketController extends Controller
         $tickets = $query->paginate(10);
         $tickets->appends($request->query());
 
+        // Get categories and locations for modals
+        $categories = TicketCategory::where('is_active', true)->get();
+        $locations = TicketLocation::where('is_active', true)->get();
+
         return view('frontend.Tickets.tickets', [
             'tickets' => $tickets,
             'search' => $request->search,
             'filters' => $request->only(['status', 'priority', 'category', 'sort']),
+            'categories' => $categories,
+            'locations' => $locations,
         ]);
     }
 
@@ -74,7 +80,7 @@ class TicketController extends Controller
         return view('frontend.Tickets.create', compact('categories', 'locations'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         try {
             $validated = $request->validate([
@@ -108,13 +114,30 @@ class TicketController extends Controller
             $ticket->load(['category', 'location']);
             $telegram = app(TelegramService::class);
 
-            $message = "📩 <b>Ticket Baru Masuk</b>\n"."Judul     : {$ticket->title}\n"."Prioritas : {$ticket->priority}\n"."Kategori  : {$ticket->category->name}\n"."Lokasi    : {$ticket->location->name}\n".'Dari      : '.auth()->user()->name."\n\n".'Silakan mengecek detailnya pada sistem 😊';
+            $message = "📩 <b>Ticket Baru Masuk</b>\n" . "Judul     : {$ticket->title}\n" . "Prioritas : {$ticket->priority}\n" . "Kategori  : {$ticket->category->name}\n" . "Lokasi    : {$ticket->location->name}\n" . 'Dari      : ' . auth()->user()->name . "\n\n" . 'Silakan mengecek detailnya pada sistem 😊';
 
             $telegram->sendMessage($message);
 
+            // Return JSON for AJAX requests
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Ticket created successfully.',
+                    'ticket' => $ticket
+                ], 201);
+            }
+
             return redirect()->route('tickets.index')->with('success', 'Ticket created successfully.');
         } catch (Exception $e) {
-            Log::error('Error creating ticket: '.$e->getMessage());
+            Log::error('Error creating ticket: ' . $e->getMessage());
+
+            // Return JSON error for AJAX requests
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while creating the ticket.'
+                ], 500);
+            }
 
             return back()->withErrors('An error occurred while creating the ticket.');
         }
@@ -134,11 +157,18 @@ class TicketController extends Controller
         return view('frontend.Tickets.edit', compact('ticket', 'categories', 'locations'));
     }
 
-    public function update(Request $request, Ticket $ticket): RedirectResponse
+    public function update(Request $request, Ticket $ticket)
     {
         $user = Auth::user();
 
         if ($ticket->user_id !== $user->id && ! $user->can('edit-own-ticket')) {
+            // Return JSON error for AJAX requests
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized action.'
+                ], 403);
+            }
             abort(403, 'Unauthorized action.');
         }
 
@@ -164,9 +194,26 @@ class TicketController extends Controller
                 'new' => $new,
             ]);
 
+            // Return JSON for AJAX requests
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Ticket updated successfully.',
+                    'ticket' => $ticket
+                ], 200);
+            }
+
             return redirect()->route('tickets.index')->with('success', 'Ticket updated successfully.');
         } catch (Exception $e) {
-            Log::error('Error updating ticket: '.$e->getMessage());
+            Log::error('Error updating ticket: ' . $e->getMessage());
+
+            // Return JSON error for AJAX requests
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error updating ticket.'
+                ], 500);
+            }
 
             return back()->withErrors('Error updating ticket.');
         }
@@ -177,11 +224,39 @@ class TicketController extends Controller
         $user = Auth::user();
 
         if (! $user->can('view-any-tickets') && $ticket->user_id !== $user->id) {
+            // Return JSON error for AJAX requests
+            if (request()->expectsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized action.'
+                ], 403);
+            }
             abort(403, 'Unauthorized action.');
         }
 
         $categoryName = TicketCategory::find($ticket->category_id)->name;
         $locationName = TicketLocation::find($ticket->location_id)->name;
+
+        // Return JSON for AJAX requests
+        if (request()->expectsJson() || request()->ajax()) {
+            $ticket->load(['user', 'assignee', 'solver']);
+            return response()->json([
+                'id' => $ticket->id,
+                'title' => $ticket->title,
+                'description' => $ticket->description,
+                'status' => $ticket->status,
+                'priority' => $ticket->priority,
+                'duration' => $ticket->duration,
+                'category' => $categoryName,
+                'location' => $locationName,
+                'user' => $ticket->user->name,
+                'assigned_to' => $ticket->assignee ? $ticket->assignee->name : null,
+                'closed_by' => $ticket->solver ? $ticket->solver->name : null,
+                'solution' => $ticket->solution,
+                'created_at' => $ticket->created_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') . ' WITA',
+                'updated_at' => $ticket->updated_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') . ' WITA',
+            ]);
+        }
 
         return view('frontend.Tickets.show', compact('ticket', 'categoryName', 'locationName'));
     }
@@ -331,11 +406,11 @@ class TicketController extends Controller
             $ticket->load(['category', 'location', 'user']);
             $telegram = app(TelegramService::class);
 
-            $message = "⚠️ <b>Ticket DIESKALASIKAN</b>\n"."Judul     : {$ticket->title}\n"."Prioritas : {$ticket->priority}\n"."Dari      : {$ticket->user->name}\n".'Eskalasi Oleh: '.$user->name."\n\n".'🛠️ <i>Tiket ini memerlukan perhatian admin untuk tindak lanjut.</i>';
+            $message = "⚠️ <b>Ticket DIESKALASIKAN</b>\n" . "Judul     : {$ticket->title}\n" . "Prioritas : {$ticket->priority}\n" . "Dari      : {$ticket->user->name}\n" . 'Eskalasi Oleh: ' . $user->name . "\n\n" . '🛠️ <i>Tiket ini memerlukan perhatian admin untuk tindak lanjut.</i>';
 
             $telegram->sendMessage($message);
         } catch (Exception $e) {
-            Log::error('Gagal mengirim notifikasi Telegram: '.$e->getMessage());
+            Log::error('Gagal mengirim notifikasi Telegram: ' . $e->getMessage());
         }
 
         return redirect()->route('tickets.index')->with('success', 'Ticket escalated and notification sent.');

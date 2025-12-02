@@ -15,13 +15,14 @@
 - [ ] Admin Dashboard, in UI chart fix the width between Ticket Trends, and SLA Category.
 - [x] Login Button loading bugs.
 - [ ] Bugs in sidebar size, its diff when username has long text the other way around.
+- [ ] Durations tickets didnt setup yet.
 
 ## Unfinished Features
 
 - [ ] PDF structure.
 - [x] Cron Job for Daily Report Telegram bot at 4 PM (not optimal yet).
 - [x] Fix every table, add pagination, and add searching.
-- [ ] Make all create/edit/show actions a popup or alert so we can interact with them.
+- [ ] Make all create/edit/show actions a popup or alert so we can interact with them. Its called MODALS.
 - [x] API for Monthly Report has not been created.
 - [x] UI login.
 - [x] Profile UI.
@@ -33,12 +34,12 @@
 - [x] Animate in logs detail/show.
 - [x] In Tickets → Take over, handle-escalated not yet has sweet alert.
 - [x] In Monthly Report → edit, create, destroy not yet has sweet alert.
-- [ ] In every show page, add edit and delete button.
 - [ ] Make consistent language in alert dan other text.
-- [ ] Make responsive for any device.
+- [x] Make responsive for any device.
 - [x] Add footer and fix structure of the folder/file in source.
-- [ ] Create a buttton to close sidebar.
+- [x] Create a buttton to close sidebar.
 - [x] Add admin page that can create new category, locations and user.
+- [ ] Add status and priority in admin settings.
 
 ## Other Notes
 
