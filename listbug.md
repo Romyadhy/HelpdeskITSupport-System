@@ -15,7 +15,7 @@
 - [ ] Admin Dashboard, in UI chart fix the width between Ticket Trends, and SLA Category.
 - [x] Login Button loading bugs.
 - [ ] Bugs in sidebar size, its diff when username has long text the other way around.
-- [ ] Durations tickets didnt setup yet.
+- [x] Durations tickets didnt setup yet.
 
 ## Unfinished Features
 

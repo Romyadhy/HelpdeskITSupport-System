@@ -14,7 +14,7 @@
                     Welcome, <span class="text-teal-600">{{ auth()->user()->name }}</span> 👋
                 </h1>
                 <p class="text-gray-500 mt-2 text-lg">
-                    Pantau status laporanmu & ajukan tiket baru kapan pun.
+                    Pantau status laporanmu & laporkan masalah baru kapan pun.
                 </p>
             </div>
 
@@ -25,7 +25,7 @@
                 <div class="bg-white shadow-md rounded-2xl p-6 border-l-4 border-teal-500 hover:shadow-xl transition">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-gray-500 text-sm">Open Tickets</p>
+                            <p class="text-gray-500 text-sm">Open</p>
                             <h3 class="text-3xl font-bold text-gray-800 mt-1">{{ $openTicketsCount }}</h3>
                         </div>
                         <i class="fas fa-folder-open text-teal-500 text-4xl"></i>
@@ -58,25 +58,25 @@
 
             {{-- INFORMASI TIKET USER --}}
             <div class="bg-white rounded-2xl shadow p-4 mb-8">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Ticket Insights</h3>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Informasi Pelaporan</h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                     {{-- Total Tiket Dibuat --}}
                     <div class="p-4 bg-gray-50 rounded-xl border hover:bg-gray-100 transition">
-                        <p class="text-gray-500 text-sm">Total Tickets Created</p>
+                        <p class="text-gray-500 text-sm">Total Pelaporan yang Dibuat</p>
                         <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ $userTickets->count() }}</h3>
                     </div>
 
                     {{-- Total Tiket Selesai --}}
                     <div class="p-4 bg-gray-50 rounded-xl border hover:bg-gray-100 transition">
-                        <p class="text-gray-500 text-sm">Tickets Closed</p>
+                        <p class="text-gray-500 text-sm">Masalah Selesai</p>
                         <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ $closedTicketsCount }}</h3>
                     </div>
 
                     {{-- Rata-rata penyelesaian --}}
                     <div class="p-4 bg-gray-50 rounded-xl border hover:bg-gray-100 transition">
-                        <p class="text-gray-500 text-sm">Avg. Resolution Time</p>
+                        <p class="text-gray-500 text-sm">Rata-rata Penyelesaian</p>
 
                         @php
                             $avg = $userTickets
@@ -95,7 +95,7 @@
             {{-- RECENT TICKETS --}}
             <div class="bg-white rounded-2xl shadow p-4 mb-8">
                 <div class="flex justify-between items-center mb-5">
-                    <h3 class="text-lg font-semibold text-gray-800">Recent Tickets</h3>
+                    <h3 class="text-lg font-semibold text-gray-800">Ticket Terakhir</h3>
                     <a href="{{ route('tickets.index') }}"
                         class="text-teal-600 text-sm hover:underline">View all</a>
                 </div>
@@ -127,13 +127,13 @@
                 @endforelse
             </div>
 
-            {{-- CTA --}}
-            <div class="text-center mt-10">
-                <a href="{{ route('tickets.create') }}"
-                   class="inline-flex items-center bg-teal-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-teal-700 transition font-medium">
-                    <i class="fas fa-plus mr-2"></i> Buat Tiket Baru
-                </a>
-            </div>
+            {{-- {{-- CTA --}}
+            {{-- <div class="text-center mt-10"> --}}
+            {{--     <a href="{{ route('tickets.create') }}" --}}
+            {{--        class="inline-flex items-center bg-teal-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-teal-700 transition font-medium"> --}}
+            {{--         <i class="fas fa-plus mr-2"></i> Buat Tiket Baru --}}
+            {{--     </a> --}}
+            {{-- </div> --}}
 
         </div>
     </div>

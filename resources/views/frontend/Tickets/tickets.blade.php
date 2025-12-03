@@ -1,34 +1,32 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Support Tickets
-        </h2>
+        <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                Pusat Laporan Masalah dan Permintaan Bantuan
+            </h2>
+            @can('create-ticket')
+                <button @click="openCreateModal()"
+                    class="mt-4 sm:mt-0 inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
+                        + Laportkan Masalah
+                </button>
+            @endcan
+        </div>
     </x-slot>
 
-    <div class="py-10 bg-gray-50 min-h-screen" x-data="ticketManagement()">
+    <div class="py-8 bg-gray-50 min-h-screen" x-data="ticketManagement()">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
                 <div>
-                    <h1 class="text-3xl font-bold text-teal-600">All Tickets</h1>
-                    <p class="text-gray-500 mt-1">Manage and track all support requests.</p>
+                    <h1 class="text-3xl font-bold text-teal-600">Semua Ticket Pelaporan</h1>
+                    <p class="text-gray-500 mt-1">Daftar semua permintaan bantuan dan laporan masalah.</p>
                 </div>
-                @can('create-ticket')
-                    <button @click="openCreateModal()"
-                        class="mt-4 sm:mt-0 inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
-                        + New Ticket
-                    </button>
-                @endcan
-            </div>
+
+
             {{-- search --}}
-            <div x-data="ticketSearch()" class="mb-6">
+            <div x-data="ticketSearch()" class="mb-4">
                 <form id="searchForm" method="GET" action="{{ route('tickets.index') }}">
                     <div class="relative max-w-sm">
 
-                        <!-- Input -->
-                        <input type="text" x-model="search" name="search" placeholder="Search tickets..."
-                            class="w-full pl-5 pr-11 py-2.5 rounded-xl bg-white border border-gray-300
-                       text-gray-700 placeholder-gray-400 shadow-sm
-                       focus:border-teal-500 focus:ring-2 focus:ring-teal-400 transition">
 
                         <!-- Clear Button -->
                         <button x-show="search.length > 0" type="button" @click="clearSearch"
@@ -37,7 +35,7 @@
                         </button>
 
                         <!-- Search Icon / Spinner -->
-                        <span class="absolute right-3 top-3 text-gray-400 text-lg">
+                        <span class="absolute top-3 mx-auto pl-2 text-gray-400 text-lg">
                             <template x-if="loading">
                                 <i class="fas fa-circle-notch fa-spin"></i>
                             </template>
@@ -46,13 +44,20 @@
                             </template>
                         </span>
 
+                        <!-- Input -->
+                        <input type="text" x-model="search" name="search" placeholder="Cari laporan..."
+                            class="w-full pl-8 pr-11 py-2.5 rounded-xl bg-white border border-gray-300
+                       text-gray-700 placeholder-gray-400 shadow-sm
+                       focus:border-teal-500 focus:ring-2 focus:ring-teal-400 transition">
+
                     </div>
                 </form>
+            </div>
             </div>
 
 
             <!-- 🌟 PREMIUM FILTER BAR -->
-            <div x-data="premiumFilter()" class="mb-8">
+            <div x-data="premiumFilter()" class="mb-4">
 
                 <!-- Header -->
                 <div class="flex items-center justify-between mb-3">
@@ -105,7 +110,7 @@
 
                         <!-- Priority -->
                         <div class="relative" x-data="{ open: false }">
-                            <label class="text-sm text-gray-600">Priority</label>
+                            <label class="text-sm text-gray-600">Prioritas</label>
                             <button type="button" @click="open = !open"
                                 class="w-full px-3 py-2 mt-1 bg-white border-gray-300 border rounded-xl flex justify-between items-center hover:border-teal-500 transition">
                                 <span x-text="priority ? priority : 'All'"></span>
@@ -129,7 +134,7 @@
 
                         <!-- Category -->
                         <div class="relative" x-data="{ open: false }">
-                            <label class="text-sm text-gray-600">Category</label>
+                            <label class="text-sm text-gray-600">Kategori</label>
                             <button type="button" @click="open = !open"
                                 class="w-full px-3 py-2 mt-1 bg-white border-gray-300 border rounded-xl flex justify-between items-center hover:border-teal-500 transition">
                                 <span x-text="category ? category : 'All'"></span>
@@ -153,7 +158,7 @@
 
                         <!-- Sort By Date -->
                         <div class="relative" x-data="{ open: false }">
-                            <label class="text-sm text-gray-600">Sort by Date</label>
+                            <label class="text-sm text-gray-600">Urutkan</label>
                             <button type="button" @click="open = !open"
                                 class="w-full px-3 py-2 mt-1 bg-white border-gray-300 border rounded-xl flex justify-between items-center hover:border-teal-500 transition">
                                 <span x-text="sort ? sort : 'Newest First'"></span>
@@ -171,6 +176,7 @@
                                 </template>
                             </div>
 
+                            {{-- <input type="hidden" name="sort" x-model="sort"> --}}
                             <input type="hidden" name="sort" x-model="sort">
                         </div>
 
@@ -188,8 +194,8 @@
                                 <th class="px-6 py-3 text-left font-semibold">Subject</th>
                                 <th class="px-6 py-3 text-left font-semibold hidden md:table-cell">User</th>
                                 <th class="px-6 py-3 text-left font-semibold">Status</th>
-                                <th class="px-6 py-3 text-left font-semibold">Priority</th>
-                                <th class="px-6 py-3 text-left font-semibold">Actions</th>
+                                <th class="px-6 py-3 text-left font-semibold">Prioritas</th>
+                                <th class="px-6 py-3 text-left font-semibold">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -267,7 +273,7 @@
                                         @endcan
 
                                         @can('delete-own-ticket', $ticket)
-                                            @if (in_array($ticket->status, ['Open', 'Closed']))
+                                            @if (in_array($ticket->status, ['Open']))
                                                 <form action="{{ route('tickets.destroy', $ticket->id) }}" method="POST"
                                                     class="inline delete-ticket-form">
                                                     @csrf
@@ -515,9 +521,7 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
                                     required>
                                     <option value="">-- Select Category --</option>
-                                    @foreach ($categories as $cat)
-                                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                                    @endforeach
+                                    <x-category-options :categories="$categories" />
                                 </select>
                             </div>
 
@@ -529,9 +533,7 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
                                     required>
                                     <option value="">-- Select Location --</option>
-                                    @foreach ($locations as $loc)
-                                        <option value="{{ $loc->id }}">{{ $loc->name }}</option>
-                                    @endforeach
+                                    <x-location-options :locations="$locations" />
                                 </select>
                             </div>
                         </div>
@@ -626,9 +628,7 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
                                     required>
                                     <option value="">-- Select Category --</option>
-                                    @foreach ($categories as $cat)
-                                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                                    @endforeach
+                                    <x-category-options :categories="$categories" />
                                 </select>
                             </div>
 
@@ -640,9 +640,7 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
                                     required>
                                     <option value="">-- Select Location --</option>
-                                    @foreach ($locations as $loc)
-                                        <option value="{{ $loc->id }}">{{ $loc->name }}</option>
-                                    @endforeach
+                                    <x-location-options :locations="$locations" />
                                 </select>
                             </div>
                         </div>
@@ -751,35 +749,18 @@
                                             x-text="showData.priority"></span>
                                     </span>
                                 </div>
-                                    {{-- ini belum selesaiya bung --}}
                                 <div class="flex items-center space-x-2">
                                     <i class="fas fa-stopwatch text-teal-500"></i>
-                                        <span><strong>Duration:</strong></span>
-                                        @if ($ticket->status === 'Closed')
-                                            <span class="text-gray-700">
-                                                {{ $ticket->duration_human }}
-                                                <small class="text-gray-500 block text-xs mt-0.5">
-                                                ({{ $ticket->started_at
-                                                    ? $ticket->started_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i')
-                                                    : $ticket->created_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i')
-                                                }}
-                                                →
-                                                {{ $ticket->solved_at
-                                                    ? $ticket->solved_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i')
-                                                    : '—' }})
-                                                </small>
-                                            </span>
-                                        @elseif($ticket->status === 'In Progress' && $ticket->started_at)
-                                            @php
-                                                $minutes = $ticket->started_at->diffInMinutes(now());
-                                                $live = \Carbon\CarbonInterval::minutes($minutes)->cascade();
-                                            @endphp
-                                            <span class="text-yellow-700">
-                                                {{ $live->hours ? $live->hours . 'h ' : '' }}{{ $live->minutes }}m (running)
-                                            </span>
-                                        @else
-                                            <span class="text-gray-500">-</span>
-                                        @endif
+                                    <span><strong>Duration:</strong></span>
+                                    <template x-if="showData.duration_human">
+                                        <span>
+                                            <span class="text-gray-700" x-text="showData.duration_human"></span>
+                                            <small class="text-gray-500 text-xs ml-1" x-show="showData.duration_details" x-text="showData.duration_details"></small>
+                                        </span>
+                                    </template>
+                                    <template x-if="!showData.duration_human">
+                                        <span class="text-gray-500">-</span>
+                                    </template>
                                 </div>
                             </div>
 
@@ -1058,7 +1039,6 @@
         }
     </script>
     {{-- ✅ SweetAlert Scripts --}}
-    {{-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 

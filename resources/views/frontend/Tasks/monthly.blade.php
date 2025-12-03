@@ -1,7 +1,7 @@
 <x-app-layout>
     {{-- ================= HEADER ================= --}}
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Daily / Monthly Tasks</h2>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Tugas Bulanan</h2>
     </x-slot>
 
     <div class="py-8 bg-gray-50 min-h-screen" x-data="taskManagement()">
@@ -12,13 +12,13 @@
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div class="p-2">
-                            <h3 class="text-lg font-semibold text-gray-700">🗓️ Monthly Tasks</h3>
+                            <h3 class="text-lg font-semibold text-gray-700">🗓️ Tugas Bulanan</h3>
                             <p class="text-sm font-thin text-gray-400">Aktivitas yang dilakukan secara periodik untuk menjaga stabilitas dan keamanan sistem</p>
                         </div>
                         @can('create-task')
-                            <button @click="openCreateModal()" 
+                            <button @click="openCreateModal()"
                                 class="inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
-                                <i class="fas fa-plus mr-2"></i> New Task
+                                <i class="fas fa-plus mr-2"></i> Tugas Baru
                             </button>
                         @endcan
                     </div>
@@ -29,12 +29,12 @@
                             <thead class="bg-gray-100">
                                 <tr>
                                     <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
-                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Title</th>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Judul</th>
                                     @if (auth()->user()->hasRole('admin'))
-                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Activate</th>
+                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Aktif</th>
                                     @endif
                                     <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
-                                    <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Action</th>
+                                    <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
@@ -82,7 +82,7 @@
 
                                                 {{-- Edit --}}
                                                 @can('edit-task')
-                                                    <button @click="openEditModal({{ $task->id }}, '{{ addslashes($task->title) }}', '{{ addslashes($task->description) }}', '{{ $task->frequency }}', {{ $task->is_active ? 'true' : 'false' }})" 
+                                                    <button @click="openEditModal({{ $task->id }}, '{{ addslashes($task->title) }}', '{{ addslashes($task->description) }}', '{{ $task->frequency }}', {{ $task->is_active ? 'true' : 'false' }})"
                                                         title="Edit"
                                                         class="text-teal-600 hover:text-teal-800 transition">
                                                         <i class="fas fa-edit"></i>
@@ -499,7 +499,7 @@
                         }
 
                         const task = await response.json();
-                        
+
                         // Store task data for display
                         this.showData = task;
                     } catch (error) {

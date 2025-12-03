@@ -72,13 +72,7 @@ class TicketController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        $categories = TicketCategory::where('is_active', true)->get();
-        $locations = TicketLocation::where('is_active', true)->get();
 
-        return view('frontend.Tickets.create', compact('categories', 'locations'));
-    }
 
     public function store(Request $request)
     {
@@ -143,19 +137,7 @@ class TicketController extends Controller
         }
     }
 
-    public function edit(Ticket $ticket)
-    {
-        $user = Auth::user();
 
-        if ($ticket->user_id !== $user->id && ! $user->can('edit-own-ticket')) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $categories = TicketCategory::where('is_active', true)->get();
-        $locations = TicketLocation::where('is_active', true)->get();
-
-        return view('frontend.Tickets.edit', compact('ticket', 'categories', 'locations'));
-    }
 
     public function update(Request $request, Ticket $ticket)
     {
@@ -240,6 +222,27 @@ class TicketController extends Controller
         // Return JSON for AJAX requests
         if (request()->expectsJson() || request()->ajax()) {
             $ticket->load(['user', 'assignee', 'solver']);
+            
+            // Calculate duration for display
+            $durationHuman = null;
+            $durationDetails = null;
+            
+            if ($ticket->status === 'Closed' && $ticket->duration) {
+                $durationHuman = $ticket->duration_human;
+                $startTime = $ticket->started_at 
+                    ? $ticket->started_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i')
+                    : $ticket->created_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i');
+                $endTime = $ticket->solved_at 
+                    ? $ticket->solved_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i')
+                    : '—';
+                $durationDetails = "({$startTime} → {$endTime})";
+            } elseif ($ticket->status === 'In Progress' && $ticket->started_at) {
+                $minutes = $ticket->started_at->diffInMinutes(now());
+                $live = \Carbon\CarbonInterval::minutes($minutes)->cascade();
+                $durationHuman = ($live->hours ? $live->hours . 'h ' : '') . $live->minutes . 'm (running)';
+                $durationDetails = null;
+            }
+            
             return response()->json([
                 'id' => $ticket->id,
                 'title' => $ticket->title,
@@ -247,6 +250,8 @@ class TicketController extends Controller
                 'status' => $ticket->status,
                 'priority' => $ticket->priority,
                 'duration' => $ticket->duration,
+                'duration_human' => $durationHuman,
+                'duration_details' => $durationDetails,
                 'category' => $categoryName,
                 'location' => $locationName,
                 'user' => $ticket->user->name,
@@ -255,6 +260,8 @@ class TicketController extends Controller
                 'solution' => $ticket->solution,
                 'created_at' => $ticket->created_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') . ' WITA',
                 'updated_at' => $ticket->updated_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') . ' WITA',
+                'started_at' => $ticket->started_at ? $ticket->started_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') . ' WITA' : null,
+                'solved_at' => $ticket->solved_at ? $ticket->solved_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') . ' WITA' : null,
             ]);
         }
 

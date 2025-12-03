@@ -103,7 +103,7 @@
 
                 <span x-show="sidebarExpanded"
                       class="text-sm font-medium transition-opacity duration-200 truncate flex-1 min-w-0">
-                    Tickets
+                    Pelaporan Masalah
                 </span>
             </a>
 
@@ -129,7 +129,7 @@
 
                         <span x-show="sidebarExpanded"
                               class="text-sm font-medium transition-opacity duration-200 truncate">
-                            Tasks
+                            Tugas-tugas
                         </span>
                     </span>
 
@@ -144,7 +144,7 @@
                        {{ request()->routeIs('tasks.daily')
                             ? 'bg-emerald-50 text-emerald-700'
                             : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
-                        Daily Tasks
+                        Tugas Harian
                     </a>
 
                     <a href="{{ route('tasks.monthly') }}"
@@ -152,7 +152,7 @@
                        {{ request()->routeIs('tasks.monthly')
                             ? 'bg-emerald-50 text-emerald-700'
                             : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
-                        Monthly Tasks
+                        Tugas Bulanan
                     </a>
                 </div>
             </div>
@@ -182,7 +182,7 @@
 
                         <span x-show="sidebarExpanded"
                               class="text-sm font-medium transition-opacity duration-200 truncate">
-                            Reports
+                            Laporan
                         </span>
                     </span>
 
@@ -198,7 +198,7 @@
                        {{ request()->routeIs('reports.daily')
                             ? 'bg-emerald-50 text-emerald-700'
                             : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
-                        Daily Report
+                        Laporan Harian
                     </a>
 
                     @can('view-monthly-reports')
@@ -207,7 +207,7 @@
                        {{ request()->routeIs('reports.monthly')
                             ? 'bg-emerald-50 text-emerald-700'
                             : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
-                        Monthly Report
+                        Laporan Bulanan
                     </a>
                     @endcan
                 </div>
@@ -272,7 +272,7 @@
                        {{ request()->routeIs('admin.categories.*')
                             ? 'bg-emerald-50 text-emerald-700'
                             : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
-                        Ticket Categories
+                        Kategori Masalah
                     </a>
 
                     <a href="{{ route('admin.locations.index') }}"
@@ -280,7 +280,7 @@
                        {{ request()->routeIs('admin.locations.*')
                             ? 'bg-emerald-50 text-emerald-700'
                             : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
-                        Ticket Locations
+                        Lokasi Masalah
                     </a>
                 </div>
             </div>
@@ -353,7 +353,7 @@
                         @csrf
                         <x-dropdown-link :href="route('logout')"
                             onclick="event.preventDefault(); this.closest('form').submit();">
-                            Log Out
+                            Keluar
                         </x-dropdown-link>
                     </form>
                 </div>

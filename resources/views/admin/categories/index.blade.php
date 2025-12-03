@@ -11,7 +11,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium">Categories List</h3>
+                        <h3 class="text-lg font-medium">Daftar Katerogi</h3>
                         <button @click="openCreateModal()" class="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded">
                             Create New Category
                         </button>
@@ -43,7 +43,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <button @click="openEditModal({{ $category->id }}, '{{ $category->name }}', {{ $category->is_active ? 'true' : 'false' }})" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
-                                            
+
                                             <form action="{{ route('admin.categories.destroy', $category->id) }}" method="POST" class="inline-block delete-category-form">
                                                 @csrf
                                                 @method('DELETE')
@@ -64,22 +64,22 @@
         </div>
 
         <!-- Create Category Modal -->
-        <div x-show="showCreateModal" 
+        <div x-show="showCreateModal"
              x-cloak
-             class="fixed inset-0 z-50 overflow-y-auto" 
-             aria-labelledby="modal-title" 
-             role="dialog" 
+             class="fixed inset-0 z-50 overflow-y-auto"
+             aria-labelledby="modal-title"
+             role="dialog"
              aria-modal="true">
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <!-- Background overlay -->
-                <div x-show="showCreateModal" 
+                <div x-show="showCreateModal"
                      x-transition:enter="ease-out duration-300"
                      x-transition:enter-start="opacity-0"
                      x-transition:enter-end="opacity-100"
                      x-transition:leave="ease-in duration-200"
                      x-transition:leave-start="opacity-100"
                      x-transition:leave-end="opacity-0"
-                     class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+                     class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
                      @click="closeModals()"></div>
 
                 <!-- Modal panel -->
@@ -94,7 +94,7 @@
                     <form @submit.prevent="submitCreate()">
                         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Create New Category</h3>
-                            
+
                             <!-- Error Display -->
                             <div x-show="Object.keys(errors).length > 0" class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
                                 <strong>Whoops!</strong> There were some problems with your input.<br><br>
@@ -134,22 +134,22 @@
         </div>
 
         <!-- Edit Category Modal -->
-        <div x-show="showEditModal" 
+        <div x-show="showEditModal"
              x-cloak
-             class="fixed inset-0 z-50 overflow-y-auto" 
-             aria-labelledby="modal-title" 
-             role="dialog" 
+             class="fixed inset-0 z-50 overflow-y-auto"
+             aria-labelledby="modal-title"
+             role="dialog"
              aria-modal="true">
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <!-- Background overlay -->
-                <div x-show="showEditModal" 
+                <div x-show="showEditModal"
                      x-transition:enter="ease-out duration-300"
                      x-transition:enter-start="opacity-0"
                      x-transition:enter-end="opacity-100"
                      x-transition:leave="ease-in duration-200"
                      x-transition:leave-start="opacity-100"
                      x-transition:leave-end="opacity-0"
-                     class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+                     class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
                      @click="closeModals()"></div>
 
                 <!-- Modal panel -->
@@ -164,7 +164,7 @@
                     <form @submit.prevent="submitEdit()">
                         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Edit Category</h3>
-                            
+
                             <!-- Error Display -->
                             <div x-show="Object.keys(errors).length > 0" class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
                                 <strong>Whoops!</strong> There were some problems with your input.<br><br>
@@ -248,7 +248,7 @@
 
                 async submitCreate() {
                     this.errors = {};
-                    
+
                     try {
                         const response = await fetch('{{ route("admin.categories.store") }}', {
                             method: 'POST',
@@ -295,7 +295,7 @@
 
                 async submitEdit() {
                     this.errors = {};
-                    
+
                     try {
                         const response = await fetch(`/admin/categories/${this.editingCategory.id}`, {
                             method: 'PUT',
