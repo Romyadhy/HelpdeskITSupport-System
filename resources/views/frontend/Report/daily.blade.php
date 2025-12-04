@@ -11,6 +11,7 @@
                 <div>
                     <h3 class="text-lg font-semibold text-gray-800">Hi, {{ Auth::user()->name }}</h3>
                     <p class="text-gray-500 text-sm">{{ now()->format('l, d F Y') }}</p>
+                    <p class="text-md text-gray-500 italic font-semibold pt-1.5">Laporan harian sebagai bentuk dokumentasi dan akuntabilitas.</p>
                 </div>
 
                 @if ($hasReportToday)
@@ -89,9 +90,6 @@
 
                                 <p class="text-sm text-gray-500 mt-1">{{ Str::limit($report->content, 80) }}</p>
 
-                                <a href="{{ route('reports.daily.show', $report->id) }}"
-                                   class="text-teal-600 hover:underline text-sm">Lihat Detail</a>
-
                                 <div class="text-xs text-gray-500 mt-2 mb-2">
                                     @if ($report->tasks->count())
                                         <p><strong>Tasks:</strong> {{ $report->tasks->pluck('title')->join(', ') }}</p>
@@ -119,6 +117,10 @@
                                 class="inline-flex items-center gap-2 bg-rose-500 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-rose-600 transition">
                                 <i class="fas fa-file-pdf text-xs"></i> Export PDF
                             </button>
+                            {{-- detail report --}}
+                            <a href="{{ route('reports.daily.show', $report->id) }}"
+                                class="rounded-md px-1.5 py-1.5 text-white bg-teal-500 hover:bg-teal-600 text-sm transition">Lihat Detail
+                            </a>
 
                             {{-- Verifikasi --}}
                             @if (Auth::user()->hasRole('admin') && !$report->verified_at)

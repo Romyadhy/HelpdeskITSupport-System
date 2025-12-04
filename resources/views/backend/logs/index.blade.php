@@ -1,7 +1,9 @@
 <x-app-layout>
     <div class="container mx-auto mt-6 pl-6">
-
-        <h1 class="text-3xl font-bold mb-6 text-teal-800">Activity Log</h1>
+        <div class="flex flex-col">
+            <h1 class="text-3xl font-bold mb-2 text-teal-800">Activity Log</h1>
+            <p class="text-sm text-gray-500 italic pb-2">Berikut catatan aktivitas pada keseluruhan sistem</p>
+        </div>
 
         {{-- FILTER BAR --}}
         <form method="GET" action="{{ route('activity.log') }}"

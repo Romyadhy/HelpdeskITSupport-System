@@ -45,12 +45,4 @@ class DailyReport extends Model
     {
         return $this->belongsToMany(Ticket::class, 'daily_report_tickets');
     }
-
-    // public function getActivitylogOptions(): LogOptions
-    // {
-    //     return LogOptions::defaults()
-    //         ->logAll()
-    //         ->logOnlyDirty()
-    //         ->useLogName('report_daily');
-    // }
 }

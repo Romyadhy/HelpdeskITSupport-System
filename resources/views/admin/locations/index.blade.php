@@ -11,7 +11,10 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium">Locations List</h3>
+                        <div class="flex flex-col py-1.5">
+                            <h3 class="text-lg font-medium pb-1">Locations List</h3>
+                            <p class="font-thin text-sm text-gray-500 italic">Berikut adalah daftar lokasi pada ticket/pelaporan maslah</p>
+                        </div>
                         <button @click="openCreateModal()" class="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded">
                             Create New Location
                         </button>
@@ -43,7 +46,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <button @click="openEditModal({{ $location->id }}, '{{ $location->name }}', {{ $location->is_active ? 'true' : 'false' }})" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
-                                            
+
                                             <form action="{{ route('admin.locations.destroy', $location->id) }}" method="POST" class="inline-block delete-location-form">
                                                 @csrf
                                                 @method('DELETE')
@@ -80,7 +83,7 @@
                                 </span>
                             @else
                                 <a href="{{ $locations->previousPageUrl() }}"
-                                    class="px-3 py-2 rounded-xl bg-white border border-gray-300 
+                                    class="px-3 py-2 rounded-xl bg-white border border-gray-300
                       text-gray-600 hover:bg-gray-100 transition">
                                     <i class="fas fa-chevron-left"></i>
                                 </a>
@@ -104,7 +107,7 @@
                             {{-- Next --}}
                             @if ($locations->hasMorePages())
                                 <a href="{{ $locations->nextPageUrl() }}"
-                                    class="px-3 py-2 rounded-xl bg-white border border-gray-300 
+                                    class="px-3 py-2 rounded-xl bg-white border border-gray-300
                       text-gray-600 hover:bg-gray-100 transition">
                                     <i class="fas fa-chevron-right"></i>
                                 </a>
@@ -121,22 +124,22 @@
         </div>
 
         <!-- Create Location Modal -->
-        <div x-show="showCreateModal" 
+        <div x-show="showCreateModal"
              x-cloak
-             class="fixed inset-0 z-50 overflow-y-auto" 
-             aria-labelledby="modal-title" 
-             role="dialog" 
+             class="fixed inset-0 z-50 overflow-y-auto"
+             aria-labelledby="modal-title"
+             role="dialog"
              aria-modal="true">
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <!-- Background overlay -->
-                <div x-show="showCreateModal" 
+                <div x-show="showCreateModal"
                      x-transition:enter="ease-out duration-300"
                      x-transition:enter-start="opacity-0"
                      x-transition:enter-end="opacity-100"
                      x-transition:leave="ease-in duration-200"
                      x-transition:leave-start="opacity-100"
                      x-transition:leave-end="opacity-0"
-                     class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+                     class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
                      @click="closeModals()"></div>
 
                 <!-- Modal panel -->
@@ -151,7 +154,7 @@
                     <form @submit.prevent="submitCreate()">
                         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Create New Location</h3>
-                            
+
                             <!-- Error Display -->
                             <div x-show="Object.keys(errors).length > 0" class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
                                 <strong>Whoops!</strong> There were some problems with your input.<br><br>
@@ -191,22 +194,22 @@
         </div>
 
         <!-- Edit Location Modal -->
-        <div x-show="showEditModal" 
+        <div x-show="showEditModal"
              x-cloak
-             class="fixed inset-0 z-50 overflow-y-auto" 
-             aria-labelledby="modal-title" 
-             role="dialog" 
+             class="fixed inset-0 z-50 overflow-y-auto"
+             aria-labelledby="modal-title"
+             role="dialog"
              aria-modal="true">
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <!-- Background overlay -->
-                <div x-show="showEditModal" 
+                <div x-show="showEditModal"
                      x-transition:enter="ease-out duration-300"
                      x-transition:enter-start="opacity-0"
                      x-transition:enter-end="opacity-100"
                      x-transition:leave="ease-in duration-200"
                      x-transition:leave-start="opacity-100"
                      x-transition:leave-end="opacity-0"
-                     class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+                     class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
                      @click="closeModals()"></div>
 
                 <!-- Modal panel -->
@@ -221,7 +224,7 @@
                     <form @submit.prevent="submitEdit()">
                         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Edit Location</h3>
-                            
+
                             <!-- Error Display -->
                             <div x-show="Object.keys(errors).length > 0" class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
                                 <strong>Whoops!</strong> There were some problems with your input.<br><br>
@@ -305,7 +308,7 @@
 
                 async submitCreate() {
                     this.errors = {};
-                    
+
                     try {
                         const response = await fetch('{{ route("admin.locations.store") }}', {
                             method: 'POST',
@@ -352,7 +355,7 @@
 
                 async submitEdit() {
                     this.errors = {};
-                    
+
                     try {
                         const response = await fetch(`/admin/locations/${this.editingLocation.id}`, {
                             method: 'PUT',

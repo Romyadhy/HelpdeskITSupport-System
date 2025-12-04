@@ -12,17 +12,18 @@
 - [x] Support Dashboard → ticket aktif didn't show the right value, and maybe we must fix it and need more effisien informations.
 - [x] DailyReport → ticket dikerjakan → its not yet showing the same output like the others role supports, expecially for the "close tickets".
 - [x] Admin escalated tickets also we need to fix it and create idea how to display it on the reports, remember the close tickets in here only for supports role and not yet implements as admin.
-- [ ] Admin Dashboard, in UI chart fix the width between Ticket Trends, and SLA Category.
+- [ ] Admin and Manager Dashboard, in UI chart fix the width between Ticket Trends, and SLA Category.
 - [x] Login Button loading bugs.
 - [ ] Bugs in sidebar size, its diff when username has long text the other way around.
 - [x] Durations tickets didnt setup yet.
+- [ ] DailyReports for support Unauthorized, and for the fields solve by in pdf, also in show or detail tickets, add the inprogress and open ticets, remove the showing of tickets or add it like modals things.
 
 ## Unfinished Features
 
 - [ ] PDF structure.
 - [x] Cron Job for Daily Report Telegram bot at 4 PM (not optimal yet).
 - [x] Fix every table, add pagination, and add searching.
-- [ ] Make all create/edit/show actions a popup or alert so we can interact with them. Its called MODALS.
+- [x] Make all create/edit/show actions a popup or alert so we can interact with them. Its called MODALS.
 - [x] API for Monthly Report has not been created.
 - [x] UI login.
 - [x] Profile UI.
@@ -40,6 +41,7 @@
 - [x] Create a buttton to close sidebar.
 - [x] Add admin page that can create new category, locations and user.
 - [ ] Add status and priority in admin settings.
+- [ ] Add Edit functions in daily report controller
 
 ## Other Notes
 

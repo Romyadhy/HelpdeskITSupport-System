@@ -28,7 +28,7 @@ class DailyReportController extends Controller
         $hasReportToday = $user->hasRole('support')
             ? DailyReport::whereDate('report_date', $today)->exists()
             : false;
-        
+
 
         // =====================================================
         // PERBAIKAN: Untuk support, sebelumnya hanya melihat laporan miliknya sendiri.
@@ -36,8 +36,8 @@ class DailyReportController extends Controller
         // =====================================================
         $dailyReports = DailyReport::with(['user', 'tasks', 'tickets', 'verifier'])
             ->latest()
-            ->take(3)
-            ->get(); 
+            ->take(5)
+            ->get();
 
 
         // =====================================================
@@ -87,7 +87,7 @@ class DailyReportController extends Controller
 
         $dailyReports = DailyReport::with(['user', 'tasks', 'tickets', 'verifier'])
             ->latest()
-            ->get(); 
+            ->get();
 
         $existing = DailyReport::whereDate('report_date', $today)->first();
 
@@ -108,7 +108,7 @@ class DailyReportController extends Controller
 
         $ticketsActiveToday = Ticket::whereIn('status', ['In Progress', 'Open'])
             ->orderBy('updated_at', 'desc')
-            ->get(); 
+            ->get();
 
         return view('frontend.Report.create', [
             'dailyReports ' => $dailyReports,
@@ -213,7 +213,7 @@ class DailyReportController extends Controller
         ]);
 
         // Telegram notif
-        $telegram = app(\App\Services\TelegramService::class);
+        $telegram = app(TelegramService::class);
 
         $text = "✅ <b>Laporan Diverifikasi</b>\n"
             . "User    : {$report->user->name}\n"
@@ -245,10 +245,10 @@ class DailyReportController extends Controller
             'user',
             'verifier',
             'tasks',
-            'tickets',
+            'tickets.solver',
         ])->findOrFail($id);
 
-        if (!$user->hasRole(['admin', 'manager']) && $report->user_id !== $user->id) {
+        if (!$user->hasRole(['admin', 'support', 'manager']) && $report->user_id !== $user->id) {
             abort(403, 'Unauthorized to export this report');
         }
 
@@ -267,6 +267,6 @@ class DailyReportController extends Controller
             ->format('a4')
             ->margins(16, 16, 20, 16)
             ->name('DailyReport-' . $report->id . '.pdf');
+        // ->download();
     }
 }
-

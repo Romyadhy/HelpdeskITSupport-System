@@ -11,7 +11,11 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium">Daftar Katerogi</h3>
+                        <div class="flex flex-col py-1.5">
+                            <h3 class="text-lg font-medium pb-1">Daftar Katerogi</h3>
+                            <p class="text-sm font-thin italic text-gray-500">Berikut adalah daftar kategori pada tickets/pelaporan masalah.</p>
+
+                        </div>
                         <button @click="openCreateModal()" class="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded">
                             Create New Category
                         </button>

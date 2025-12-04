@@ -5,7 +5,7 @@
                 Pusat Laporan Masalah dan Permintaan Bantuan
             </h2>
             @can('create-ticket')
-                <button @click="openCreateModal()"
+                <button @click="$dispatch('open-create-modal')"
                     class="mt-4 sm:mt-0 inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
                         + Laportkan Masalah
                 </button>
@@ -13,7 +13,7 @@
         </div>
     </x-slot>
 
-    <div class="py-8 bg-gray-50 min-h-screen" x-data="ticketManagement()">
+    <div class="py-8 bg-gray-50 min-h-screen" x-data="ticketManagement()" @open-create-modal.window="openCreateModal()">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
                 <div>
@@ -768,7 +768,7 @@
                             <div x-show="showData.status === 'Closed' && showData.solution"
                                  class="bg-green-50 border-l-4 border-green-500 rounded-lg p-5">
                                 <h5 class="text-lg font-semibold text-green-700 mb-2 flex items-center">
-                                    <i class="fas fa-tools mr-2"></i> Solusi dari Tim IT Support
+                                    <i class="fas fa-tools mr-2"></i> Solusi dari Masalah
                                 </h5>
                                 <p class="text-gray-700 leading-relaxed" x-text="showData.solution || 'Belum ada solusi yang tercatat.'"></p>
                             </div>
