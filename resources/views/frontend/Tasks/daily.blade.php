@@ -390,7 +390,7 @@
                                         <table class="min-w-full divide-y divide-gray-200">
                                             <thead class="bg-gray-100">
                                                 <tr>
-                                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">#</th>
+                                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">No</th>
                                                     <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Nama User</th>
                                                     <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Tanggal Selesai</th>
                                                 </tr>

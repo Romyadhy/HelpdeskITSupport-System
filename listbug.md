@@ -16,7 +16,7 @@
 - [x] Login Button loading bugs.
 - [ ] Bugs in sidebar size, its diff when username has long text the other way around.
 - [x] Durations tickets didnt setup yet.
-- [ ] DailyReports for support Unauthorized, and for the fields solve by in pdf, also in show or detail tickets, add the inprogress and open ticets, remove the showing of tickets or add it like modals things.
+- [x] DailyReports for support Unauthorized, and for the fields solve by in pdf, also in show or detail tickets, add the inprogress and open ticets, remove the showing of tickets or add it like modals things.
 
 ## Unfinished Features
 
@@ -40,8 +40,8 @@
 - [x] Add footer and fix structure of the folder/file in source.
 - [x] Create a buttton to close sidebar.
 - [x] Add admin page that can create new category, locations and user.
-- [ ] Add status and priority in admin settings.
-- [ ] Add Edit functions in daily report controller
+- [ ] Add status and priority in admin settings. [OPSIONAL]
+- [ ] Add Edit functions in daily report controller [OPSIONAL]
 
 ## Other Notes
 

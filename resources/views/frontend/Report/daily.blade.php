@@ -11,7 +11,7 @@
                 <div>
                     <h3 class="text-lg font-semibold text-gray-800">Hi, {{ Auth::user()->name }}</h3>
                     <p class="text-gray-500 text-sm">{{ now()->format('l, d F Y') }}</p>
-                    <p class="text-md text-gray-500 italic font-semibold pt-1.5">Laporan harian sebagai bentuk dokumentasi dan akuntabilitas.</p>
+                    <p class="text-md text-gray-500 pt-1">Laporan harian sebagai bentuk dokumentasi dan akuntabilitas.</p>
                 </div>
 
                 @if ($hasReportToday)
@@ -148,7 +148,7 @@
         </div>
     </div>
 
-    {{-- ============= SWEETALERT ============= --}}
+    {{-- SWEETALERT --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {

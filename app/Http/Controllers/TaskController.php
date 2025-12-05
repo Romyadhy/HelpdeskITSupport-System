@@ -71,12 +71,12 @@ class TaskController extends Controller
                 'is_active' => $task->is_active,
                 'created_at' => $task->created_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') . ' WITA',
                 'completed_count_this_month' => $completedCountThisMonth,
-                'completions' => $completions->map(function($completion, $index) {
+                'completions' => $completions->map(function ($completion, $index) {
                     return [
                         'number' => $index + 1,
                         'user_name' => $completion->user->name ?? 'Unknown',
                         'completed_at' => $completion->complated_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') . ' WITA',
-                        'notes' => $completion->notes
+                        // 'notes' => $completion->notes
                     ];
                 })
             ]);

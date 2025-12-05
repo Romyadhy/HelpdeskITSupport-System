@@ -18,52 +18,35 @@ class DailyReportController extends Controller
         $user = Auth::user();
         $today = now()->toDateString();
 
-        // =====================================================
-        // PERBAIKAN: Support bisa melihat apakah sudah membuat laporan hari ini
-        // namun pengecekan tetap berdasarkan user sendiri
-        // =====================================================
-        // $hasReportToday = DailyReport::where('user_id', $user->id)
-        //     ->whereDate('report_date', $today)
-        //     ->exists();
+        //Check has report today
         $hasReportToday = $user->hasRole('support')
             ? DailyReport::whereDate('report_date', $today)->exists()
             : false;
 
-
-        // =====================================================
-        // PERBAIKAN: Untuk support, sebelumnya hanya melihat laporan miliknya sendiri.
-        // Sekarang support melihat SEMUA laporan support lain.
-        // =====================================================
+        //Get latest report
         $dailyReports = DailyReport::with(['user', 'tasks', 'tickets', 'verifier'])
             ->latest()
             ->take(5)
             ->get();
 
-
-        // =====================================================
-        // PERBAIKAN: Statistik HARUS global (semua support)
-        // =====================================================
-
-        // Total laporan bulan ini (global)
+        // Total Laporan
         $monthlyReportsCount = DailyReport::whereMonth('report_date', now()->month)
-            ->count(); // PERBAIKAN: hapus filter user_id
+            ->count();
 
-        // Tasks selesai hari ini (global)
+        // Task done today
         $tasksCompletedToday = Task::whereHas('completions', function ($q) use ($today) {
             $q->whereDate('created_at', $today);
-        })->get(); // PERBAIKAN: hapus filter user_id
+        })->get();
 
-        // Tickets closed hari ini (global)
+        // Tickets closeed per today
         $ticketsClosedToday = Ticket::where('status', 'Closed')
             ->whereDate('solved_at', $today)
-            ->get(); // PERBAIKAN
+            ->get();
 
-        // Tickets aktif hari ini (global)
+        // Tickets Open today
         $ticketsActiveToday = Ticket::whereIn('status', ['Open', 'In Progress'])
             ->whereDate('updated_at', $today)
-            ->get(); // PERBAIKAN
-
-        // =====================================================
+            ->get();
 
         $completedTasksCount = $tasksCompletedToday->count();
         $handledTicketsCount = $ticketsClosedToday->count() + $ticketsActiveToday->count();
@@ -122,7 +105,7 @@ class DailyReportController extends Controller
     {
         $today = now()->toDateString();
 
-        // PERBAIKAN: validasi global agar tidak bisa submit 2x lewat POST
+        // Warning if user try to create double reports
         if (DailyReport::whereDate('report_date', $today)->exists()) {
             return redirect()->route('reports.daily')->with('warning', 'Daily report hari ini sudah dibuat.');
         }
@@ -159,10 +142,7 @@ class DailyReportController extends Controller
                 ->whereDate('solved_at', $today)
                 ->pluck('id');
 
-            // =====================================================
-            // PERBAIKAN: active ticket diambil global
-            // =====================================================
-            $idsActive = Ticket::whereIn('status', ['Open', 'In Progress', 'Closed'])
+            $idsActive = Ticket::whereIn('status', ['Open', 'In Progress'])
                 ->whereDate('updated_at', $today)
                 ->pluck('id');
 
@@ -244,13 +224,14 @@ class DailyReportController extends Controller
         $report = DailyReport::with([
             'user',
             'verifier',
-            'tasks',
+            'tasks.completions',
             'tickets.solver',
         ])->findOrFail($id);
 
         if (!$user->hasRole(['admin', 'support', 'manager']) && $report->user_id !== $user->id) {
             abort(403, 'Unauthorized to export this report');
         }
+        // dd($report);
 
         // Log
         logActivity::add('daily_report', 'exported', $report, 'Laporan harian diexport ke PDF', [

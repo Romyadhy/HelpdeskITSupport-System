@@ -1,4 +1,6 @@
 <x-app-layout>
+    <div x-data="ticketModal()">
+
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-900 leading-tight flex items-center gap-2">
@@ -106,12 +108,10 @@
                         <div class="space-y-4">
 
                             @foreach ($report->tickets as $ticket)
-                                <a href="{{ route('tickets.show', $ticket->id) }}"
-                                    class="block border rounded-xl p-4 bg-gray-50 hover:bg-gray-100 transition shadow-sm">
-
+                                <div @click="openTicket({{ $ticket->id }})" class="cursor-pointer border rounded-xl p-4 bg-gray-50 hover:bg-gray-100 transition shadow-sm">
                                     <div class="flex justify-between items-center">
                                         <h4 class="font-semibold text-gray-800">
-                                            #{{ str_pad($ticket->id, 4, '0', STR_PAD_LEFT) }} — {{ $ticket->title }}
+                                            #{{ str_pad($ticket->id, 3, '0', STR_PAD_LEFT) }}. {{ $ticket->title }}
                                         </h4>
 
                                         <span @class([
@@ -128,7 +128,7 @@
                                     <p class="text-xs text-gray-500 mt-1">
                                         Prioritas: {{ $ticket->priority }}
                                     </p>
-                                </a>
+                                </div>
                             @endforeach
 
                         </div>
@@ -136,6 +136,8 @@
                         <p class="text-gray-500 italic text-sm">Tidak ada tiket yang dilaporkan.</p>
                     @endif
                 </div>
+
+
 
                 {{-- SECTION: Verifikasi (Admin Only) --}}
                 @can('verify-daily-report')
@@ -158,4 +160,40 @@
             </div>
         </div>
     </div>
+   @include('frontend.Tickets.partials.show-modal')
+ </div>
+    <script>
+        function ticketModal(){
+            return {
+                showShowModal: false,
+                loading: false,
+                showData: {},
+
+                async openTicket(ticketId){
+                    this.loading = true;
+                    this.showShowModal = true;
+
+                    try{
+                        const response = await fetch(`/tickets/${ticketId}`, {
+                            headers: {'Accept': 'application/json'}
+                        });
+
+                        const data = await response.json();
+                        this.showData = data;
+                    } catch(e) {
+                        console.error(e);
+                        alert("Failed to load tickets");
+                        this.showShowModal = false;
+                    }
+
+                    this.loading = false;
+                },
+
+                closeModals(){
+                    this.showShowModal = false;
+                }
+
+            }
+        }
+    </script>
 </x-app-layout>

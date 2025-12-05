@@ -203,7 +203,7 @@
                                 <tr class="hover:bg-gray-50 transition text-left">
                                     {{-- Ticket ID --}}
                                     <td class="px-6 py-4 font-semibold text-gray-800">
-                                        #{{ str_pad($ticket->id, 4, '0', STR_PAD_LEFT) }}
+                                        #{{ str_pad($ticket->id, 3, '0', STR_PAD_LEFT) }}
                                     </td>
 
                                     {{-- Subject --}}
@@ -784,12 +784,12 @@
                         </div>
                     </div>
 
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button type="button" @click="closeModals()"
-                            class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm">
-                            Close
-                        </button>
-                    </div>
+                    {{-- <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse"> --}}
+                    {{--     <button type="button" @click="closeModals()" --}}
+                    {{--         class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"> --}}
+                    {{--         Close --}}
+                    {{--     </button> --}}
+                    {{-- </div> --}}
                 </div>
             </div>
         </div>

@@ -72,7 +72,8 @@
     <div style="text-align:center; margin-bottom:20px;">
         <h2>Laporan Harian IT Support</h2>
         <div style="font-size: 14px;">
-            {{ \Carbon\Carbon::now()->setTimezone('Asia/Makassar')->translatedFormat('l, d F Y') }}
+            {{-- {{ \Carbon\Carbon::now()->setTimezone('Asia/Makassar')->translatedFormat('l, d F Y') }} --}}
+            {{ \Carbon\Carbon::parse($report->report_date)->translatedFormat('l, d F Y') }}
         </div>
     </div>
 
@@ -116,11 +117,25 @@
         </thead>
         <tbody>
             @forelse($report->tasks as $i => $task)
+                @php
+                    // Get completions for this task on the report date
+                    $completionsOnDate = $task->completions
+                        ->filter(function($completion) use ($report) {
+                            return \Carbon\Carbon::parse($completion->complated_at)->isSameDay($report->report_date);
+                        })
+                        ->sortBy('complated_at');
+                    
+                    $firstCompletion = $completionsOnDate->first();
+                @endphp
                 <tr>
                     <td class="text-center">{{ $i + 1 }}</td>
                     <td>{{ $task->title }}</td>
                     <td class="text-center">
-                        {{ \Carbon\Carbon::parse($task->created_at)->timezone('Asia/Makassar')->translatedFormat('H:i') }} WITA
+                        @if($firstCompletion && $firstCompletion->complated_at)
+                            {{ \Carbon\Carbon::parse($firstCompletion->complated_at)->timezone('Asia/Makassar')->translatedFormat('H:i') }} WITA
+                        @else
+                            -
+                        @endif
                     </td>
                 </tr>
             @empty
