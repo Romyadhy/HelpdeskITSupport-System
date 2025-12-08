@@ -75,7 +75,7 @@
         </div>
 
         <footer class="text-xs text-gray-600 mt-6">
-            © {{ date('Y') }} Helpdesk IT System — All Rights Reserved
+            © {{ date('Y') }} Helpdesk IT System ❤️ All Rights Reserved
         </footer>
     </div>
 

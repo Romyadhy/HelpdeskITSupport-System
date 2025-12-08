@@ -80,7 +80,6 @@ class TicketController extends Controller
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
-                'priority' => 'required|string|in:Low,Medium,High',
                 'category_id' => 'required|exists:ticket_categories,id',
                 'location_id' => 'required|exists:ticket_locations,id',
             ]);
@@ -89,7 +88,7 @@ class TicketController extends Controller
                 'user_id' => auth()->id(),
                 'title' => $validated['title'],
                 'description' => $validated['description'],
-                'priority' => $validated['priority'],
+                'priority' => null,
                 'category_id' => $validated['category_id'],
                 'location_id' => $validated['location_id'],
                 'status' => 'Open',
@@ -108,7 +107,7 @@ class TicketController extends Controller
             $ticket->load(['category', 'location']);
             $telegram = app(TelegramService::class);
 
-            $message = "📩 <b>Ticket Baru Masuk</b>\n" . "Judul     : {$ticket->title}\n" . "Prioritas : {$ticket->priority}\n" . "Kategori  : {$ticket->category->name}\n" . "Lokasi    : {$ticket->location->name}\n" . 'Dari      : ' . auth()->user()->name . "\n\n" . 'Silakan mengecek detailnya pada sistem 😊';
+            $message = "📩 <b>Ticket Baru Masuk</b>\n" . "Judul     : {$ticket->title}\n" . "Prioritas : Belum ditentukan\n" . "Kategori  : {$ticket->category->name}\n" . "Lokasi    : {$ticket->location->name}\n" . 'Dari      : ' . auth()->user()->name . "\n\n" . '⚠️ Silakan admin menentukan prioritas ticket ini.';
 
             $telegram->sendMessage($message);
 
@@ -158,7 +157,7 @@ class TicketController extends Controller
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
-                'priority' => 'required|string|in:Low,Medium,High',
+                'priority' => 'nullable|string|in:Low,Medium,High',
                 'category_id' => 'required|exists:ticket_categories,id',
                 'location_id' => 'required|exists:ticket_locations,id',
             ]);
@@ -222,17 +221,17 @@ class TicketController extends Controller
         // Return JSON for AJAX requests
         if (request()->expectsJson() || request()->ajax()) {
             $ticket->load(['user', 'assignee', 'solver']);
-            
+
             // Calculate duration for display
             $durationHuman = null;
             $durationDetails = null;
-            
+
             if ($ticket->status === 'Closed' && $ticket->duration) {
                 $durationHuman = $ticket->duration_human;
-                $startTime = $ticket->started_at 
+                $startTime = $ticket->started_at
                     ? $ticket->started_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i')
                     : $ticket->created_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i');
-                $endTime = $ticket->solved_at 
+                $endTime = $ticket->solved_at
                     ? $ticket->solved_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i')
                     : '—';
                 $durationDetails = "({$startTime} → {$endTime})";
@@ -242,7 +241,7 @@ class TicketController extends Controller
                 $durationHuman = ($live->hours ? $live->hours . 'h ' : '') . $live->minutes . 'm (running)';
                 $durationDetails = null;
             }
-            
+
             return response()->json([
                 'id' => $ticket->id,
                 'title' => $ticket->title,
@@ -472,5 +471,59 @@ class TicketController extends Controller
         ]);
 
         return redirect()->route('tickets.index')->with('success', 'Ticket has been released.');
+    }
+
+    //set priority
+    public function setPriority(Request $request, Ticket $ticket)
+    {
+        $validated = $request->validate([
+            'priority' => 'required|string|in:Low,Medium,High',
+        ]);
+
+        $oldPriority = $ticket->priority;
+
+        $ticket->update(['priority' => $validated['priority']]);
+
+        logActivity::add('ticket', 'set-priority', $ticket, 'Prioritas ticket ditetapkan', [
+            'old' => ['priority' => $oldPriority],
+            'new' => ['priority' => $validated['priority']],
+        ]);
+
+        try {
+            // load relasi
+            $ticket->load(['category', 'location', 'user']);
+            $telegram = app(TelegramService::class);
+
+            $categoryName = TicketCategory::find($ticket->category_id)->name;
+            $locationName = TicketLocation::find($ticket->location_id)->name;
+            $userName     = $ticket->user?->name ?? auth()->user()->name;
+
+            $priorityEmoji = [
+                'High' => '🔴',
+                'Medium' => '🟡',
+                'Low' => '🟢',
+            ];
+
+            $emoji = $priorityEmoji[$validated['priority']] ?? '⚪';
+
+            $message = "{$emoji} <b>Prioritas Ticket Ditetapkan</b>\n" .
+                "Ticket ID : #{$ticket->id}\n" .
+                "Judul     : {$ticket->title}\n" .
+                "Prioritas : {$validated['priority']}\n" .
+                "Kategori  : {$categoryName}\n" .
+                "Lokasi    : {$locationName}\n" .
+                "Ditetapkan oleh: {$userName}\n\n" .
+                "📌 Ticket siap ditangani sesuai prioritas.";
+
+            $telegram->sendMessage($message);
+        } catch (Exception $e) {
+            Log::error('Gagal mengirim notifikasi Telegram: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Priority set successfully.',
+            'priority' => $validated['priority'],
+        ]);
     }
 }

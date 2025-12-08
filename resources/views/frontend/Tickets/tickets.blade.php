@@ -7,7 +7,7 @@
             @can('create-ticket')
                 <button @click="$dispatch('open-create-modal')"
                     class="mt-4 sm:mt-0 inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
-                        + Laportkan Masalah
+                    + Laportkan Masalah
                 </button>
             @endcan
         </div>
@@ -22,40 +22,39 @@
                 </div>
 
 
-            {{-- search --}}
-            <div x-data="ticketSearch()" class="mb-4">
-                <form id="searchForm" method="GET" action="{{ route('tickets.index') }}">
-                    <div class="relative max-w-sm">
+                {{-- search --}}
+                <div x-data="ticketSearch()" class="mb-4">
+                    <form id="searchForm" method="GET" action="{{ route('tickets.index') }}">
+                        <div class="relative max-w-sm">
 
 
-                        <!-- Clear Button -->
-                        <button x-show="search.length > 0" type="button" @click="clearSearch"
-                            class="absolute right-10 top-2.5 text-gray-400 hover:text-gray-600">
-                            <i class="fas fa-times"></i>
-                        </button>
+                            <!-- Clear Button -->
+                            <button x-show="search.length > 0" type="button" @click="clearSearch"
+                                class="absolute right-10 top-2.5 text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times"></i>
+                            </button>
 
-                        <!-- Search Icon / Spinner -->
-                        <span class="absolute top-3 mx-auto pl-2 text-gray-400 text-lg">
-                            <template x-if="loading">
-                                <i class="fas fa-circle-notch fa-spin"></i>
-                            </template>
-                            <template x-if="!loading">
-                                <i class="fas fa-search"></i>
-                            </template>
-                        </span>
+                            <!-- Search Icon / Spinner -->
+                            <span class="absolute top-3 mx-auto pl-2 text-gray-400 text-lg">
+                                <template x-if="loading">
+                                    <i class="fas fa-circle-notch fa-spin"></i>
+                                </template>
+                                <template x-if="!loading">
+                                    <i class="fas fa-search"></i>
+                                </template>
+                            </span>
 
-                        <!-- Input -->
-                        <input type="text" x-model="search" name="search" placeholder="Cari laporan..."
-                            class="w-full pl-8 pr-11 py-2.5 rounded-xl bg-white border border-gray-300
+                            <!-- Input -->
+                            <input type="text" x-model="search" name="search" placeholder="Cari laporan..."
+                                class="w-full pl-8 pr-11 py-2.5 rounded-xl bg-white border border-gray-300
                        text-gray-700 placeholder-gray-400 shadow-sm
                        focus:border-teal-500 focus:ring-2 focus:ring-teal-400 transition">
 
-                    </div>
-                </form>
+                        </div>
+                    </form>
+                </div>
             </div>
-            </div>
-
-
+            
             <!-- 🌟 PREMIUM FILTER BAR -->
             <div x-data="premiumFilter()" class="mb-4">
 
@@ -184,7 +183,6 @@
                 </form>
             </div>
 
-
             <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm text-gray-700">
@@ -240,14 +238,94 @@
 
                                     {{-- Priority --}}
                                     <td class="px-6 py-4">
-                                        <span @class([
-                                            'px-3 py-1 text-xs font-semibold rounded-full',
-                                            'bg-red-100 text-red-600' => $ticket->priority === 'High',
-                                            'bg-orange-100 text-orange-600' => $ticket->priority === 'Medium',
-                                            'bg-green-100 text-green-700' => $ticket->priority === 'Low',
-                                        ])>
-                                            {{ $ticket->priority }}
-                                        </span>
+                                        @can('set-ticket-priority')
+                                            @if ($ticket->status === 'Open')
+                                                {{-- ✅ ADMIN / MANAGER - BISA EDIT --}}
+                                                <div x-data="{
+                                                    priority: '{{ $ticket->priority }}',
+                                                    isUpdating: false,
+                                                    async updatePriority(ticketId, newPriority) {
+                                                        this.isUpdating = true;
+                                                        try {
+                                                            const response = await fetch(`/tickets/${ticketId}/set-priority`, {
+                                                                method: 'PATCH',
+                                                                headers: {
+                                                                    'Content-Type': 'application/json',
+                                                                    'X-CSRF-TOKEN': document.querySelector('meta[name=\'csrf-token\']').content,
+                                                                    'Accept': 'application/json'
+                                                                },
+                                                                body: JSON.stringify({ priority: newPriority })
+                                                            });
+                                                
+                                                            const data = await response.json();
+                                                
+                                                            if (response.ok) {
+                                                                this.priority = newPriority;
+                                                                Swal.fire({
+                                                                    icon: 'success',
+                                                                    title: 'Success!',
+                                                                    text: 'Priority updated successfully.',
+                                                                    showConfirmButton: false,
+                                                                    timer: 1500
+                                                                });
+                                                            } else {
+                                                                Swal.fire({
+                                                                    icon: 'error',
+                                                                    title: 'Error!',
+                                                                    text: data.message || 'Failed to update priority.'
+                                                                });
+                                                            }
+                                                        } catch (error) {
+                                                            Swal.fire({
+                                                                icon: 'error',
+                                                                title: 'Error!',
+                                                                text: 'An unexpected error occurred.'
+                                                            });
+                                                        } finally {
+                                                            this.isUpdating = false;
+                                                        }
+                                                    }
+                                                }">
+                                                    <select x-model="priority"
+                                                        @change="updatePriority({{ $ticket->id }}, $event.target.value)"
+                                                        :disabled="isUpdating"
+                                                        class="px-3 py-1 text-xs font-semibold rounded-full cursor-pointer transition"
+                                                        :class="{
+                                                            'bg-red-100 text-red-600': priority === 'High',
+                                                            'bg-orange-100 text-orange-600': priority === 'Medium',
+                                                            'bg-green-100 text-green-700': priority === 'Low',
+                                                            'bg-gray-100 text-gray-500': !priority
+                                                        }">
+                                                        {{-- <option value="">-</option> --}}
+                                                        <option value="Low">Low</option>
+                                                        <option value="Medium">Medium</option>
+                                                        <option value="High">High</option>
+                                                    </select>
+                                                </div>
+                                            @else
+                                                {{-- 🔒 ADMIN TAPI STATUS BUKAN OPEN (TERKUNCI) --}}
+                                                <span @class([
+                                                    'px-3 py-1 text-xs font-semibold rounded-full',
+                                                    'bg-red-100 text-red-600' => $ticket->priority === 'High',
+                                                    'bg-orange-100 text-orange-600' => $ticket->priority === 'Medium',
+                                                    'bg-green-100 text-green-700' => $ticket->priority === 'Low',
+                                                    'bg-gray-100 text-gray-500' => !$ticket->priority,
+                                                ])>
+                                                    {{ $ticket->priority ?? '-' }}
+                                                </span>
+                                            @endif
+                                        @else
+                                            {{-- ✅ ✅ ✅ SEMUA ROLE SELAIN ADMIN (SUPPORT & USER) --}}
+                                            <span @class([
+                                                'px-3 py-1 text-xs font-semibold rounded-full',
+                                                'bg-red-100 text-red-600' => $ticket->priority === 'High',
+                                                'bg-orange-100 text-orange-600' => $ticket->priority === 'Medium',
+                                                'bg-green-100 text-green-700' => $ticket->priority === 'Low',
+                                                'bg-gray-100 text-gray-500' => !$ticket->priority,
+                                            ])>
+                                                {{ $ticket->priority ?? '-' }}
+                                            </span>
+                                        @endcan
                                     </td>
 
                                     {{-- ACTIONS --}}
@@ -264,7 +342,7 @@
                                         @can('edit-own-ticket', $ticket)
                                             @if ($ticket->status === 'Open')
                                                 <button
-                                                    @click="openEditModal({{ $ticket->id }}, '{{ addslashes($ticket->title) }}', '{{ addslashes($ticket->description) }}', '{{ $ticket->priority }}', {{ $ticket->category_id }}, {{ $ticket->location_id }})"
+                                                    @click="openEditModal({{ $ticket->id }}, '{{ addslashes($ticket->title) }}', '{{ addslashes($ticket->description) }}', {{ $ticket->category_id }}, {{ $ticket->location_id }})"
                                                     title="Edit Ticket"
                                                     class="text-gray-400 hover:text-blue-600 p-2 rounded-lg transition">
                                                     <i class="fas fa-edit"></i>
@@ -372,7 +450,6 @@
                                                     </button>
                                                 </form>
                                             @endif
-
                                         @endcan
                                     </td>
                                 </tr>
@@ -501,18 +578,6 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500" required></textarea>
                             </div>
 
-                            <!-- Priority -->
-                            <div class="mb-4">
-                                <label for="create-priority"
-                                    class="block text-sm font-medium text-gray-700">Priority</label>
-                                <select x-model="createFormData.priority" id="create-priority"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
-                                    <option value="Low">Low</option>
-                                    <option value="Medium">Medium</option>
-                                    <option value="High">High</option>
-                                </select>
-                            </div>
-
                             <!-- Category -->
                             <div class="mb-4">
                                 <label for="create-category"
@@ -542,9 +607,13 @@
                             <button type="submit" :disabled="isSubmitting"
                                 :class="isSubmitting ? 'opacity-50 cursor-not-allowed' : ''"
                                 class="w-full inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-teal-500 text-base font-medium text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 sm:ml-3 sm:w-auto sm:text-sm">
-                                <svg x-show="isSubmitting" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                <svg x-show="isSubmitting" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
                                 </svg>
                                 <span x-text="isSubmitting ? 'Creating...' : 'Create Ticket'"></span>
                             </button>
@@ -608,18 +677,6 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500" required></textarea>
                             </div>
 
-                            <!-- Priority -->
-                            <div class="mb-4">
-                                <label for="edit-priority"
-                                    class="block text-sm font-medium text-gray-700">Priority</label>
-                                <select x-model="editFormData.priority" id="edit-priority"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
-                                    <option value="Low">Low</option>
-                                    <option value="Medium">Medium</option>
-                                    <option value="High">High</option>
-                                </select>
-                            </div>
-
                             <!-- Category -->
                             <div class="mb-4">
                                 <label for="edit-category"
@@ -649,9 +706,13 @@
                             <button type="submit" :disabled="isSubmitting"
                                 :class="isSubmitting ? 'opacity-50 cursor-not-allowed' : ''"
                                 class="w-full inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-teal-500 text-base font-medium text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 sm:ml-3 sm:w-auto sm:text-sm">
-                                <svg x-show="isSubmitting" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                <svg x-show="isSubmitting" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
                                 </svg>
                                 <span x-text="isSubmitting ? 'Updating...' : 'Update Ticket'"></span>
                             </button>
@@ -701,7 +762,8 @@
                         <div x-show="!loading" class="space-y-6">
                             <!-- Header with Title & Status -->
                             <div class="flex flex-col md:flex-row md:items-center md:justify-between pb-4 border-b">
-                                <h4 class="text-3xl font-extrabold text-teal-600 uppercase" x-text="showData.title"></h4>
+                                <h4 class="text-3xl font-extrabold text-teal-600 uppercase" x-text="showData.title">
+                                </h4>
                                 <span class="mt-2 md:mt-0 px-4 py-1.5 text-sm font-semibold rounded-full shadow-sm"
                                     :class="{
                                         'bg-blue-100 text-blue-800': showData.status === 'Open',
@@ -723,19 +785,23 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-gray-700">
                                 <div class="flex items-center space-x-2">
                                     <i class="fas fa-layer-group text-teal-500"></i>
-                                    <span><strong>Category:</strong> <span x-text="showData.category || '-'"></span></span>
+                                    <span><strong>Category:</strong> <span
+                                            x-text="showData.category || '-'"></span></span>
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <i class="fas fa-map-marker-alt text-teal-500"></i>
-                                    <span><strong>Location:</strong> <span x-text="showData.location || '-'"></span></span>
+                                    <span><strong>Location:</strong> <span
+                                            x-text="showData.location || '-'"></span></span>
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <i class="fas fa-user text-teal-500"></i>
-                                    <span><strong>Created By:</strong> <span x-text="showData.user || 'Unknown'"></span></span>
+                                    <span><strong>Created By:</strong> <span
+                                            x-text="showData.user || 'Unknown'"></span></span>
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <i class="fas fa-calendar text-teal-500"></i>
-                                    <span><strong>Created At:</strong> <span x-text="showData.created_at"></span></span>
+                                    <span><strong>Created At:</strong> <span
+                                            x-text="showData.created_at"></span></span>
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <i class="fas fa-flag text-teal-500"></i>
@@ -755,7 +821,9 @@
                                     <template x-if="showData.duration_human">
                                         <span>
                                             <span class="text-gray-700" x-text="showData.duration_human"></span>
-                                            <small class="text-gray-500 text-xs ml-1" x-show="showData.duration_details" x-text="showData.duration_details"></small>
+                                            <small class="text-gray-500 text-xs ml-1"
+                                                x-show="showData.duration_details"
+                                                x-text="showData.duration_details"></small>
                                         </span>
                                     </template>
                                     <template x-if="!showData.duration_human">
@@ -766,16 +834,17 @@
 
                             <!-- Solution Section (only if Closed) -->
                             <div x-show="showData.status === 'Closed' && showData.solution"
-                                 class="bg-green-50 border-l-4 border-green-500 rounded-lg p-5">
+                                class="bg-green-50 border-l-4 border-green-500 rounded-lg p-5">
                                 <h5 class="text-lg font-semibold text-green-700 mb-2 flex items-center">
                                     <i class="fas fa-tools mr-2"></i> Solusi dari Masalah
                                 </h5>
-                                <p class="text-gray-700 leading-relaxed" x-text="showData.solution || 'Belum ada solusi yang tercatat.'"></p>
+                                <p class="text-gray-700 leading-relaxed"
+                                    x-text="showData.solution || 'Belum ada solusi yang tercatat.'"></p>
                             </div>
 
                             <!-- Assigned To -->
                             <div x-show="showData.assigned_to"
-                                 class="bg-teal-50 border-l-4 border-teal-500 rounded-lg p-5">
+                                class="bg-teal-50 border-l-4 border-teal-500 rounded-lg p-5">
                                 <h5 class="text-lg font-semibold text-teal-700 mb-2 flex items-center">
                                     <i class="fas fa-user-cog mr-2"></i> Ditangani Oleh
                                 </h5>
@@ -783,19 +852,12 @@
                             </div>
                         </div>
                     </div>
-
-                    {{-- <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse"> --}}
-                    {{--     <button type="button" @click="closeModals()" --}}
-                    {{--         class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"> --}}
-                    {{--         Close --}}
-                    {{--     </button> --}}
-                    {{-- </div> --}}
                 </div>
             </div>
         </div>
     </div>
 
-     {{-- Ticket Management Modals --}}
+    {{-- Ticket Management Modals --}}
     <script>
         // Define ticketManagement in global scope for Alpine.js
         window.ticketManagement = function() {
@@ -809,7 +871,6 @@
                 createFormData: {
                     title: '',
                     description: '',
-                    priority: 'Medium',
                     category_id: '',
                     location_id: ''
                 },
@@ -818,7 +879,6 @@
                     id: null,
                     title: '',
                     description: '',
-                    priority: '',
                     category_id: '',
                     location_id: ''
                 },
@@ -833,7 +893,6 @@
                     this.createFormData = {
                         title: '',
                         description: '',
-                        priority: 'Medium',
                         category_id: '',
                         location_id: ''
                     };
@@ -841,12 +900,11 @@
                     this.showCreateModal = true;
                 },
 
-                openEditModal(id, title, description, priority, categoryId, locationId) {
+                openEditModal(id, title, description, categoryId, locationId) {
                     this.editFormData = {
                         id: id,
                         title: title,
                         description: description,
-                        priority: priority,
                         category_id: categoryId,
                         location_id: locationId
                     };
@@ -919,7 +977,7 @@
                     this.isSubmitting = true; // Start loading
 
                     try {
-                        const response = await fetch('{{ route('tickets.store') }}', {
+                        const response = await fetch("{{ route('tickets.store') }}", {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -995,7 +1053,6 @@
                             body: JSON.stringify({
                                 title: this.editFormData.title,
                                 description: this.editFormData.description,
-                                priority: this.editFormData.priority,
                                 category_id: this.editFormData.category_id,
                                 location_id: this.editFormData.location_id
                             })
@@ -1221,16 +1278,16 @@
         });
 
         //search
+
         function ticketSearch() {
             return {
-                search: '{{ $search }}',
+                search: "{{ $search ?? '' }}",
                 loading: false,
                 timeout: null,
 
                 init() {
                     this.$watch('search', value => {
                         clearTimeout(this.timeout)
-
                         this.loading = true
 
                         this.timeout = setTimeout(() => {
@@ -1249,13 +1306,15 @@
             }
         }
 
+
         //filters
+
         function premiumFilter() {
             return {
-                status: '{{ $filters['status'] ?? '' }}',
-                priority: '{{ $filters['priority'] ?? '' }}',
-                category: '{{ $filters['category'] ?? '' }}',
-                sort: '{{ request()->sort ?? '' }}',
+                status: "{{ $filters['status'] ?? '' }}",
+                priority: "{{ $filters['priority'] ?? '' }}",
+                category: "{{ $filters['category'] ?? '' }}",
+                sort: "{{ request('sort') ?? '' }}",
 
                 statusList: [{
                         label: "All",
@@ -1322,7 +1381,7 @@
                     {
                         label: "Oldest First",
                         value: "oldest"
-                    }
+                    },
                 ],
 
                 get activeCount() {

@@ -264,7 +264,7 @@
                        {{ request()->routeIs('admin.users.*')
                             ? 'bg-emerald-50 text-emerald-700'
                             : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
-                        User Management
+                        Management User
                     </a>
 
                     <a href="{{ route('admin.categories.index') }}"

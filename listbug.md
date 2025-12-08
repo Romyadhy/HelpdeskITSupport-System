@@ -9,13 +9,13 @@
 - [x] Ticket → index for user does not show their own tickets.
 - [x] Log Ticket escalated, take over, or cancel does not inform the description/text and is still named as “update”.
 - [x] Filters in supports sort by date in oldest have a bugs.
-- [x] Support Dashboard → ticket aktif didn't show the right value, and maybe we must fix it and need more effisien informations.
+- [x] Support Dashboard → ticket aktif didn't show the right value, and maybe we must fix it and need more eficient informations.
 - [x] DailyReport → ticket dikerjakan → its not yet showing the same output like the others role supports, expecially for the "close tickets".
 - [x] Admin escalated tickets also we need to fix it and create idea how to display it on the reports, remember the close tickets in here only for supports role and not yet implements as admin.
 - [ ] Admin and Manager Dashboard, in UI chart fix the width between Ticket Trends, and SLA Category.
 - [x] Login Button loading bugs.
 - [ ] Bugs in sidebar size, its diff when username has long text the other way around.
-- [x] Durations tickets didnt setup yet.
+- [x] Durations tickets didn't setup yet.
 - [x] DailyReports for support Unauthorized, and for the fields solve by in pdf, also in show or detail tickets, add the inprogress and open ticets, remove the showing of tickets or add it like modals things.
 
 ## Unfinished Features
@@ -38,10 +38,13 @@
 - [ ] Make consistent language in alert dan other text.
 - [x] Make responsive for any device.
 - [x] Add footer and fix structure of the folder/file in source.
-- [x] Create a buttton to close sidebar.
+- [x] Create a button to close sidebar.
 - [x] Add admin page that can create new category, locations and user.
 - [ ] Add status and priority in admin settings. [OPSIONAL]
 - [ ] Add Edit functions in daily report controller [OPSIONAL]
+- [x] Priority Tickets make it clear for admin to determine witch one the support gonna do first and so the admin can have access to determine the tickets priority.
+- [ ] Add more durations, tell apart between durations tickets open before handle by support and durations tickets solved by supports.
+- [ ] Add note when the tickets is didn't closed todays, from admin or it support.
 
 ## Other Notes
 

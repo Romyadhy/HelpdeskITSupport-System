@@ -13,7 +13,6 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     {{-- Icon FontAwesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     {{-- SweetAlert --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -28,9 +27,9 @@
     <div x-data="{ 
         sidebarOpen: false, 
         sidebarExpanded: localStorage.getItem('sidebar-expanded') == 'true' 
-    }" 
-    x-init="$watch('sidebarExpanded', value => localStorage.setItem('sidebar-expanded', value))"
-    class="flex h-screen bg-gray-100">
+    }"
+        x-init="$watch('sidebarExpanded', value => localStorage.setItem('sidebar-expanded', value))"
+        class="flex h-screen bg-gray-100">
 
         @include('layouts.sidebar')
 
@@ -46,7 +45,7 @@
 
                 <div class="flex-1">
                     @if (isset($header))
-                        {{ $header }}
+                    {{ $header }}
                     @endif
                 </div>
             </header>

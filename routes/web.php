@@ -29,7 +29,6 @@ Route::middleware('auth')->group(function () {
     // Tickets Route
     Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');
     Route::post('/tickets/store', [TicketController::class, 'store'])->name('tickets.store');
-
     Route::patch('/tickets/{ticket}', [TicketController::class, 'update'])->name('tickets.update');
     Route::get('/tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
     Route::delete('/tickets/{ticket}', [TicketController::class, 'destroy'])->name('tickets.destroy');
@@ -39,6 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::post('tickets/{ticket}/escalate', [TicketController::class, 'escalate'])->name('tickets.escalate');
     Route::put('/tickets/{ticket}/handle-escalated', [TicketController::class, 'handleEscalated'])->name('tickets.handleEscalated');
     Route::post('/tickets/{ticket}/cancel', [TicketController::class, 'cancel'])->name('tickets.cancel');
+    Route::patch('/tickets/{ticket}/set-priority', [TicketController::class, 'setPriority'])->name('tickets.setPriority')->middleware('permission:set-ticket-priority');
 
     // Tasks Route
     Route::get('tasks/daily', [TaskController::class, 'daily'])->name('tasks.daily');
