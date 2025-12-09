@@ -49,12 +49,17 @@
                                 class="w-full pl-8 pr-11 py-2.5 rounded-xl bg-white border border-gray-300
                        text-gray-700 placeholder-gray-400 shadow-sm
                        focus:border-teal-500 focus:ring-2 focus:ring-teal-400 transition">
+                            <input type="hidden" name="status" value="{{ request('status') }}">
+                            <input type="hidden" name="priority" value="{{ request('priority') }}">
+                            <input type="hidden" name="category" value="{{ request('category') }}">
+                            <input type="hidden" name="sort" value="{{ request('sort') }}">
+
 
                         </div>
                     </form>
                 </div>
             </div>
-            
+
             <!-- 🌟 PREMIUM FILTER BAR -->
             <div x-data="premiumFilter()" class="mb-4">
 
@@ -153,6 +158,7 @@
                             </div>
 
                             <input type="hidden" name="category" x-model="category">
+
                         </div>
 
                         <!-- Sort By Date -->
@@ -178,6 +184,7 @@
                             {{-- <input type="hidden" name="sort" x-model="sort"> --}}
                             <input type="hidden" name="sort" x-model="sort">
                         </div>
+                        <input type="hidden" name="search" id="filter-search" value="{{ request('search') }}">
 
                     </div>
                 </form>
@@ -289,21 +296,21 @@
                                                     <select x-model="priority"
                                                         @change="updatePriority({{ $ticket->id }}, $event.target.value)"
                                                         :disabled="isUpdating"
-                                                        class="px-3 py-1 text-xs font-semibold rounded-full cursor-pointer transition"
+                                                        class="px-5 py-1 text-xs font-semibold rounded-full cursor-pointer transition"
                                                         :class="{
                                                             'bg-red-100 text-red-600': priority === 'High',
                                                             'bg-orange-100 text-orange-600': priority === 'Medium',
                                                             'bg-green-100 text-green-700': priority === 'Low',
                                                             'bg-gray-100 text-gray-500': !priority
                                                         }">
-                                                        {{-- <option value="">-</option> --}}
+                                                        <option value="">-</option>
                                                         <option value="Low">Low</option>
                                                         <option value="Medium">Medium</option>
                                                         <option value="High">High</option>
                                                     </select>
                                                 </div>
                                             @else
-                                                {{-- 🔒 ADMIN TAPI STATUS BUKAN OPEN (TERKUNCI) --}}
+                                                {{-- admin --}}
                                                 <span @class([
                                                     'px-3 py-1 text-xs font-semibold rounded-full',
                                                     'bg-red-100 text-red-600' => $ticket->priority === 'High',
@@ -315,7 +322,7 @@
                                                 </span>
                                             @endif
                                         @else
-                                            {{-- ✅ ✅ ✅ SEMUA ROLE SELAIN ADMIN (SUPPORT & USER) --}}
+                                            {{-- selain admin --}}
                                             <span @class([
                                                 'px-3 py-1 text-xs font-semibold rounded-full',
                                                 'bg-red-100 text-red-600' => $ticket->priority === 'High',
@@ -746,12 +753,22 @@
                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                     class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full max-h-[90vh] overflow-y-auto">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
-                        <div class="flex justify-between items-center mb-4">
+                        {{-- <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-medium leading-6 text-gray-900">Ticket Details</h3>
                             <button @click="closeModals()" class="text-gray-400 hover:text-gray-500">
                                 <i class="fas fa-times"></i>
                             </button>
+                        </div> --}}
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900">Ticket Details</h3>
+
+                            <div class="flex items-center gap-2">
+                                <button @click="closeModals()" class="text-gray-400 hover:text-gray-500">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
                         </div>
+
 
                         <div x-show="loading" class="text-center py-8">
                             <i class="fas fa-circle-notch fa-spin text-4xl text-teal-500"></i>
@@ -782,52 +799,147 @@
                             </div>
 
                             <!-- Info Grid -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-gray-700">
-                                <div class="flex items-center space-x-2">
-                                    <i class="fas fa-layer-group text-teal-500"></i>
-                                    <span><strong>Category:</strong> <span
-                                            x-text="showData.category || '-'"></span></span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
+
+                                <!-- Left Column -->
+                                <div class="space-y-3">
+
+                                    <div
+                                        class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                        <i class="fas fa-layer-group text-teal-500 w-5"></i>
+                                        <div>
+                                            <p class="text-xs text-gray-500">Category</p>
+                                            <p class="font-semibold text-gray-800" x-text="showData.category || '-'">
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                        <i class="fas fa-map-marker-alt text-teal-500 w-5"></i>
+                                        <div>
+                                            <p class="text-xs text-gray-500">Location</p>
+                                            <p class="font-semibold text-gray-800" x-text="showData.location || '-'">
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                        <i class="fas fa-user text-teal-500 w-5"></i>
+                                        <div>
+                                            <p class="text-xs text-gray-500">Created By</p>
+                                            <p class="font-semibold text-gray-800"
+                                                x-text="showData.user || 'Unknown'"></p>
+                                        </div>
+                                    </div>
+
                                 </div>
-                                <div class="flex items-center space-x-2">
-                                    <i class="fas fa-map-marker-alt text-teal-500"></i>
-                                    <span><strong>Location:</strong> <span
-                                            x-text="showData.location || '-'"></span></span>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <i class="fas fa-user text-teal-500"></i>
-                                    <span><strong>Created By:</strong> <span
-                                            x-text="showData.user || 'Unknown'"></span></span>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <i class="fas fa-calendar text-teal-500"></i>
-                                    <span><strong>Created At:</strong> <span
-                                            x-text="showData.created_at"></span></span>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <i class="fas fa-flag text-teal-500"></i>
-                                    <span><strong>Priority:</strong>
+
+                                <!-- Right Column -->
+                                <div class="space-y-3">
+
+                                    <div
+                                        class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                        <i class="fas fa-calendar text-teal-500 w-5"></i>
+                                        <div>
+                                            <p class="text-xs text-gray-500">Created At</p>
+                                            <p class="font-semibold text-gray-800" x-text="showData.created_at"></p>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        class="flex items-center justify-between gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-flag text-teal-500 w-5"></i>
+                                            <div>
+                                                <p class="text-xs text-gray-500">Priority</p>
+                                                <p class="font-semibold text-gray-800" x-text="showData.priority"></p>
+                                            </div>
+                                        </div>
+
                                         <span class="px-2 py-0.5 rounded text-xs font-medium"
                                             :class="{
                                                 'bg-yellow-100 text-yellow-800': showData.priority === 'Low',
                                                 'bg-orange-100 text-orange-800': showData.priority === 'Medium',
                                                 'bg-red-100 text-red-800': showData.priority === 'High'
-                                            }"
-                                            x-text="showData.priority"></span>
-                                    </span>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <i class="fas fa-stopwatch text-teal-500"></i>
-                                    <span><strong>Duration:</strong></span>
-                                    <template x-if="showData.duration_human">
-                                        <span>
-                                            <span class="text-gray-700" x-text="showData.duration_human"></span>
-                                            <small class="text-gray-500 text-xs ml-1"
-                                                x-show="showData.duration_details"
-                                                x-text="showData.duration_details"></small>
+                                            }">
+                                            <span x-text="showData.priority"></span>
                                         </span>
-                                    </template>
-                                    <template x-if="!showData.duration_human">
-                                        <span class="text-gray-500">-</span>
+                                    </div>
+
+                                    <!-- ✅ Informasi Durasi (Menyatu di Grid) -->
+                                    <div class="border border-gray-200 rounded-lg p-3 bg-white shadow-sm">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h5 class="text-sm font-semibold text-gray-600 flex items-center gap-2">
+                                                <i class="fas fa-stopwatch text-teal-500"></i>
+                                                Informasi Durasi
+                                            </h5>
+
+                                            <span class="text-sm font-bold text-teal-600"
+                                                x-text="showData.total_duration || '-'"></span>
+                                        </div>
+
+                                        <div class="space-y-1 text-sm">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-500">⏳ Menunggu</span>
+                                                <span class="font-semibold text-gray-800"
+                                                    x-text="showData.waiting_duration || '-'"></span>
+                                            </div>
+
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-500">🔧 Pengerjaan</span>
+                                                <span class="font-semibold text-gray-800"
+                                                    x-text="showData.progress_duration || '-'"></span>
+                                            </div>
+
+                                            <div class="pt-1 border-t flex justify-between">
+                                                <span class="font-semibold text-gray-700">✅ Total</span>
+                                                <span class="font-bold text-teal-600"
+                                                    x-text="showData.total_duration || '-'"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- Notes Section -->
+                            <div x-show="showData.notes && showData.notes.length"
+                                class="mt-4 bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h5 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                        <i class="fas fa-sticky-note text-teal-500"></i>
+                                        Catatan Admin
+                                    </h5>
+
+                                    @if(auth()->user()->role === 'admin')
+                                    <button @click="addNote(showData.id)"
+                                        class="text-xs inline-flex items-center gap-1
+                                            px-3 py-1.5 rounded-md border
+                                            border-teal-500 text-teal-600
+                                            hover:bg-teal-50 transition">
+                                        <i class="fas fa-plus"></i>
+                                        Tambah
+                                    </button>
+                                    @endif
+                                </div>
+
+                                <!-- List Notes -->
+                                <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                                    <template x-for="note in showData.notes" :key="note.id">
+                                        <div class="border border-gray-200 rounded-md px-2 py-1.5 bg-white">
+                                            <p class="text-xs text-gray-700 leading-relaxed" x-text="note.note"></p>
+                                            <div class="flex justify-between items-center mt-1">
+                                                <span class="text-[10px] text-gray-500">
+                                                    <i class="fas fa-user-shield mr-1"></i>
+                                                    <span x-text="note.author"></span>
+                                                </span>
+                                                <span class="text-[10px] text-gray-400"
+                                                    x-text="note.created_at"></span>
+                                            </div>
+                                        </div>
                                     </template>
                                 </div>
                             </div>
@@ -883,7 +995,9 @@
                     location_id: ''
                 },
 
-                showData: {},
+                showData: {
+                    notes: []
+                },
                 errors: {},
                 loading: false,
                 isSubmitting: false, // NEW: Prevent double submissions
@@ -935,7 +1049,11 @@
                         const ticket = await response.json();
 
                         // Store ticket data for display
-                        this.showData = ticket;
+                        // this.showData = ticket;
+                        this.showData = {
+                            ...ticket,
+                            notes: ticket.notes || []
+                        };
                     } catch (error) {
                         console.error('Error fetching ticket:', error);
                         Swal.fire({
@@ -1091,7 +1209,68 @@
                     } finally {
                         this.isSubmitting = false; // Stop loading
                     }
+                },
+                //add notes
+                addNote(ticketId) {
+                    Swal.fire({
+                        title: 'Tambah Catatan',
+                        text: 'Berikan alasan kenapa ticket ini belum dikerjakan.',
+                        input: 'textarea',
+                        inputPlaceholder: 'Contoh: Sparepart belum tersedia, perbaikan dijadwalkan besok.',
+                        showCancelButton: true,
+                        confirmButtonText: 'Simpan Note',
+                        cancelButtonText: 'Batal',
+                        confirmButtonColor: '#14b8a6',
+                        cancelButtonColor: '#6b7280',
+                        preConfirm: (value) => {
+                            if (!value || !value.trim()) {
+                                Swal.showValidationMessage('Catatan tidak boleh kosong');
+                            }
+                            return value;
+                        }
+                    }).then(async (result) => {
+                        if (!result.isConfirmed) return;
+
+                        try {
+                            const response = await fetch(`/tickets/${ticketId}/notes`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({ note: result.value })
+                            });
+
+                            const data = await response.json();
+
+                            if (!response.ok || !data.success) {
+                                throw new Error(data.message || 'Gagal menyimpan catatan.');
+                            }
+
+                            // ✅ Langsung update UI tanpa reload
+                            if (!this.showData.notes) {
+                                this.showData.notes = [];
+                            }
+                            this.showData.notes.unshift(data.note);
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: 'Catatan berhasil ditambahkan.',
+                                timer: 1500,
+                                showConfirmButton: false,
+                            });
+                        } catch (error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: error.message || 'Terjadi kesalahan saat menyimpan catatan.'
+                            });
+                        }
+                    });
                 }
+
             }
         }
     </script>
@@ -1278,7 +1457,6 @@
         });
 
         //search
-
         function ticketSearch() {
             return {
                 search: "{{ $search ?? '' }}",
@@ -1400,11 +1578,13 @@
                 },
 
                 clearAll() {
-                    this.status = '';
-                    this.priority = '';
-                    this.category = '';
-                    this.sort = '';
-                    this.submitFilters();
+                    // this.status = '';
+                    // this.priority = '';
+                    // this.category = '';
+                    // this.sort = '';
+                    // this.submitFilters();
+                    // document.getElementById('filter-search').value = '';
+                    window.location.href = "{{ route('tickets.index') }}";
                 }
             }
         }

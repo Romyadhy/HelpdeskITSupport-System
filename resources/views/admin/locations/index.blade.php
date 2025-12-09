@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Ticket Locations') }}
+            Managemen Lokasi Ticket
         </h2>
     </x-slot>
 
@@ -13,7 +13,7 @@
                     <div class="flex justify-between items-center mb-4">
                         <div class="flex flex-col py-1.5">
                             <h3 class="text-lg font-medium pb-1">Locations List</h3>
-                            <p class="font-thin text-sm text-gray-500 italic">Berikut adalah daftar lokasi pada ticket/pelaporan maslah</p>
+                            <p class="font-thin text-sm text-gray-500">Berikut adalah daftar lokasi pada ticket/pelaporan maslah</p>
                         </div>
                         <button @click="openCreateModal()" class="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded">
                             Create New Location

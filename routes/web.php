@@ -50,8 +50,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
     Route::post('/tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
+    Route::post('/tickets/{ticket}/notes', [TicketController::class, 'storeNote'])->name('tickets.notes.store');
 
-    // === DAILY REPORT ===
+
+    // Daily Report Routes
     Route::get('reports/daily', [DailyReportController::class, 'index'])->name('reports.daily');
     Route::get('reports/daily/create', [DailyReportController::class, 'create'])->name('reports.daily.create');
     Route::post('reports/daily', [DailyReportController::class, 'store'])->name('reports.daily.store');
@@ -59,7 +61,7 @@ Route::middleware('auth')->group(function () {
     Route::put('reports/daily/{id}/verify', [DailyReportController::class, 'verify'])->name('reports.daily.verify');
     Route::get('reports/daily/{id}/pdf', [DailyReportController::class, 'exportPdf'])->name('reports.daily.pdf');
 
-    // === MONTHLY REPORT ===
+    // Monthly Report Routes
     Route::get('reports/monthly', [MonthlyReportController::class, 'index'])->name('reports.monthly');
     Route::get('reports/monthly/create', [MonthlyReportController::class, 'create'])->name('reports.monthly.create');
     Route::post('reports/monthly', [MonthlyReportController::class, 'store'])->name('reports.monthly.store');
@@ -83,7 +85,7 @@ Route::middleware('auth')->group(function () {
     // Logs
     Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity.log');
 
-    // === ADMIN ROUTES ===
+    // admin routes
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::resource('users', AdminUserController::class);
         Route::resource('categories', AdminTicketCategoryController::class);

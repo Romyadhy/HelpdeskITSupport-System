@@ -13,9 +13,6 @@ use App\Helpers\logActivity;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $users = User::with('roles')->latest()->paginate(10);
@@ -23,19 +20,7 @@ class UserController extends Controller
         return view('admin.users.index', compact('users', 'roles'));
     }
 
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $roles = Role::pluck('name', 'name')->all();
-        return view('admin.users.create', compact('roles'));
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+    // store
     public function store(Request $request)
     {
         $request->validate([
@@ -75,21 +60,7 @@ class UserController extends Controller
             ->with('success', 'User created successfully.');
     }
 
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(User $user)
-    {
-        $roles = Role::pluck('name', 'name')->all();
-        $userRole = $user->roles->pluck('name', 'name')->first();
-
-        return view('admin.users.edit', compact('user', 'roles', 'userRole'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
+    // update
     public function update(Request $request, User $user)
     {
         $request->validate([
@@ -137,10 +108,7 @@ class UserController extends Controller
             ->with('success', 'User updated successfully');
     }
 
-
-    /**
-     * Remove the specified resource from storage.
-     */
+    // delete
     public function destroy(User $user)
     {
         // Prevent deleting self

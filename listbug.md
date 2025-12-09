@@ -17,6 +17,9 @@
 - [ ] Bugs in sidebar size, its diff when username has long text the other way around.
 - [x] Durations tickets didn't setup yet.
 - [x] DailyReports for support Unauthorized, and for the fields solve by in pdf, also in show or detail tickets, add the inprogress and open ticets, remove the showing of tickets or add it like modals things.
+- [x] Search and Filter in tickets pages has a bug. 
+- [ ] Daily Report Tickets, add note tickets when is aviable in every tickets. Expecially in pdf or in show data in system.
+
 
 ## Unfinished Features
 
@@ -40,11 +43,11 @@
 - [x] Add footer and fix structure of the folder/file in source.
 - [x] Create a button to close sidebar.
 - [x] Add admin page that can create new category, locations and user.
-- [ ] Add status and priority in admin settings. [OPSIONAL]
-- [ ] Add Edit functions in daily report controller [OPSIONAL]
+- [ ] Add status and priority in admin settings. [OPSIONAL]. *need foreignkey and make new tables, its mean change a lot of things*
+- [ ] Add Edit functions in daily report controller [OPSIONAL] *need foreignkey and make new tables, its mean change a lot of things*
 - [x] Priority Tickets make it clear for admin to determine witch one the support gonna do first and so the admin can have access to determine the tickets priority.
-- [ ] Add more durations, tell apart between durations tickets open before handle by support and durations tickets solved by supports.
-- [ ] Add note when the tickets is didn't closed todays, from admin or it support.
+- [x] Add more durations, tell apart between durations tickets open before handle by support and durations tickets solved by supports.
+- [x] Add note when the tickets is didn't closed todays, from admin or IT support.
 
 ## Other Notes
 

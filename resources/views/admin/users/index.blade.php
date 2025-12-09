@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('User Management') }}
+            Managemen User
         </h2>
     </x-slot>
 
@@ -11,7 +11,10 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium">Users List</h3>
+                        <div class="flex flex-col py-1.5">
+                            <h3 class="text-lg font-medium pb-1">Daftar User</h3>
+                            <p class="text-sm font-thin text-gray-500">Berikut adalah daftar user pada keseluruhan sistem</p>
+                        </div>
                         <button @click="openCreateModal()" class="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded">
                             Create New User
                         </button>

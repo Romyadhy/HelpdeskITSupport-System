@@ -6,6 +6,7 @@ use App\Helpers\logActivity;
 use App\Models\Ticket;
 use App\Models\TicketCategory;
 use App\Models\TicketLocation;
+use App\Models\TicketNote;
 use App\Services\TelegramService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
@@ -220,26 +221,36 @@ class TicketController extends Controller
 
         // Return JSON for AJAX requests
         if (request()->expectsJson() || request()->ajax()) {
-            $ticket->load(['user', 'assignee', 'solver']);
+            $ticket->load(['user', 'assignee', 'solver', 'notes.user']);
 
-            // Calculate duration for display
-            $durationHuman = null;
-            $durationDetails = null;
+            //durasi ticket mulai di kerjakan
+            $waitingDuration = null;
 
-            if ($ticket->status === 'Closed' && $ticket->duration) {
-                $durationHuman = $ticket->duration_human;
-                $startTime = $ticket->started_at
-                    ? $ticket->started_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i')
-                    : $ticket->created_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i');
-                $endTime = $ticket->solved_at
-                    ? $ticket->solved_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i')
-                    : '—';
-                $durationDetails = "({$startTime} → {$endTime})";
-            } elseif ($ticket->status === 'In Progress' && $ticket->started_at) {
-                $minutes = $ticket->started_at->diffInMinutes(now());
-                $live = \Carbon\CarbonInterval::minutes($minutes)->cascade();
-                $durationHuman = ($live->hours ? $live->hours . 'h ' : '') . $live->minutes . 'm (running)';
-                $durationDetails = null;
+            //durasi ticket di kerjakan sampai selesai
+            $progressDuration = null;
+
+            //durasi total ticket dari di buat sampai selesai
+            $totalDuration = null;
+
+            if ($ticket->started_at) {
+                $waitingDuration = $ticket->waiting_duration_human;
+            }
+
+            if ($ticket->started_at) {
+                if ($ticket->solved_at) {
+                    $progressDuration = $ticket->progress_duration_human;
+                } else {
+                    // Live progress (sedang dikerjakan)
+                    $minutes = $ticket->started_at->diffInMinutes(now());
+                    $interval = \Carbon\CarbonInterval::minutes($minutes)->cascade();
+                    $progressDuration =
+                        ($interval->hours ? $interval->hours . 'h ' : '') .
+                        $interval->minutes . 'm (running)';
+                }
+            }
+
+            if ($ticket->solved_at) {
+                $totalDuration = $ticket->total_duration_human;
             }
 
             return response()->json([
@@ -248,15 +259,30 @@ class TicketController extends Controller
                 'description' => $ticket->description,
                 'status' => $ticket->status,
                 'priority' => $ticket->priority,
-                'duration' => $ticket->duration,
-                'duration_human' => $durationHuman,
-                'duration_details' => $durationDetails,
+
+                'waiting_duration' => $waitingDuration,
+                'progress_duration' => $progressDuration,
+                'total_duration' => $totalDuration,
+                
                 'category' => $categoryName,
                 'location' => $locationName,
                 'user' => $ticket->user->name,
                 'assigned_to' => $ticket->assignee ? $ticket->assignee->name : null,
                 'closed_by' => $ticket->solver ? $ticket->solver->name : null,
                 'solution' => $ticket->solution,
+                
+                'notes' => $ticket->notes->map(function ($note) {
+                    return [
+                        'id' => $note->id,
+                        'note' => $note->note,
+                        'author' => $note->user ? $note->user->name : 'Unknown',
+                        'created_at' => $note->created_at
+                            ->setTimezone('Asia/Makassar')
+                            ->translatedFormat('d M Y, H:i') . ' WITA',
+                    ];
+                }),
+
+
                 'created_at' => $ticket->created_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') . ' WITA',
                 'updated_at' => $ticket->updated_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') . ' WITA',
                 'started_at' => $ticket->started_at ? $ticket->started_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') . ' WITA' : null,
@@ -264,7 +290,7 @@ class TicketController extends Controller
             ]);
         }
 
-        return view('frontend.Tickets.show', compact('ticket', 'categoryName', 'locationName'));
+        // return view('frontend.Tickets.show', compact('ticket', 'categoryName', 'locationName'));
     }
 
     public function destroy(Ticket $ticket)
@@ -524,6 +550,50 @@ class TicketController extends Controller
             'success' => true,
             'message' => 'Priority set successfully.',
             'priority' => $validated['priority'],
+        ]);
+    }
+
+
+    public function storeNote(Request $request, Ticket $ticket){
+        $user = Auth::user();
+
+        // Hanya admin (atau role yang punya ability ini) yang boleh tambah note
+        if (! $user->can('view-any-tickets')) { // silakan sesuaikan dengan policy kamu
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.',
+            ], 403);
+        }
+
+        // Hanya boleh tambah note kalau statusnya Open
+        if ($ticket->status !== 'Open') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Notes hanya dapat ditambahkan ketika ticket berstatus Open.',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'note' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $note = TicketNote::create([
+            'ticket_id' => $ticket->id,
+            'user_id'   => $user->id,
+            'note'      => $validated['note'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Note berhasil ditambahkan.',
+            'note' => [
+                'id' => $note->id,
+                'note' => $note->note,
+                'author' => $note->user->name,
+                'created_at' => $note->created_at
+                    ->setTimezone('Asia/Makassar')
+                    ->translatedFormat('d M Y, H:i') . ' WITA',
+            ],
         ]);
     }
 }

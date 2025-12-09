@@ -10,26 +10,13 @@ use Illuminate\Support\Facades\Auth;
 
 class TicketCategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $categories = TicketCategory::latest()->paginate(10);
         return view('admin.categories.index', compact('categories'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('admin.categories.create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+   // store
     public function store(Request $request)
     {
         $request->validate([
@@ -61,17 +48,7 @@ class TicketCategoryController extends Controller
             ->with('success', 'Category created successfully.');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(TicketCategory $category)
-    {
-        return view('admin.categories.edit', compact('category'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
+    // update
     public function update(Request $request, TicketCategory $category)
     {
         $request->validate([
@@ -103,9 +80,7 @@ class TicketCategoryController extends Controller
             ->with('success', 'Category updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    //delete
     public function destroy(TicketCategory $category)
     {
         // Check if used in tickets

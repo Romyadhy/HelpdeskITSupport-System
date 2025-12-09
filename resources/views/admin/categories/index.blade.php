@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Ticket Categories') }}
+            Managemen Kategori Ticket
         </h2>
     </x-slot>
 
@@ -13,7 +13,7 @@
                     <div class="flex justify-between items-center mb-4">
                         <div class="flex flex-col py-1.5">
                             <h3 class="text-lg font-medium pb-1">Daftar Katerogi</h3>
-                            <p class="text-sm font-thin italic text-gray-500">Berikut adalah daftar kategori pada tickets/pelaporan masalah.</p>
+                            <p class="text-sm font-thin text-gray-500">Berikut adalah daftar kategori pada tickets/pelaporan masalah.</p>
 
                         </div>
                         <button @click="openCreateModal()" class="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded">
