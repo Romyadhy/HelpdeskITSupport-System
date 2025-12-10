@@ -906,28 +906,33 @@
                             </div>
 
                             <!-- Notes Section -->
-                            <div x-show="showData.notes && showData.notes.length"
-                                class="mt-4 bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2">
+                            <div class="mt-4 bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2">
+
                                 <div class="flex items-center justify-between mb-2">
                                     <h5 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
                                         <i class="fas fa-sticky-note text-teal-500"></i>
                                         Catatan Admin
                                     </h5>
 
-                                    @if(auth()->user()->role === 'admin')
-                                    <button @click="addNote(showData.id)"
-                                        class="text-xs inline-flex items-center gap-1
-                                            px-3 py-1.5 rounded-md border
-                                            border-teal-500 text-teal-600
-                                            hover:bg-teal-50 transition">
-                                        <i class="fas fa-plus"></i>
-                                        Tambah
-                                    </button>
-                                    @endif
+                                    @role('admin')
+                                        <button @click="addNote(showData.id)" 
+                                        class="text-xs inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-teal-500 text-teal-600 hover:bg-teal-50 transition">
+                                            <i class="fas fa-plus"></i>
+                                                Tambah
+                                        </button>
+                                    @endrole
                                 </div>
 
-                                <!-- List Notes -->
-                                <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                                <!-- ✅ JIKA NOTES KOSONG -->
+                                <div x-show="!showData.notes || showData.notes.length === 0"
+                                    class="text-xs text-gray-400 italic text-center py-2">
+                                    Belum ada catatan admin.
+                                </div>
+
+                                <!-- ✅ LIST NOTES -->
+                                <div x-show="showData.notes && showData.notes.length"
+                                    class="space-y-2 max-h-40 overflow-y-auto pr-1">
+
                                     <template x-for="note in showData.notes" :key="note.id">
                                         <div class="border border-gray-200 rounded-md px-2 py-1.5 bg-white">
                                             <p class="text-xs text-gray-700 leading-relaxed" x-text="note.note"></p>
@@ -942,7 +947,9 @@
                                         </div>
                                     </template>
                                 </div>
+
                             </div>
+
 
                             <!-- Solution Section (only if Closed) -->
                             <div x-show="showData.status === 'Closed' && showData.solution"
@@ -1236,10 +1243,13 @@
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    'X-CSRF-TOKEN': document.querySelector(
+                                        'meta[name="csrf-token"]').content,
                                     'Accept': 'application/json'
                                 },
-                                body: JSON.stringify({ note: result.value })
+                                body: JSON.stringify({
+                                    note: result.value
+                                })
                             });
 
                             const data = await response.json();

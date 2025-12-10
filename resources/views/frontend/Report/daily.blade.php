@@ -11,7 +11,8 @@
                 <div>
                     <h3 class="text-lg font-semibold text-gray-800">Hi, {{ Auth::user()->name }}</h3>
                     <p class="text-gray-500 text-sm">{{ now()->format('l, d F Y') }}</p>
-                    <p class="text-md text-gray-500 pt-1">Laporan harian sebagai bentuk dokumentasi dan akuntabilitas.</p>
+                    <p class="text-md text-gray-500 pt-1">Laporan harian sebagai bentuk dokumentasi dan akuntabilitas.
+                    </p>
                 </div>
 
                 @if ($hasReportToday)
@@ -21,7 +22,7 @@
                 @else
                     @can('create-daily-report')
                         <a href="{{ route('reports.daily.create') }}"
-                           class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow">
+                            class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow">
                             + Buat Laporan Harian
                         </a>
                     @endcan
@@ -45,7 +46,7 @@
             </div>
 
             {{-- Statistik per support (admin/manager) --}}
-            @if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('manager'))
+            {{-- @if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('manager'))
                 <div class="bg-white shadow rounded-lg p-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">📊 Statistik Support</h3>
 
@@ -70,11 +71,11 @@
                         </tbody>
                     </table>
                 </div>
-            @endif
+            @endif --}}
 
             {{-- Riwayat laporan --}}
             <div class="bg-white shadow rounded-lg p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">📋 Laporan Sebelumnya</h3>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">📋 Riwayat Laporan</h3>
 
                 @forelse ($dailyReports as $report)
                     <div class="border-b py-4">
@@ -96,7 +97,8 @@
                                     @endif
 
                                     @if ($report->tickets->count())
-                                        <p><strong>Tickets:</strong> {{ $report->tickets->pluck('title')->join(', ') }}</p>
+                                        <p><strong>Tickets:</strong> {{ $report->tickets->pluck('title')->join(', ') }}
+                                        </p>
                                     @endif
                                 </div>
                             </div>
@@ -105,7 +107,8 @@
                             @if ($report->verified_at)
                                 <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">Verified</span>
                             @else
-                                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">Pending</span>
+                                <span
+                                    class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">Pending</span>
                             @endif
                         </div>
 
@@ -119,20 +122,19 @@
                             </button>
                             {{-- detail report --}}
                             <a href="{{ route('reports.daily.show', $report->id) }}"
-                                class="rounded-md px-1.5 py-1.5 text-white bg-teal-500 hover:bg-teal-600 text-sm transition">Lihat Detail
+                                class="rounded-md px-1.5 py-1.5 text-white bg-teal-500 hover:bg-teal-600 text-sm transition">Lihat
+                                Detail
                             </a>
 
                             {{-- Verifikasi --}}
                             @if (Auth::user()->hasRole('admin') && !$report->verified_at)
                                 <form id="verifyForm-{{ $report->id }}"
-                                      action="{{ route('reports.daily.verify', $report->id) }}"
-                                      method="POST">
+                                    action="{{ route('reports.daily.verify', $report->id) }}" method="POST">
                                     @csrf
                                     @method('PUT')
 
-                                    <button type="button"
-                                            onclick="confirmVerify('verifyForm-{{ $report->id }}')"
-                                            class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow">
+                                    <button type="button" onclick="confirmVerify('verifyForm-{{ $report->id }}')"
+                                        class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow">
                                         <i class="fas fa-check mr-1"></i> Verify
                                     </button>
                                 </form>
@@ -144,14 +146,74 @@
                     <p class="text-gray-500 text-sm">Belum ada laporan yang dibuat.</p>
                 @endforelse
             </div>
+            <!-- Modern Pagination with Info -->
+            <div class="px-6 py-5 border-t bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+
+                <!-- Left: Showing Info -->
+                <div class="text-sm text-gray-600">
+                    Showing
+                    <span class="font-semibold text-gray-900">{{ $dailyReports->firstItem() }}</span>
+                    to
+                    <span class="font-semibold text-gray-900">{{ $dailyReports->lastItem() }}</span>
+                    of
+                    <span class="font-semibold text-gray-900">{{ $dailyReports->total() }}</span>
+                    results
+                </div>
+
+                <!-- Right: Pagination -->
+                <div class="flex items-center space-x-1">
+
+                    {{-- Previous --}}
+                    @if ($dailyReports->onFirstPage())
+                        <span class="px-3 py-2 rounded-xl bg-gray-100 text-gray-400 cursor-not-allowed">
+                            <i class="fas fa-chevron-left"></i>
+                        </span>
+                    @else
+                        <a href="{{ $dailyReports->previousPageUrl() }}"
+                            class="px-3 py-2 rounded-xl bg-white border border-gray-300
+                text-gray-600 hover:bg-gray-100 transition">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    @endif
+
+                    {{-- Page Numbers --}}
+                    @foreach ($dailyReports->links()->elements[0] as $page => $url)
+                        @if ($page == $dailyReports->currentPage())
+                            <span class="px-4 py-2 rounded-xl bg-teal-500 text-white font-semibold shadow">
+                                {{ $page }}
+                            </span>
+                        @else
+                            <a href="{{ $url }}"
+                                class="px-4 py-2 rounded-xl bg-white border border-gray-300
+                    text-gray-700 hover:bg-gray-100 transition">
+                                {{ $page }}
+                            </a>
+                        @endif
+                    @endforeach
+
+                    {{-- Next --}}
+                    @if ($dailyReports->hasMorePages())
+                        <a href="{{ $dailyReports->nextPageUrl() }}"
+                            class="px-3 py-2 rounded-xl bg-white border border-gray-300
+                text-gray-600 hover:bg-gray-100 transition">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    @else
+                        <span class="px-3 py-2 rounded-xl bg-gray-100 text-gray-400 cursor-not-allowed">
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                    @endif
+
+                </div>
+            </div>
 
         </div>
     </div>
 
     {{-- SWEETALERT --}}
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {{-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> --}}
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             @if (session('success'))
                 Swal.fire({
                     icon: 'success',

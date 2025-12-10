@@ -2,168 +2,187 @@
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight flex items-center gap-2">
             <i class="fas fa-calendar-alt text-indigo-500"></i>
-            Monthly Reports
+            Laporan Bulanan IT Support
         </h2>
     </x-slot>
 
-    <div class="py-10 min-h-screen">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-8 bg-gray-100 min-h-screen">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            {{-- SUMMARY UTAMA BULANAN --}}
+            <div
+                class="bg-white shadow rounded-xl p-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
 
-            {{-- Tombol Buat Laporan Bulanan --}}
-            @can('create-monthly-report')
-                <div class="flex justify-end mb-6">
-                    <a href="{{ route('reports.monthly.create') }}"
-                        class="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 
-                        text-white px-5 py-2.5 rounded-lg shadow-md transition-all duration-200 flex items-center gap-2">
-                        <i class="fas fa-plus-circle"></i> Buat Laporan Bulanan
-                    </a>
-                </div>
-            @endcan
-
-            {{-- Card Utama --}}
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-xl p-6 border border-gray-100">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                        <i class="fas fa-file-alt text-indigo-500"></i>
-                        Daftar Laporan Bulanan
+                {{-- KIRI --}}
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800">
+                        Hi, {{ Auth::user()->name }}
                     </h3>
+                    <p class="text-gray-500 text-sm">
+                        {{ now()->translatedFormat('l, d F Y') }}
+                    </p>
+                    <p class="text-md text-gray-500 pt-1">
+                        Rekap laporan bulanan sebagai dokumentasi.
+                    </p>
                 </div>
 
-                {{-- Jika Tidak Ada Data --}}
+                {{-- KANAN (BUTTON CREATE) --}}
+                @can('create-monthly-report')
+                    <a href="{{ route('reports.monthly.create') }}"
+                        class="inline-flex items-center gap-2 px-5 py-2.5
+            bg-teal-600 hover:bg-teal-700
+            text-white font-semibold rounded-lg shadow transition">
+                        <i class="fas fa-plus-circle"></i>
+                        Buat Laporan Bulanan
+                    </a>
+                @endcan
+            </div>
+
+            {{-- STATISTIK BULANAN --}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 mb-8">
+
+                {{-- Total Laporan --}}
+                <div class="bg-white p-6 rounded-xl shadow text-center">
+                    <h4 class="text-gray-600 text-sm">Total Laporan Bulan Ini</h4>
+                    <p class="text-3xl font-bold text-indigo-600 mt-1">
+                        {{ $totalMonthlyReports ?? '-' }}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">Jumlah laporan yang dikirim</p>
+                </div>
+
+                {{-- Total Tugas --}}
+                <div class="bg-white p-6 rounded-xl shadow text-center">
+                    <h4 class="text-gray-600 text-sm">Total Tugas Diselesaikan</h4>
+                    <p class="text-3xl font-bold text-green-600 mt-1">
+                        {{ $totalMonthlyTasks ?? '-' }}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">Akumulasi tugas bulanan</p>
+                </div>
+
+                {{-- Total Ticket --}}
+                <div class="bg-white p-6 rounded-xl shadow text-center">
+                    <h4 class="text-gray-600 text-sm">Total Ticket Ditangani</h4>
+                    <p class="text-3xl font-bold text-yellow-600 mt-1">
+                        {{ $totalMonthlyTickets ?? '-' }}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">Permintaan yang terselesaikan</p>
+                </div>
+
+            </div>
+
+
+            {{-- WRAPPER UTAMA --}}
+            <div class="bg-white shadow rounded-xl p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-5 flex items-center gap-2">
+                    <i class="fas fa-clipboard-list text-indigo-600"></i>
+                    Riwayat Laporan Bulanan
+                </h3>
+
                 @if ($monthlyReports->isEmpty())
                     <div class="p-6 text-center text-gray-500 italic">
                         <i class="fas fa-info-circle text-gray-400 text-2xl mb-2"></i>
                         <p>Belum ada laporan bulanan yang tersedia.</p>
                     </div>
                 @else
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full border border-gray-200 text-sm text-gray-700 rounded-lg overflow-hidden">
-                            <thead class="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 uppercase text-xs font-semibold">
-                                <tr>
-                                    <th class="px-4 py-3 border">#</th>
-                                    <th class="px-4 py-3 border">Nama User</th>
-                                    <th class="px-4 py-3 border">Bulan</th>
-                                    <th class="px-4 py-3 border">Total Hari</th>
-                                    <th class="px-4 py-3 border">Total Tugas</th>
-                                    <th class="px-4 py-3 border">Total Tiket</th>
-                                    <!-- <th class="px-4 py-3 border">Status</th> -->
-                                    <th class="px-4 py-3 border text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($monthlyReports as $index => $report)
-                                    <tr class="hover:bg-gray-50 transition duration-150">
-                                        <td class="px-4 py-3 border text-center font-medium text-gray-600">
-                                            {{ $index + 1 }}
-                                        </td>
-                                        <td class="px-4 py-3 border font-medium">{{ $report->user->name ?? '-' }}</td>
-                                        <td class="px-4 py-3 border font-medium text-gray-700">
+                    <div class="space-y-5">
+
+                        @foreach ($monthlyReports as $report)
+                            <div class="border rounded-xl p-5 bg-gray-50 hover:bg-gray-100 transition shadow-sm">
+
+                                {{-- HEADER --}}
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-lg">
                                             {{ $report->month }} {{ $report->year }}
-                                        </td>
-                                        <td class="px-4 py-3 border text-center text-gray-600">{{ $report->total_days_reported }}</td>
-                                        <td class="px-4 py-3 border text-center text-gray-600">{{ $report->total_tasks }}</td>
-                                        <td class="px-4 py-3 border text-center text-gray-600">{{ $report->total_tickets }}</td>
+                                            <span class="text-sm text-gray-500">
+                                                oleh {{ $report->user->name ?? '-' }}
+                                            </span>
+                                        </p>
 
-                                        {{-- Status dengan Warna Dinamis --}}
-                                        <!-- <td class="px-4 py-3 border text-center">
-                                            @if ($report->status === 'Verified')
-                                                <span class="px-2.5 py-1 bg-green-100 text-green-700 text-xs rounded-full font-semibold">
-                                                    <i class="fas fa-check-circle"></i> Verified
-                                                </span>
-                                            @elseif ($report->status === 'Pending Verification')
-                                                <span class="px-2.5 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-semibold">
-                                                    <i class="fas fa-hourglass-half"></i> Pending
-                                                </span>
-                                            @else
-                                                <span class="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs rounded-full font-semibold">
-                                                    <i class="fas fa-pencil-alt"></i> Draft
-                                                </span>
-                                            @endif
-                                        </td> -->
+                                        <p class="text-sm text-gray-500 mt-1">
+                                            Rekap aktivitas bulanan IT Support
+                                        </p>
+                                    </div>
 
-                                        {{-- Aksi --}}
-                                        <td class="px-4 py-3 border text-center">
-                                            <div class="flex items-center justify-center gap-3">
+                                    {{-- Badge --}}
+                                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                                        Verified
+                                    </span>
+                                </div>
 
-                                                {{-- Detail --}}
-                                                @can('view-monthly-reports')
-                                                    <a href="{{ route('reports.monthly.show', $report->id) }}"
-                                                        class="text-blue-600 hover:text-blue-800 transition-all flex items-center gap-1">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                @endcan
+                                {{-- ISI --}}
+                                <div class="text-sm text-gray-600 mt-2 space-y-1">
+                                    <p>📅 Total Hari Laporan: <b>{{ $report->total_days_reported }}</b></p>
+                                    <p>✅ Total Tugas Diselesaikan: <b>{{ $report->total_tasks }}</b></p>
+                                    <p>🎫 Total Tiket Ditangani: <b>{{ $report->total_tickets }}</b></p>
+                                </div>
 
-                                                {{-- Edit --}}
-                                                @can('edit-monthly-report')
-                                                    <a href="{{ route('reports.monthly.edit', $report->id) }}"
-                                                        class="text-green-600 hover:text-green-800 transition-all flex items-center gap-1">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                @endcan
+                                {{-- TOMBOL AKSI --}}
+                                <div class="flex gap-3 mt-4">
 
-                                                {{-- Verifikasi --}}
-                                                <!-- @can('verify-daily-report')
-                                                    @if ($report->status !== 'Verified')
-                                                        <form action="{{ route('reports.monthly.verify', $report->id) }}"
-                                                            method="POST"
-                                                            onsubmit="return confirm('Verifikasi laporan ini?')"
-                                                            class="verify-report-btn flex items-center gap-1 text-indigo-600 hover:text-indigo-800 transition-all">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <button type="submit">
-                                                                <i class="fas fa-check"></i>
-                                                            </button>
-                                                        </form>
-                                                    @endif
-                                                @endcan -->
+                                    {{-- Detail --}}
+                                    @can('view-monthly-reports')
+                                        <a href="{{ route('reports.monthly.show', $report->id) }}"
+                                            class="bg-teal-500 hover:bg-teal-600 text-white px-3 py-1.5 rounded-md text-sm transition">
+                                            <i class="fas fa-eye mr-1"></i> Lihat Detail
+                                        </a>
+                                    @endcan
 
-                                                {{-- Hapus --}}
-                                                @can('delete-monthly-report')
-                                                    <form action="{{ route('reports.monthly.destroy', $report->id) }}"
-                                                        method="POST"
-                                                        class="delete-report-btn flex items-center gap-1 text-red-600 hover:text-red-800 transition-all">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit">
-                                                            <i class="fas fa-trash-alt"></i>
-                                                        </button>
-                                                    </form>
-                                                @endcan
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                    {{-- Edit --}}
+                                    @can('edit-monthly-report')
+                                        <a href="{{ route('reports.monthly.edit', $report->id) }}"
+                                            class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-md text-sm transition">
+                                            <i class="fas fa-edit mr-1"></i> Edit
+                                        </a>
+                                    @endcan
+
+                                    {{-- Delete --}}
+                                    @can('delete-monthly-report')
+                                        <form action="{{ route('reports.monthly.destroy', $report->id) }}" method="POST"
+                                            class="delete-report-btn">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-md text-sm transition">
+                                                <i class="fas fa-trash mr-1"></i> Hapus
+                                            </button>
+                                        </form>
+                                    @endcan
+
+                                </div>
+
+                            </div>
+                        @endforeach
+
                     </div>
+
                 @endif
             </div>
         </div>
     </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Delete confirmation
             document.querySelectorAll('.delete-report-btn').forEach(form => {
                 form.addEventListener('submit', e => {
-                    e.preventDefault(); // Prevent default form submission
-                    
+                    e.preventDefault();
+
                     Swal.fire({
                         title: 'Hapus Laporan?',
                         text: 'Yakin ingin menghapus laporan ini?',
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#ef4444', // Red color for delete
-                        cancelButtonColor: '#6b7280', // Gray for cancel
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
                         confirmButtonText: 'Ya, hapus',
                         cancelButtonText: 'Batal'
                     }).then(result => {
                         if (result.isConfirmed) {
-                            form.submit(); // Submit the form if confirmed
+                            form.submit();
                         }
                     });
                 });
             });
         });
-      
     </script>
+
 </x-app-layout>

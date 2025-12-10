@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Spatie\LaravelPdf\Facades\Pdf;
 use App\Helpers\logActivity;
+use App\Models\Task;
+use App\Models\TaskCompletion;
+use App\Models\Ticket;
 
 class MonthlyReportController extends Controller
 {
@@ -28,6 +31,10 @@ class MonthlyReportController extends Controller
     {
         $user = Auth::user();
 
+        // Ambil bulan & tahun sekarang
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
+
         if ($user->hasRole(['admin', 'manager'])) {
             $monthlyReports = MonthlyReport::with(['user', 'verifier'])
                 ->latest()
@@ -39,13 +46,31 @@ class MonthlyReportController extends Controller
                 ->get();
         }
 
-        return view('frontend.Report.monthly', compact('monthlyReports'));
+        // TOTAL LAPORAN BULAN INI
+        $totalMonthlyReports = MonthlyReport::whereMonth('created_at', $currentMonth)
+        ->whereYear('created_at', $currentYear)
+        ->count();
+
+        // TOTAL TUGAS BULAN INI
+        $totalMonthlyTasks = TaskCompletion::whereMonth('created_at', $currentMonth)
+        ->whereYear('created_at', $currentYear)
+        ->count();
+
+        // TOTAL TICKET BULAN INI
+        $totalMonthlyTickets = Ticket::whereMonth('created_at', $currentMonth)
+        ->whereYear('created_at', $currentYear)
+        ->count();
+
+        // $tes = $monthlyReports;
+        // dd($tes);
+
+        return view('frontend.Report.monthly', compact('monthlyReports', 'totalMonthlyReports', 'totalMonthlyTasks', 'totalMonthlyTickets'));
     }
 
     public function create(Request $request)
     {
         // Ambil periode dari query, default bulan berjalan
-        $period = $request->query('period', now()->format('Y-m')); // e.g. "2025-10"
+        $period = $request->query('period', now()->format('Y-m')); 
         [$year, $monthNum] = explode('-', $period);
 
         // Ambil semua daily report di bulan tersebut
@@ -60,7 +85,6 @@ class MonthlyReportController extends Controller
         $totalTasks = $dailyReports->flatMap->tasks->count();
         $totalTickets = $dailyReports->flatMap->tickets->count();
 
-        // Nama bulan (dalam format lokal, misal: Oktober)
         $month = \Carbon\Carbon::createFromDate($year, $monthNum, 1)->translatedFormat('F');
 
         return view('frontend.Report.monthly-create', compact('dailyReports', 'totalDaysReported', 'totalTasks', 'totalTickets', 'month', 'year', 'period'));
@@ -223,7 +247,8 @@ class MonthlyReportController extends Controller
         return redirect()->route('reports.monthly')->with('success', 'Laporan bulanan berhasil dihapus.');
     }
 
-    public function exportPdf($id){
+    public function exportPdf($id)
+    {
         $user = Auth::user();
         $report = MonthlyReport::with(['user', 'verifier'])->findOrFail($id);
 
@@ -245,17 +270,17 @@ class MonthlyReportController extends Controller
             'new' => [
                 'exported_by' => auth()->user()->name,
                 'exported_at' => now()->setTimezone('Asia/Makassar')->toDateTimeString(),
-            ]
+            ],
         ]);
 
         return Pdf::view('pdf.monthly-report', [
-                'report'       => $report,
-                'dailyReports' => $dailyReports,
-                'today'        => now()->setTimezone('Asia/Makassar'),
-            ])
+            'report' => $report,
+            'dailyReports' => $dailyReports,
+            'today' => now()->setTimezone('Asia/Makassar'),
+        ])
             ->format('a4')
             ->margins(16, 16, 20, 16) // top, right, bottom, left (mm)
-            ->name('MonthlyReport-'.$report->id.'.pdf');
+            ->name('MonthlyReport-' . $report->id . '.pdf');
         // ->download();
     }
 }

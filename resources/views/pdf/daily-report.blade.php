@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <title>Laporan Harian IT Support</title>
@@ -7,16 +8,17 @@
     <style>
         body {
             font-family: "Times New Roman", serif;
-            font-size: 14px;
+            /* font-size: 14px; */
             color: #000;
-            line-height: 1.6;
+            /* line-height: 1.6; */
         }
 
         @page {
             margin: 40px 35px;
         }
 
-        h2, h3 {
+        h2,
+        h3 {
             font-weight: bold;
             margin-bottom: 6px;
         }
@@ -36,7 +38,8 @@
             margin-bottom: 18px;
         }
 
-        table th, table td {
+        table th,
+        table td {
             border: 1px solid #000;
             padding: 6px;
             vertical-align: top;
@@ -53,7 +56,7 @@
 
         .footer {
             position: fixed;
-            bottom: -5px;
+            bottom: 5px;
             left: 0;
             right: 0;
             text-align: center;
@@ -61,8 +64,13 @@
             color: #444;
         }
 
-        .text-center { text-align: center; }
-        .italic { font-style: italic; }
+        .text-center {
+            text-align: center;
+        }
+
+        .italic {
+            font-style: italic;
+        }
     </style>
 </head>
 
@@ -78,7 +86,7 @@
     </div>
 
     <!-- INFORMASI UMUM -->
-    <h3>Informasi Umum</h3>
+    <h3>Informasi Laporan</h3>
 
     <table class="section-table">
         <tbody>
@@ -95,7 +103,8 @@
                 <td>
                     @if ($report->verified_at)
                         Terverifikasi oleh <b>{{ $report->verifier->name ?? 'N/A' }}</b><br>
-                        ({{ \Carbon\Carbon::parse($report->verified_at)->timezone('Asia/Makassar')->translatedFormat('d F Y, H:i') }} WITA)
+                        ({{ \Carbon\Carbon::parse($report->verified_at)->timezone('Asia/Makassar')->translatedFormat('d F Y, H:i') }}
+                        WITA)
                     @else
                         <span class="italic">Belum diverifikasi</span>
                     @endif
@@ -105,7 +114,7 @@
     </table>
 
     <!-- TUGAS HARIAN -->
-    <h3>Tugas Harian yang Sudah Dikerjakan</h3>
+    <h3>Daftar Tugas Harian yang Sudah Dikerjakan</h3>
 
     <table>
         <thead>
@@ -120,19 +129,20 @@
                 @php
                     // Get completions for this task on the report date
                     $completionsOnDate = $task->completions
-                        ->filter(function($completion) use ($report) {
+                        ->filter(function ($completion) use ($report) {
                             return \Carbon\Carbon::parse($completion->complated_at)->isSameDay($report->report_date);
                         })
                         ->sortBy('complated_at');
-                    
+
                     $firstCompletion = $completionsOnDate->first();
                 @endphp
                 <tr>
                     <td class="text-center">{{ $i + 1 }}</td>
                     <td>{{ $task->title }}</td>
                     <td class="text-center">
-                        @if($firstCompletion && $firstCompletion->complated_at)
-                            {{ \Carbon\Carbon::parse($firstCompletion->complated_at)->timezone('Asia/Makassar')->translatedFormat('H:i') }} WITA
+                        @if ($firstCompletion && $firstCompletion->complated_at)
+                            {{ \Carbon\Carbon::parse($firstCompletion->complated_at)->timezone('Asia/Makassar')->translatedFormat('H:i') }}
+                            WITA
                         @else
                             -
                         @endif
@@ -147,7 +157,7 @@
     </table>
 
     <!-- TIKET -->
-    <h3>Ticket yang Sudah Ditangani</h3>
+    <h3>Daftar Pelaporan Masalah dan Permintaan User</h3>
 
     <table>
         <thead>
@@ -157,6 +167,7 @@
                 <th style="width: 70px;">Status</th>
                 <th>Detail</th>
                 <th>Solusi</th>
+                <th>Catatan</th>
                 <th style="width: 70px;">Prioritas</th>
                 <th style="width: 120px;">Diselesaikan Oleh</th>
             </tr>
@@ -169,6 +180,25 @@
                     <td class="text-center">{{ $ticket->status }}</td>
                     <td>{{ $ticket->description ?? '-' }}</td>
                     <td>{{ $ticket->solution ?? '-' }}</td>
+                    <td>
+                        @if ($ticket->notes->count())
+                            <ul style="padding-left: 14px; margin: 0;">
+                                @foreach ($ticket->notes as $note)
+                                    <li style="font-size: 12px;">
+                                        {{ $note->note }}
+                                        <br>
+                                        <small style="color: #555;">
+                                            - {{ $note->user->name ?? 'Admin' }},
+                                            {{ \Carbon\Carbon::parse($note->created_at)->timezone('Asia/Makassar')->translatedFormat('d M Y, H:i') }}
+                                            WITA
+                                        </small>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <span class="italic">-</span>
+                        @endif
+                    </td>
                     <td class="text-center">{{ $ticket->priority ?? '-' }}</td>
                     <td class="text-center">{{ $ticket->solver->name ?? '-' }}</td>
                 </tr>
@@ -195,4 +225,5 @@
     </div>
 
 </body>
+
 </html>

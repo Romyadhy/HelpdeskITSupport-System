@@ -26,8 +26,7 @@ class DailyReportController extends Controller
         //Get latest report
         $dailyReports = DailyReport::with(['user', 'tasks', 'tickets', 'verifier'])
             ->latest()
-            ->take(5)
-            ->get();
+            ->paginate(5);
 
         // Total Laporan
         $monthlyReportsCount = DailyReport::whereMonth('report_date', now()->month)
