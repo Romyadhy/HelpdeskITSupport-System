@@ -263,9 +263,9 @@
                                                                 },
                                                                 body: JSON.stringify({ priority: newPriority })
                                                             });
-                                                
+
                                                             const data = await response.json();
-                                                
+
                                                             if (response.ok) {
                                                                 this.priority = newPriority;
                                                                 Swal.fire({
@@ -373,7 +373,7 @@
 
                                         {{-- ==== Support ==== --}}
                                         @can('handle-ticket')
-                                            @if ($ticket->status === 'Open' && !$ticket->assigned_to)
+                                            @if ($ticket->status === 'Open' && !$ticket->assigned_to && $ticket->priority)
                                                 {{-- Handle Ticket --}}
                                                 <form action="{{ route('tickets.start', $ticket->id) }}" method="POST"
                                                     class="inline handle-ticket-form">
@@ -915,18 +915,20 @@
                                     </h5>
 
                                     @role('admin')
-                                        <button @click="addNote(showData.id)" 
+                                    <template x-if="showData.status === 'Open'">
+                                        <button @click="addNote(showData.id)"
                                         class="text-xs inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-teal-500 text-teal-600 hover:bg-teal-50 transition">
                                             <i class="fas fa-plus"></i>
                                                 Tambah
                                         </button>
                                     @endrole
+                                    </template>
                                 </div>
 
                                 <!-- ✅ JIKA NOTES KOSONG -->
                                 <div x-show="!showData.notes || showData.notes.length === 0"
                                     class="text-xs text-gray-400 italic text-center py-2">
-                                    Belum ada catatan admin.
+                                    Tidak Ada Catatan Admin
                                 </div>
 
                                 <!-- ✅ LIST NOTES -->

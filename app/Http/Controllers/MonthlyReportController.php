@@ -48,18 +48,19 @@ class MonthlyReportController extends Controller
 
         // TOTAL LAPORAN BULAN INI
         $totalMonthlyReports = MonthlyReport::whereMonth('created_at', $currentMonth)
-        ->whereYear('created_at', $currentYear)
-        ->count();
+            ->whereYear('created_at', $currentYear)
+            ->count();
 
         // TOTAL TUGAS BULAN INI
         $totalMonthlyTasks = TaskCompletion::whereMonth('created_at', $currentMonth)
-        ->whereYear('created_at', $currentYear)
-        ->count();
+            ->whereYear('created_at', $currentYear)
+            ->count();
+
 
         // TOTAL TICKET BULAN INI
         $totalMonthlyTickets = Ticket::whereMonth('created_at', $currentMonth)
-        ->whereYear('created_at', $currentYear)
-        ->count();
+            ->whereYear('created_at', $currentYear)
+            ->count();
 
         // $tes = $monthlyReports;
         // dd($tes);
@@ -70,7 +71,7 @@ class MonthlyReportController extends Controller
     public function create(Request $request)
     {
         // Ambil periode dari query, default bulan berjalan
-        $period = $request->query('period', now()->format('Y-m')); 
+        $period = $request->query('period', now()->format('Y-m'));
         [$year, $monthNum] = explode('-', $period);
 
         // Ambil semua daily report di bulan tersebut
@@ -83,7 +84,7 @@ class MonthlyReportController extends Controller
         // Agregat data
         $totalDaysReported = $dailyReports->count();
         $totalTasks = $dailyReports->flatMap->tasks->count();
-        $totalTickets = $dailyReports->flatMap->tickets->count();
+        $totalTickets = $dailyReports->flatMap->tickets->unique('id')->count();
 
         $month = \Carbon\Carbon::createFromDate($year, $monthNum, 1)->translatedFormat('F');
 
