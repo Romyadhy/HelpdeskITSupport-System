@@ -38,12 +38,12 @@ class MonthlyReportController extends Controller
         if ($user->hasRole(['admin', 'manager'])) {
             $monthlyReports = MonthlyReport::with(['user', 'verifier'])
                 ->latest()
-                ->get();
+                ->paginate(10);
         } else {
             $monthlyReports = MonthlyReport::where('user_id', $user->id)
                 ->with(['user', 'verifier'])
                 ->latest()
-                ->get();
+                ->paginate(10);
         }
 
         // TOTAL LAPORAN BULAN INI

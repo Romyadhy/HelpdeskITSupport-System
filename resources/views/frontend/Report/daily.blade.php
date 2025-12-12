@@ -147,7 +147,7 @@
                 @endforelse
             </div>
             <!-- Modern Pagination with Info -->
-            <div class="px-6 py-5 border-t bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div class="px-6 py-5 border-t bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3 rounded-lg">
 
                 <!-- Left: Showing Info -->
                 <div class="text-sm text-gray-600">

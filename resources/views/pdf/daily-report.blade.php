@@ -102,11 +102,11 @@
                 <td>Status Verifikasi</td>
                 <td>
                     @if ($report->verified_at)
-                        Terverifikasi oleh <b>{{ $report->verifier->name ?? 'N/A' }}</b><br>
-                        ({{ \Carbon\Carbon::parse($report->verified_at)->timezone('Asia/Makassar')->translatedFormat('d F Y, H:i') }}
-                        WITA)
+                    Terverifikasi oleh <b>{{ $report->verifier->name ?? 'N/A' }}</b><br>
+                    ({{ \Carbon\Carbon::parse($report->verified_at)->timezone('Asia/Makassar')->translatedFormat('d F Y, H:i') }}
+                    WITA)
                     @else
-                        <span class="italic">Belum diverifikasi</span>
+                    <span class="italic">Belum diverifikasi</span>
                     @endif
                 </td>
             </tr>
@@ -126,32 +126,32 @@
         </thead>
         <tbody>
             @forelse($report->tasks as $i => $task)
-                @php
-                    // Get completions for this task on the report date
-                    $completionsOnDate = $task->completions
-                        ->filter(function ($completion) use ($report) {
-                            return \Carbon\Carbon::parse($completion->complated_at)->isSameDay($report->report_date);
-                        })
-                        ->sortBy('complated_at');
+            @php
+            // Get completions for this task on the report date
+            $completionsOnDate = $task->completions
+            ->filter(function ($completion) use ($report) {
+            return \Carbon\Carbon::parse($completion->complated_at)->isSameDay($report->report_date);
+            })
+            ->sortBy('complated_at');
 
-                    $firstCompletion = $completionsOnDate->first();
-                @endphp
-                <tr>
-                    <td class="text-center">{{ $i + 1 }}</td>
-                    <td>{{ $task->title }}</td>
-                    <td class="text-center">
-                        @if ($firstCompletion && $firstCompletion->complated_at)
-                            {{ \Carbon\Carbon::parse($firstCompletion->complated_at)->timezone('Asia/Makassar')->translatedFormat('H:i') }}
-                            WITA
-                        @else
-                            -
-                        @endif
-                    </td>
-                </tr>
+            $firstCompletion = $completionsOnDate->first();
+            @endphp
+            <tr>
+                <td class="text-center">{{ $i + 1 }}</td>
+                <td>{{ $task->title }}</td>
+                <td class="text-center">
+                    @if ($firstCompletion && $firstCompletion->complated_at)
+                    {{ \Carbon\Carbon::parse($firstCompletion->complated_at)->timezone('Asia/Makassar')->translatedFormat('H:i') }}
+                    WITA
+                    @else
+                    -
+                    @endif
+                </td>
+            </tr>
             @empty
-                <tr>
-                    <td colspan="3" class="text-center italic">Tidak ada tugas tercatat.</td>
-                </tr>
+            <tr>
+                <td colspan="3" class="text-center italic">Tidak ada tugas tercatat.</td>
+            </tr>
             @endforelse
         </tbody>
     </table>
@@ -173,49 +173,62 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($report->tickets as $i => $ticket)
-                <tr>
-                    <td class="text-center">{{ $i + 1 }}</td>
-                    <td>{{ $ticket->title }}</td>
-                    <td class="text-center">{{ $ticket->status }}</td>
-                    <td>{{ $ticket->description ?? '-' }}</td>
-                    <td>{{ $ticket->solution ?? '-' }}</td>
-                    <td>
-                        @if ($ticket->notes->count())
-                            <ul style="padding-left: 14px; margin: 0;">
-                                @foreach ($ticket->notes as $note)
-                                    <li style="font-size: 12px;">
-                                        {{ $note->note }}
-                                        <br>
-                                        <small style="color: #555;">
-                                            - {{ $note->user->name ?? 'Admin' }},
-                                            {{ \Carbon\Carbon::parse($note->created_at)->timezone('Asia/Makassar')->translatedFormat('d M Y, H:i') }}
-                                            WITA
-                                        </small>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @else
-                            <span class="italic">-</span>
-                        @endif
-                    </td>
-                    <td class="text-center">{{ $ticket->priority ?? '-' }}</td>
-                    <td class="text-center">{{ $ticket->solver->name ?? '-' }}</td>
-                </tr>
+            @php
+            // Use snapshots if available (new reports), fallback to live tickets (old reports)
+            $ticketData = $report->ticketSnapshots->count() > 0
+            ? $report->ticketSnapshots
+            : $report->tickets;
+            $useSnapshots = $report->ticketSnapshots->count() > 0;
+            @endphp
+            @forelse($ticketData as $i => $item)
+            @php
+            // Get original ticket for notes (notes still use live data)
+            $originalTicket = $useSnapshots
+            ? $report->tickets->firstWhere('id', $item->ticket_id)
+            : $item;
+            @endphp
+            <tr>
+                <td class="text-center">{{ $i + 1 }}</td>
+                <td>{{ $item->title }}</td>
+                <td class="text-center">{{ $item->status }}</td>
+                <td>{{ $item->description ?? '-' }}</td>
+                <td>{{ $item->solution ?? '-' }}</td>
+                <td>
+                    @if ($originalTicket && $originalTicket->notes && $originalTicket->notes->count())
+                    <ul style="padding-left: 14px; margin: 0;">
+                        @foreach ($originalTicket->notes as $note)
+                        <li style="font-size: 12px;">
+                            {{ $note->note }}
+                            <br>
+                            <small style="color: #555;">
+                                - {{ $note->user->name ?? 'Admin' }},
+                                {{ \Carbon\Carbon::parse($note->created_at)->timezone('Asia/Makassar')->translatedFormat('d M Y, H:i') }}
+                                WITA
+                            </small>
+                        </li>
+                        @endforeach
+                    </ul>
+                    @else
+                    <span class="italic">-</span>
+                    @endif
+                </td>
+                <td class="text-center">{{ $item->priority ?? '-' }}</td>
+                <td class="text-center">{{ $useSnapshots ? ($item->solved_by_name ?? '-') : ($item->solver->name ?? '-') }}</td>
+            </tr>
             @empty
-                <tr>
-                    <td colspan="7" class="text-center italic">Tidak ada tiket ditangani.</td>
-                </tr>
+            <tr>
+                <td colspan="8" class="text-center italic">Tidak ada tiket ditangani.</td>
+            </tr>
             @endforelse
         </tbody>
     </table>
 
     <!-- CATATAN -->
     @if (!empty($report->content))
-        <h3>Catatan / Isi Laporan</h3>
-        <p style="white-space: pre-line;">
-            {{ $report->content }}
-        </p>
+    <h3>Catatan / Isi Laporan</h3>
+    <p style="white-space: pre-line;">
+        {{ $report->content }}
+    </p>
     @endif
 
     <!-- FOOTER -->

@@ -45,4 +45,13 @@ class DailyReport extends Model
     {
         return $this->belongsToMany(Ticket::class, 'daily_report_tickets');
     }
+
+    /**
+     * Get ticket snapshots for this daily report.
+     * Use this for displaying immutable historical data.
+     */
+    public function ticketSnapshots()
+    {
+        return $this->hasMany(DailyReportTicketSnapshot::class);
+    }
 }

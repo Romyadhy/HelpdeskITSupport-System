@@ -157,6 +157,66 @@
 
                 @endif
             </div>
+            <div class="px-6 py-5 border-t bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3 rounded-lg">
+
+                <!-- Left: Showing Info -->
+                <div class="text-sm text-gray-600">
+                    Showing
+                    <span class="font-semibold text-gray-900">{{ $monthlyReports->firstItem() }}</span>
+                    to
+                    <span class="font-semibold text-gray-900">{{ $monthlyReports->lastItem() }}</span>
+                    of
+                    <span class="font-semibold text-gray-900">{{ $monthlyReports->total() }}</span>
+                    results
+                </div>
+
+                <!-- Right: Pagination -->
+                <div class="flex items-center space-x-1">
+
+                    {{-- Previous --}}
+                    @if ($monthlyReports->onFirstPage())
+                        <span class="px-3 py-2 rounded-xl bg-gray-100 text-gray-400 cursor-not-allowed">
+                            <i class="fas fa-chevron-left"></i>
+                        </span>
+                    @else
+                        <a href="{{ $monthlyReports->previousPageUrl() }}"
+                            class="px-3 py-2 rounded-xl bg-white border border-gray-300
+                text-gray-600 hover:bg-gray-100 transition">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    @endif
+
+                    {{-- Page Numbers --}}
+                    @foreach ($monthlyReports->links()->elements[0] as $page => $url)
+                        @if ($page == $monthlyReports->currentPage())
+                            <span class="px-4 py-2 rounded-xl bg-teal-500 text-white font-semibold shadow">
+                                {{ $page }}
+                            </span>
+                        @else
+                            <a href="{{ $url }}"
+                                class="px-4 py-2 rounded-xl bg-white border border-gray-300
+                    text-gray-700 hover:bg-gray-100 transition">
+                                {{ $page }}
+                            </a>
+                        @endif
+                    @endforeach
+
+                    {{-- Next --}}
+                    @if ($monthlyReports->hasMorePages())
+                        <a href="{{ $monthlyReport->nextPageUrl() }}"
+                            class="px-3 py-2 rounded-xl bg-white border border-gray-300
+                text-gray-600 hover:bg-gray-100 transition">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    @else
+                        <span class="px-3 py-2 rounded-xl bg-gray-100 text-gray-400 cursor-not-allowed">
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                    @endif
+
+                </div>
+            </div>
+
         </div>
     </div>
 

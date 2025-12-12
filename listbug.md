@@ -50,7 +50,7 @@
 - [x] Priority Tickets make it clear for admin to determine witch one the support gonna do first and so the admin can have access to determine the tickets priority.
 - [x] Add more durations, tell apart between durations tickets open before handle by support and durations tickets solved by supports.
 - [x] Add note when the tickets is didn't closed todays, from admin or IT support.
-- [ ] Paginate in monthly reports
+- [x] Paginate in monthly reports
 - [ ] Dashboard Total ticket, task, ect
 
 ## Other Notes

@@ -154,6 +154,22 @@ class DailyReportController extends Controller
 
         if (!empty($ticketIds)) {
             $report->tickets()->attach($ticketIds);
+
+            // Create ticket snapshots to preserve data at report creation time
+            $ticketsToSnapshot = Ticket::with('solver')->whereIn('id', $ticketIds)->get();
+            foreach ($ticketsToSnapshot as $ticket) {
+                \App\Models\DailyReportTicketSnapshot::create([
+                    'daily_report_id' => $report->id,
+                    'ticket_id' => $ticket->id,
+                    'title' => $ticket->title,
+                    'description' => $ticket->description,
+                    'status' => $ticket->status,
+                    'priority' => $ticket->priority,
+                    'solution' => $ticket->solution,
+                    'solved_by' => $ticket->solved_by,
+                    'solved_by_name' => $ticket->solver?->name,
+                ]);
+            }
         }
 
         // Telegram notif
@@ -225,6 +241,7 @@ class DailyReportController extends Controller
             'verifier',
             'tasks.completions',
             'tickets.solver',
+            'ticketSnapshots',
         ])->findOrFail($id);
 
         if (!$user->hasRole(['admin', 'support', 'manager']) && $report->user_id !== $user->id) {
