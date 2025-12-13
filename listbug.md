@@ -21,7 +21,8 @@
 - [x] Daily Report Tickets, add note tickets when is aviable in every tickets. Expecially in pdf or in show data in system.
 - [x] Fix bug logic in notes tickets.
 - [ ] Total ticket in monthly report has a diff output.
-- [ ] Bugs in daily reports when the ticket open yesterday and solve by today, the previous reports is not recorded but updated along with the ticket handle and status.
+- [x] Bugs in daily reports when the ticket open yesterday and solve by today, the previous reports is not recorded but updated along with the ticket handle and status.
+- [ ] Bugs in detail daily report -> tickets shows changes the data sources, as we do in pdf.
 
 ## Unfinished Features
 

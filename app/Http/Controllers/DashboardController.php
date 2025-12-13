@@ -14,48 +14,36 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        /**
-         * ========================
-         * 🧩 ADMIN DASHBOARD
-         * ========================
-         */
+        // ADMIN DASHBOARD
         if ($user->hasRole('admin')) {
-
-            // --- Tiket terbaru (untuk tabel) ---
-            // $tickets = Ticket::with(['user', 'category'])
-            //     ->latest()
-            //     ->take(5)
-            //     ->get();
             $tickets = Ticket::select('tickets.*', 'ticket_categories.name as category_name')
-                ->leftJoin('ticket_categories', 'tickets.category_id', '=', 'ticket_categories.id') 
-                ->with('user') 
-                ->latest() 
-                ->take(5) 
+                ->leftJoin('ticket_categories', 'tickets.category_id', '=', 'ticket_categories.id')
+                ->with('user')
+                ->latest()
+                ->take(5)
                 ->get();
 
-
-   
-            // --- KPI utama ---
+            // Main info
             $totalTickets   = Ticket::count();
             $closedTickets  = Ticket::where('status', 'Closed')->count();
             $pendingTickets = Ticket::where('status', 'In Progress')->count();
             $openTickets    = Ticket::where('status', 'Open')->count();
             $totalUsers     = User::count();
 
-            // --- SLA per kategori (rata-rata durasi dalam menit) ---
+            // SLA per kategori
             $slaData = Ticket::selectRaw('category_id, AVG(duration) as avg_duration')
                 ->groupBy('category_id')
                 ->with('category')
                 ->get();
 
-            $slaCategories = $slaData->map(fn ($t) => $t->category->name ?? 'Unknown');
-            $slaDurations  = $slaData->map(fn ($t) => round($t->avg_duration ?? 0, 2));
+            $slaCategories = $slaData->map(fn($t) => $t->category->name ?? 'Unknown');
+            $slaDurations  = $slaData->map(fn($t) => round($t->avg_duration ?? 0, 2));
 
-            // Rata-rata SLA keseluruhan (menit -> hari/jam/menit)
+            // Rata-rata SLA keseluruhan
             $avgSlaMinutes   = (int) round($slaDurations->avg() ?? 0);
             $avgSlaFormatted = $this->formatDuration($avgSlaMinutes);
 
-            // --- Ticket Trend 30 hari terakhir ---
+            // Ticket Trend 30 hari terakhir
             $trendData = Ticket::selectRaw("
                     DATE(created_at) as date,
                     COUNT(*) as total_created,
@@ -66,7 +54,6 @@ class DashboardController extends Controller
                 ->orderBy('date')
                 ->get();
 
-            // label tanggal dibuat lebih enak dibaca (mis: 01 Nov)
             $trendLabels  = $trendData->pluck('date')->map(function ($date) {
                 return Carbon::parse($date)->format('d M');
             });
@@ -91,17 +78,13 @@ class DashboardController extends Controller
             ));
         }
 
-        /**
-         * ========================
-         * 👨‍💼 MANAGER DASHBOARD
-         * ========================
-         */
+        // MANAGER DASHBOARD
         if ($user->hasRole('manager')) {
             $tickets = Ticket::select('tickets.*', 'ticket_categories.name as category_name')
-                ->leftJoin('ticket_categories', 'tickets.category_id', '=', 'ticket_categories.id') 
-                ->with('user') 
-                ->latest() 
-                ->take(5) 
+                ->leftJoin('ticket_categories', 'tickets.category_id', '=', 'ticket_categories.id')
+                ->with('user')
+                ->latest()
+                ->take(5)
                 ->get();
 
             $totalTickets   = Ticket::count();
@@ -109,14 +92,14 @@ class DashboardController extends Controller
             $pendingTickets = Ticket::where('status', 'In Progress')->count();
             $openTickets    = Ticket::where('status', 'Open')->count();
 
-            // SLA Statistik (kalau mau pakai juga tinggal pakai formatDuration di blade)
+            // SLA Statistik
             $slaData = Ticket::selectRaw('category_id, AVG(duration) as avg_duration')
                 ->groupBy('category_id')
                 ->with('category')
                 ->get();
 
-            $slaCategories = $slaData->map(fn ($t) => $t->category->name ?? 'Unknown');
-            $slaDurations  = $slaData->map(fn ($t) => round($t->avg_duration ?? 0, 2));
+            $slaCategories = $slaData->map(fn($t) => $t->category->name ?? 'Unknown');
+            $slaDurations  = $slaData->map(fn($t) => round($t->avg_duration ?? 0, 2));
 
             return view('frontend.Dashbord.menagerdashboard', compact(
                 'tickets',

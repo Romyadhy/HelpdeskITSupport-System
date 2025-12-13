@@ -1,8 +1,4 @@
 <x-app-layout>
-
-    {{-- =========================== --}}
-    {{-- HEADER --}}
-    {{-- =========================== --}}
     <x-slot name="header">
         <div class="flex flex-col gap-1">
             <h2 class="font-semibold text-2xl text-gray-800 tracking-tight">
@@ -13,12 +9,7 @@
     </x-slot>
 
     <div class="py-10 px-6 max-w-7xl mx-auto space-y-10">
-
-        {{-- =========================== --}}
-        {{-- KPI CARDS (Premium Style) --}}
-        {{-- =========================== --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
             {{-- CARD ITEM --}}
             <div class="flex items-center gap-4 border rounded-xl bg-white shadow-sm p-5">
                 <div class="p-3 rounded-lg bg-blue-100 text-blue-700 text-xl">
@@ -81,16 +72,13 @@
             </div>
 
         </div>
-
-
-
         {{-- =========================== --}}
         {{-- CHART SECTION --}}
         {{-- =========================== --}}
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {{-- TICKET TREND --}}
-            <div class="lg:col-span-2 border rounded-xl bg-white shadow-sm p-6">
+            <div class=" border rounded-xl bg-white shadow-sm p-6">
                 <div class="flex justify-between items-center mb-4">
                     <div>
                         <h3 class="text-lg font-semibold text-gray-800">Ticket Trend</h3>
