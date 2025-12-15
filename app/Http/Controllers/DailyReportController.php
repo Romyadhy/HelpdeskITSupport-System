@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Spatie\LaravelPdf\Facades\Pdf;
 use App\Helpers\logActivity;
+use Carbon\Carbon;
+use Carbon\CarbonInterval;
 
 class DailyReportController extends Controller
 {
@@ -152,22 +154,79 @@ class DailyReportController extends Controller
             $report->tasks()->attach($taskIds);
         }
 
+
+
         if (!empty($ticketIds)) {
             $report->tickets()->attach($ticketIds);
 
-            // Create ticket snapshots to preserve data at report creation time
-            $ticketsToSnapshot = Ticket::with('solver')->whereIn('id', $ticketIds)->get();
+            $ticketsToSnapshot = Ticket::with([
+                'solver',
+                'location',
+                'category',
+                'user',
+            ])->whereIn('id', $ticketIds)->get();
+
             foreach ($ticketsToSnapshot as $ticket) {
+
+                $waitingDuration = null;
+                $progressDuration = null;
+                $totalDuration = null;
+
+                // Waiting duration
+                if ($ticket->started_at) {
+                    $minutes = $ticket->created_at->diffInMinutes($ticket->started_at);
+                    $interval = CarbonInterval::minutes($minutes)->cascade();
+                    $waitingDuration =
+                        ($interval->hours ? $interval->hours . 'h ' : '') .
+                        $interval->minutes . 'm';
+                }
+
+                // Progress duration
+                if ($ticket->started_at && $ticket->solved_at) {
+                    $minutes = $ticket->started_at->diffInMinutes($ticket->solved_at);
+                    $interval = CarbonInterval::minutes($minutes)->cascade();
+                    $progressDuration =
+                        ($interval->hours ? $interval->hours . 'h ' : '') .
+                        $interval->minutes . 'm';
+                }
+
+                // Total duration
+                if ($ticket->solved_at) {
+                    $minutes = $ticket->created_at->diffInMinutes($ticket->solved_at);
+                    $interval = CarbonInterval::minutes($minutes)->cascade();
+                    $totalDuration =
+                        ($interval->hours ? $interval->hours . 'h ' : '') .
+                        $interval->minutes . 'm';
+                }
+
                 \App\Models\DailyReportTicketSnapshot::create([
                     'daily_report_id' => $report->id,
                     'ticket_id' => $ticket->id,
+
                     'title' => $ticket->title,
                     'description' => $ticket->description,
                     'status' => $ticket->status,
                     'priority' => $ticket->priority,
                     'solution' => $ticket->solution,
+
                     'solved_by' => $ticket->solved_by,
                     'solved_by_name' => $ticket->solver?->name,
+
+                    'category_id' => $ticket->category_id,
+                    'category_name' => $ticket->category?->name,
+
+                    'location_id' => $ticket->location_id,
+                    'location_name' => $ticket->location?->name,
+
+                    'created_by' => $ticket->user_id,
+                    'created_by_name' => $ticket->user?->name,
+                    'ticket_created_at' => $ticket->created_at,
+                    'ticket_started_at' => $ticket->started_at,
+                    'ticket_solved_at' => $ticket->solved_at,
+
+                    'waiting_duration' => $waitingDuration,
+                    'progress_duration' => $progressDuration,
+                    'total_duration' => $totalDuration,
                 ]);
             }
         }
@@ -222,7 +281,14 @@ class DailyReportController extends Controller
             'solution' => $snapshort->solution,
             'assigned_to' => $snapshort->solved_by_name,
             'user' => $snapshort->created_by_name,
-            'created_at' => $snapshort->ticket_created_at,
+            // 'created_at' => $snapshort->ticket_created_at,
+            'created_at' => optional($snapshort->ticket_created_at)
+                ?->setTimezone('Asia/Makassar')
+                ->translatedFormat('d M Y, H:i') . ' WITA',
+
+            'waiting_duration' => $snapshort->waiting_duration,
+            'progress_duration' => $snapshort->progress_duration,
+            'total_duration' => $snapshort->total_duration,
         ]);
     }
 

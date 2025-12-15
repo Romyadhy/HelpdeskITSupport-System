@@ -29,7 +29,10 @@ class DailyReportTicketSnapshot extends Model
         'created_by_name',
         'ticket_created_at',
         'ticket_started_at',
-        'ticket_solved_at'
+        'ticket_solved_at',
+        'waiting_duration',
+        'progress_duration',
+        'total_duration',
 
     ];
 

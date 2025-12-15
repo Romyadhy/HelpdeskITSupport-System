@@ -86,7 +86,7 @@
                                             {{ \Carbon\Carbon::parse($daily->report_date)->format('d M Y') }}
                                         </td>
                                         <td class="px-4 py-3 text-gray-700 border-b">
-                                            {{ Str::limit($daily->content, 100) }}
+                                            {{ Str::limit($daily->content, 100000) }}
                                         </td>
                                         <td class="px-4 py-3 text-center text-gray-700 border-b">
                                             {{ $daily->tasks->count() }}
