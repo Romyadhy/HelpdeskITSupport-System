@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/daily/{id}', [DailyReportController::class, 'show'])->name('reports.daily.show');
     Route::put('reports/daily/{id}/verify', [DailyReportController::class, 'verify'])->name('reports.daily.verify');
     Route::get('reports/daily/{id}/pdf', [DailyReportController::class, 'exportPdf'])->name('reports.daily.pdf');
+    Route::get('reports/daily/{report}/tickets/{ticket}/snapshot', [DailyReportController::class, 'ticketSnapshot'])->name('report.daily.ticket.snapshort');
 
     // Monthly Report Routes
     Route::get('reports/monthly', [MonthlyReportController::class, 'index'])->name('reports.monthly');

@@ -92,7 +92,7 @@
                             <i class="fas fa-calendar text-teal-500 w-5"></i>
                             <div>
                                 <p class="text-xs text-gray-500">Created At</p>
-                                <p class="font-semibold text-gray-800" x-text="showData.created_at"></p>
+                                <p class="font-semibold text-gray-800" x-text="showData.created_at || '-'"></p>
                             </div>
                         </div>
 
@@ -102,7 +102,7 @@
                                 <i class="fas fa-flag text-teal-500 w-5"></i>
                                 <div>
                                     <p class="text-xs text-gray-500">Priority</p>
-                                    <p class="font-semibold text-gray-800" x-text="showData.priority"></p>
+                                    <p class="font-semibold text-gray-800" x-text="showData.priority || '-'"></p>
                                 </div>
                             </div>
 

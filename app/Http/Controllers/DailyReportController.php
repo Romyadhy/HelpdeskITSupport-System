@@ -194,9 +194,36 @@ class DailyReportController extends Controller
 
     public function show($id)
     {
-        $report = DailyReport::with(['user', 'tasks', 'tickets', 'verifier'])
-            ->findOrFail($id);
+        $report = DailyReport::with([
+            'user',
+            'tasks',
+            'verifier',
+            'ticketSnapshots',
+        ])->findOrFail($id);
+        // dd($report);
+        // dd($report->ticketSnapshots);
         return view('frontend.Report.show', compact('report'));
+    }
+
+    public function ticketSnapshot(DailyReport $report, Ticket $ticket)
+    {
+        $snapshort = $report->ticketSnapshots()
+            ->where('ticket_id', $ticket->id)
+            ->firstOrFail();
+
+        return response()->json([
+            'ticket_id' => $snapshort->ticket_id,
+            'title' => $snapshort->title,
+            'description' => $snapshort->description,
+            'status' => $snapshort->status,
+            'priority' => $snapshort->priority,
+            'location' => $snapshort->location_name,
+            'category' => $snapshort->category_name,
+            'solution' => $snapshort->solution,
+            'assigned_to' => $snapshort->solved_by_name,
+            'user' => $snapshort->created_by_name,
+            'created_at' => $snapshort->ticket_created_at,
+        ]);
     }
 
     public function verify($id)

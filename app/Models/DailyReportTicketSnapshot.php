@@ -21,19 +21,24 @@ class DailyReportTicketSnapshot extends Model
         'solution',
         'solved_by',
         'solved_by_name',
+        'location_id',
+        'location_name',
+        'category_id',
+        'category_name',
+        'created_by',
+        'created_by_name',
+        'ticket_created_at',
+        'ticket_started_at',
+        'ticket_solved_at'
+
     ];
 
-    /**
-     * Get the daily report this snapshot belongs to.
-     */
+
     public function dailyReport()
     {
         return $this->belongsTo(DailyReport::class);
     }
 
-    /**
-     * Get the original ticket (for reference).
-     */
     public function ticket()
     {
         return $this->belongsTo(Ticket::class);

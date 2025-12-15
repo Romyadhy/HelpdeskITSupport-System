@@ -22,7 +22,8 @@
 - [x] Fix bug logic in notes tickets.
 - [ ] Total ticket in monthly report has a diff output.
 - [x] Bugs in daily reports when the ticket open yesterday and solve by today, the previous reports is not recorded but updated along with the ticket handle and status.
-- [ ] Bugs in detail daily report -> tickets shows changes the data sources, as we do in pdf.
+- [x] Bugs in detail daily report -> tickets shows changes the data sources, as we do in pdf.
+- [ ] Add durations and time in WITA at dashboard admin pages
 
 ## Unfinished Features
 
@@ -53,6 +54,7 @@
 - [x] Add note when the tickets is didn't closed todays, from admin or IT support.
 - [x] Paginate in monthly reports
 - [ ] Dashboard Total ticket, task, ect
+- [ ] Daily Report Show detail add the column in daily report ticket snapshot and refix the store func, ticketSnapshot, ect.
 
 ## Other Notes
 

@@ -104,32 +104,36 @@
                         <i class="fas fa-ticket-alt text-orange-600"></i> Tiket yang Ditangani
                     </h3>
 
-                    @if ($report->tickets->count() > 0)
+                    @if ($report->ticketSnapshots->count() > 0)
                         <div class="space-y-4">
 
-                            @foreach ($report->tickets as $ticket)
-                                <div @click="openTicket({{ $ticket->id }})" class="cursor-pointer border rounded-xl p-4 bg-gray-50 hover:bg-gray-100 transition shadow-sm">
-                                    <div class="flex justify-between items-center">
-                                        <h4 class="font-semibold text-gray-800">
-                                            #{{ str_pad($ticket->id, 3, '0', STR_PAD_LEFT) }}. {{ $ticket->title }}
-                                        </h4>
+                        @foreach ($report->ticketSnapshots as $snapshot)
+                            <div
+                                @click="openTicket({{ $snapshot->ticket_id }})"
+                                class="cursor-pointer border rounded-xl p-4 bg-gray-50 hover:bg-gray-100 transition shadow-sm"
+                            >
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-semibold text-gray-800">
+                                    #{{ str_pad($snapshot->ticket_id, 3, '0', STR_PAD_LEFT) }}.
+                                    {{ $snapshot->title }}
+                                </h4>
 
-                                        <span @class([
-                                            'px-3 py-1 text-xs font-semibold rounded-full',
-                                            'bg-red-100 text-red-600' => $ticket->status === 'Open',
-                                            'bg-yellow-100 text-yellow-700' => $ticket->status === 'In Progress',
-                                            'bg-green-100 text-green-700' => $ticket->status === 'Closed',
-                                            'bg-purple-100 text-purple-700' => $ticket->status === 'Escalated',
-                                        ])>
-                                            {{ $ticket->status }}
-                                        </span>
-                                    </div>
+                            <span @class([
+                                'px-3 py-1 text-xs font-semibold rounded-full',
+                                'bg-red-100 text-red-600' => $snapshot->status === 'Open',
+                                'bg-yellow-100 text-yellow-700' => $snapshot->status === 'In Progress',
+                                'bg-green-100 text-green-700' => $snapshot->status === 'Closed',
+                                'bg-purple-100 text-purple-700' => $snapshot->status === 'Escalated',
+                            ])>
+                                {{ $snapshot->status }}
+                            </span>
+                            </div>
 
-                                    <p class="text-xs text-gray-500 mt-1">
-                                        Prioritas: {{ $ticket->priority }}
-                                    </p>
-                                </div>
-                            @endforeach
+                            <p class="text-xs text-gray-500 mt-1">
+                                Prioritas: {{ $snapshot->priority }}
+                            </p>
+                        </div>
+                        @endforeach
 
                         </div>
                     @else
@@ -174,7 +178,7 @@
                     this.showShowModal = true;
 
                     try{
-                        const response = await fetch(`/tickets/${ticketId}`, {
+                        const response = await fetch(`/reports/daily/{{ $report->id }}/tickets/${ticketId}/snapshot`, {
                             headers: {'Accept': 'application/json'}
                         });
 
@@ -182,7 +186,7 @@
                         this.showData = data;
                     } catch(e) {
                         console.error(e);
-                        alert("Failed to load tickets");
+                        alert("Failed to load tickets snapshot");
                         this.showShowModal = false;
                     }
 
