@@ -16,25 +16,54 @@
 
             {{-- Statistik Utama --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-white p-5 rounded-lg shadow hover:shadow-lg transition">
-                    <p class="text-sm text-gray-500">Total Tiket</p>
-                    <p class="text-3xl font-bold text-gray-800">{{ $totalTickets ?? 0 }}</p>
+               <div class="flex items-center gap-4 bg-white p-5 rounded-lg shadow hover:shadow-lg transition">
+                    <div class="p-3 rounded-lg bg-blue-100 text-blue-700 text-xl">
+                        📊
+                    </div>
+
+                    <div>
+                        <p class="text-sm text-gray-500">Total Tiket</p>
+                        <p class="text-3xl font-bold text-gray-800">{{ $totalTickets ?? 0 }}</p>
+                    </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-lg shadow hover:shadow-lg transition">
-                    <p class="text-sm text-gray-500">Selesai (Closed)</p>
-                    <p class="text-3xl font-bold text-green-600">{{ $closedTickets ?? 0 }}</p>
+
+                <div class="flex items-center gap-4 bg-white p-5 rounded-lg shadow hover:shadow-lg transition">
+                    <div class="p-3 rounded-lg bg-green-100 text-green-700 text-xl">
+                        ✅
+                    </div>
+
+                    <div>
+                        <p class="text-sm text-gray-500">Selesai (Closed)</p>
+                        <p class="text-3xl font-bold text-green-600">{{ $closedTickets ?? 0 }}</p>
+                    </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-lg shadow hover:shadow-lg transition">
-                    <p class="text-sm text-gray-500">Proses (Pending)</p>
-                    <p class="text-3xl font-bold text-yellow-500">{{ $pendingTickets ?? 0 }}</p>
+
+                <div class="flex items-center gap-4 bg-white p-5 rounded-lg shadow hover:shadow-lg transition">
+                    <div class="p-3 rounded-lg bg-yellow-100 text-yellow-700 text-xl">
+                        🕓
+                    </div>
+
+                    <div>
+                        <p class="text-sm text-gray-500">Proses (Pending)</p>
+                        <p class="text-3xl font-bold text-yellow-500">{{ $pendingTickets ?? 0 }}</p>
+                    </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-lg shadow hover:shadow-lg transition">
-                    <p class="text-sm text-gray-500">Belum Dikerjakan (Open)</p>
-                    <p class="text-3xl font-bold text-red-500">{{ $openTickets ?? 0 }}</p>
+
+
+                <div class="flex items-center gap-4 bg-white p-5 rounded-lg shadow hover:shadow-lg transition">
+                    <div class="p-3 rounded-lg bg-red-100 text-red-700 text-xl">
+                        🔓
+                    </div>
+
+                    <div>
+                        <p class="text-sm text-gray-500">Belum Dikerjakan (Open)</p>
+                        <p class="text-3xl font-bold text-red-500">{{ $openTickets ?? 0 }}</p>
+                    </div>
                 </div>
+
             </div>
 
             {{-- Grafik --}}
@@ -53,7 +82,7 @@
                 <div class="bg-white shadow rounded-lg p-6">
                     <h3 class="text-lg font-bold text-gray-700 mb-4">Performa SLA (Rata-rata Penyelesaian per Kategori)
                     </h3>
-                    <div class="w-full max-w-lg mx-auto h-80">
+                    <div class="w-full max-w-lg mx-auto h-72">
                         <canvas id="slaPerformanceChart"></canvas>
                     </div>
                 </div>
@@ -61,7 +90,7 @@
 
             {{-- Daftar Tiket Terbaru --}}
             <div class="bg-white shadow rounded-lg p-6">
-                <h3 class="text-lg font-bold text-gray-700 mb-4">Tiket Terbaru</h3>
+                <h3 class="text-lg font-bold text-gray-700 mb-4">Tiket Terakhir</h3>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm text-left border border-gray-100">
                         <thead class="bg-gray-100">
@@ -113,6 +142,22 @@
         const ticketStatusCtx = document.getElementById('ticketStatusChart').getContext('2d');
         const slaPerformanceCtx = document.getElementById('slaPerformanceChart').getContext('2d');
 
+        function formatDuration(totalMinutes) {
+            totalMinutes = Math.round(totalMinutes);
+
+            const days = Math.floor(totalMinutes / 1440);
+            const hours = Math.floor((totalMinutes % 1440) / 60);
+            const minutes = totalMinutes % 60;
+
+            let result = [];
+
+            if (days > 0) result.push(`${days} hari`);
+            if (hours > 0) result.push(`${hours} jam`);
+            if (minutes > 0) result.push(`${minutes} menit`);
+
+            return result.join(" ");
+        }
+
         // Pie Chart (Status Tiket)
         new Chart(ticketStatusCtx, {
             type: 'pie',
@@ -142,31 +187,69 @@
         });
 
         // Bar Chart (SLA Performance)
+        // new Chart(slaPerformanceCtx, {
+        //     type: 'bar',
+        //     data: {
+        //         labels: {!! json_encode($slaCategories ?? []) !!},
+        //         datasets: [{
+        //             label: 'Rata-rata durasi penyelesaian (menit)',
+        //             data: {!! json_encode($slaDurations ?? []) !!},
+        //             backgroundColor: ['#14b8a6', '#3b82f6', '#facc15', '#ef4444'],
+        //             borderRadius: 8,
+        //         }]
+        //     },
+        //     options: {
+        //         responsive: true,
+        //         maintainAspectRatio: false,
+        //         scales: {
+        //             y: {
+        //                 beginAtZero: true
+        //             }
+        //         },
+        //         plugins: {
+        //             legend: {
+        //                 display: false
+        //             }
+        //         }
+        //     }
+        // });
+
         new Chart(slaPerformanceCtx, {
             type: 'bar',
             data: {
                 labels: {!! json_encode($slaCategories ?? []) !!},
                 datasets: [{
-                    label: 'Rata-rata durasi penyelesaian (menit)',
-                    data: {!! json_encode($slaDurations ?? []) !!},
-                    backgroundColor: ['#14b8a6', '#3b82f6', '#facc15', '#ef4444'],
+                    label: 'Avg SLA',
+                    data: {!! json_encode($slaDurations ?? []) !!}, // menit mentah
+                    backgroundColor: '#14b8a6',
                     borderRadius: 8,
+                    barThickness: 40
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
                 },
-                plugins: {
-                    legend: {
-                        display: false
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return " " + formatDuration(context.raw);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    ticks: {
+                        callback: function(value) {
+                            return formatDuration(value);
+                        }
                     }
                 }
             }
+        }
         });
     </script>
 </x-app-layout>

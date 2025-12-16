@@ -16,7 +16,7 @@
                 </div>
 
                 <div x-show="!sidebarExpanded" class="transition-opacity duration-300">
-                    <img src="{{ asset('images/logo3.png') }}" alt="Logo" class="h-10 w-10 object-contain">
+                    <img src="{{ asset('images/logoKU.png') }}" alt="Logo" class="h-10 w-10 object-contain">
                 </div>
             </div>
         </div>

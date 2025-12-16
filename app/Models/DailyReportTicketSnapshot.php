@@ -33,7 +33,12 @@ class DailyReportTicketSnapshot extends Model
         'waiting_duration',
         'progress_duration',
         'total_duration',
+    ];
 
+    protected $casts = [
+        'ticket_created_at' => 'datetime',
+        'ticket_started_at' => 'datetime',
+        'ticket_solved_at' => 'datetime',
     ];
 
 

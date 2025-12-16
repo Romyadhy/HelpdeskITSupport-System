@@ -1,7 +1,7 @@
 <x-guest-layout>
 
     <div class="flex flex-col items-center text-center mb-6">
-        <img src="{{ asset('images/logo3.png') }}" class="w-20 h-20 drop-shadow-lg" alt="system logo">
+        <img src="{{ asset('images/logoKU.png') }}" class="w-20 h-20 drop-shadow-lg" alt="system logo">
         <h1 class="text-2xl font-bold text-gray-800 mt-3">Helpdesk IT System</h1>
         <p class="text-gray-500 text-sm">Masuk untuk melanjutkan pekerjaanmu</p>
     </div>

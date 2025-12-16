@@ -159,12 +159,16 @@ class DailyReportController extends Controller
         if (!empty($ticketIds)) {
             $report->tickets()->attach($ticketIds);
 
-            $ticketsToSnapshot = Ticket::with([
-                'solver',
-                'location',
-                'category',
-                'user',
-            ])->whereIn('id', $ticketIds)->get();
+            $ticketsToSnapshot = Ticket::with(['solver', 'user'])
+                ->leftJoin('ticket_categories', 'tickets.category_id', '=', 'ticket_categories.id')
+                ->leftJoin('ticket_locations', 'tickets.location_id', '=', 'ticket_locations.id')
+                ->select(
+                    'tickets.*',
+                    'ticket_categories.name as category_name',
+                    'ticket_locations.name as location_name'
+                )
+                ->whereIn('tickets.id', $ticketIds)
+                ->get();
 
             foreach ($ticketsToSnapshot as $ticket) {
 
@@ -213,10 +217,10 @@ class DailyReportController extends Controller
                     'solved_by_name' => $ticket->solver?->name,
 
                     'category_id' => $ticket->category_id,
-                    'category_name' => $ticket->category?->name,
+                    'category_name' => $ticket->category_name,  // Direct from join
 
                     'location_id' => $ticket->location_id,
-                    'location_name' => $ticket->location?->name,
+                    'location_name' => $ticket->location_name,  // Direct from join
 
                     'created_by' => $ticket->user_id,
                     'created_by_name' => $ticket->user?->name,
@@ -281,10 +285,9 @@ class DailyReportController extends Controller
             'solution' => $snapshort->solution,
             'assigned_to' => $snapshort->solved_by_name,
             'user' => $snapshort->created_by_name,
-            // 'created_at' => $snapshort->ticket_created_at,
-            'created_at' => optional($snapshort->ticket_created_at)
-                ?->setTimezone('Asia/Makassar')
-                ->translatedFormat('d M Y, H:i') . ' WITA',
+            'created_at' => $snapshort->ticket_created_at
+                ? $snapshort->ticket_created_at->setTimezone('Asia/Makassar')->translatedFormat('d M Y, H:i') . ' WITA'
+                : null,
 
             'waiting_duration' => $snapshort->waiting_duration,
             'progress_duration' => $snapshort->progress_duration,

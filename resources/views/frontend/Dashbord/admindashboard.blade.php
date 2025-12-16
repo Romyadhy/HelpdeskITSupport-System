@@ -85,8 +85,9 @@
                         <p class="text-sm text-gray-500">Last 30 days activity</p>
                     </div>
                 </div>
-
-                <canvas id="ticketTrendChart" height="110"></canvas>
+                <div class="w-full max-w-lg mx-auto h-72">
+                    <canvas id="ticketTrendChart"></canvas>
+                </div>
             </div>
 
             {{-- SLA CHART --}}
@@ -95,7 +96,7 @@
                 <p class="text-sm text-gray-500 mb-4">Average resolution duration</p>
 
                 {{-- <canvas id="slaChart" height="180" class="pt-4"></canvas> --}}
-                <div class="relative" style="height: 220px;">
+                <div class="w-full max-w-lg mx-auto h-72">
                     <canvas id="slaChart"></canvas>
                 </div>
             </div>

@@ -12,7 +12,7 @@
 - [x] Support Dashboard → ticket aktif didn't show the right value, and maybe we must fix it and need more eficient informations.
 - [x] DailyReport → ticket dikerjakan → its not yet showing the same output like the others role supports, expecially for the "close tickets".
 - [x] Admin escalated tickets also we need to fix it and create idea how to display it on the reports, remember the close tickets in here only for supports role and not yet implements as admin.
-- [ ] Admin and Manager Dashboard, in UI chart fix the width between Ticket Trends, and SLA Category.
+- [x] Admin and Manager Dashboard, in UI chart fix the width between Ticket Trends, and SLA Category.
 - [x] Login Button loading bugs.
 - [ ] Bugs in sidebar size, its diff when username has long text the other way around.
 - [x] Durations tickets didn't setup yet.
@@ -23,11 +23,11 @@
 - [ ] Total ticket in monthly report has a diff output.
 - [x] Bugs in daily reports when the ticket open yesterday and solve by today, the previous reports is not recorded but updated along with the ticket handle and status.
 - [x] Bugs in detail daily report -> tickets shows changes the data sources, as we do in pdf.
-- [ ] Add durations and time in WITA at dashboard admin pages
+- [x] Add durations and time in WITA at dashboard manager
 
 ## Unfinished Features
 
-- [ ] PDF structure.
+- [x] PDF structure.
 - [x] Cron Job for Daily Report Telegram bot at 4 PM (not optimal yet).
 - [x] Fix every table, add pagination, and add searching.
 - [x] Make all create/edit/show actions a popup or alert so we can interact with them. Its called MODALS.
@@ -38,7 +38,7 @@
 - [x] Logs for task and reports, add like tickets feature, when necessary add the handbooks also.
 - [x] Fix dashboard for User and Support roles.
 - [x] Fix dashboard for Manager and Admin roles.
-- [ ] Fix logo.
+- [x] Fix logo.
 - [x] Animate in logs detail/show.
 - [x] In Tickets → Take over, handle-escalated not yet has sweet alert.
 - [x] In Monthly Report → edit, create, destroy not yet has sweet alert.
@@ -54,7 +54,7 @@
 - [x] Add note when the tickets is didn't closed todays, from admin or IT support.
 - [x] Paginate in monthly reports
 - [ ] Dashboard Total ticket, task, ect
-- [ ] Daily Report Show detail add the column in daily report ticket snapshot and refix the store func, ticketSnapshot, ect.
+- [x] Daily Report Show detail add the column in daily report ticket snapshot and refix the store func, ticketSnapshot, ect. "NEED MORE TESTING IN THE FUTURE"
 
 ## Other Notes
 
