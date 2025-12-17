@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -46,10 +47,18 @@ class Ticket extends Model
             return null;
         }
 
-        $minutes = $this->created_at->diffInMinutes($this->started_at);
-        $interval = CarbonInterval::minutes($minutes)->cascade();
+        // $minutes = $this->created_at->diffInMinutes($this->started_at);
+        // $interval = CarbonInterval::minutes($minutes)->cascade();
 
-        return ($interval->hours ? $interval->hours . 'h ' : '') . $interval->minutes . 'm';
+        // return ($interval->hours ? $interval->hours . 'h ' : '') . $interval->minutes . 'm';
+        $diff = $this->created_at->diff($this->started_at);
+
+        return trim(sprintf(
+            '%sd %sh %sm',
+            $diff->d,
+            $diff->h,
+            $diff->i
+        ));
     }
     //durasi ticket di kerjakan sampai selesai
     public function getProgressDurationHumanAttribute()
@@ -60,10 +69,18 @@ class Ticket extends Model
 
         $end = $this->solved_at ?? now();
 
-        $minutes = $this->started_at->diffInMinutes($end);
-        $interval = CarbonInterval::minutes($minutes)->cascade();
+        // $minutes = $this->started_at->diffInMinutes($end);
+        // $interval = CarbonInterval::minutes($minutes)->cascade();
 
-        return ($interval->hours ? $interval->hours . 'h ' : '') . $interval->minutes . 'm';
+        // return ($interval->hours ? $interval->hours . 'h ' : '') . $interval->minutes . 'm';
+        $diff = $this->started_at->diff($end);
+
+        return trim(sprintf(
+            '%sd %sh %sm',
+            $diff->d,
+            $diff->h,
+            $diff->i
+        ));
     }
 
     //durasi total ticket dari di buat sampai selesai
@@ -73,10 +90,19 @@ class Ticket extends Model
             return null;
         }
 
-        $minutes = $this->created_at->diffInMinutes($this->solved_at);
-        $interval = CarbonInterval::minutes($minutes)->cascade();
+        // $minutes = $this->created_at->diffInMinutes($this->solved_at);
+        // $interval = CarbonInterval::minutes($minutes)->cascade();
 
-        return ($interval->hours ? $interval->hours . 'h ' : '') . $interval->minutes . 'm';
+        // return ($interval->hours ? $interval->hours . 'h ' : '') . $interval->minutes . 'm';
+
+        $diff = $this->created_at->diff($this->solved_at);
+
+        return trim(sprintf(
+            '%sd %sh %sm',
+            $diff->d,
+            $diff->h,
+            $diff->i
+        ));
     }
 
     public function user(): BelongsTo
@@ -109,7 +135,8 @@ class Ticket extends Model
         return $this->belongsToMany(DailyReport::class, 'daily_report_tickets');
     }
 
-    public function notes(){
+    public function notes()
+    {
         return $this->hasMany(TicketNote::class)->latest();
     }
 }

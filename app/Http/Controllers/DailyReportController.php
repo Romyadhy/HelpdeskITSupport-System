@@ -178,29 +178,50 @@ class DailyReportController extends Controller
 
                 // Waiting duration
                 if ($ticket->started_at) {
-                    $minutes = $ticket->created_at->diffInMinutes($ticket->started_at);
-                    $interval = CarbonInterval::minutes($minutes)->cascade();
-                    $waitingDuration =
-                        ($interval->hours ? $interval->hours . 'h ' : '') .
-                        $interval->minutes . 'm';
+                    // $minutes = $ticket->created_at->diffInMinutes($ticket->started_at);
+                    // $interval = CarbonInterval::minutes($minutes)->cascade();
+                    // $waitingDuration =
+                    //     ($interval->hours ? $interval->hours . 'h ' : '') .
+                    //     $interval->minutes . 'm';
+                    $diff = $ticket->created_at->diff($ticket->started_at);
+                    $waitingDuration = sprintf(
+                        '%sd %sh %sm',
+                        $diff->d,
+                        $diff->h,
+                        $diff->i
+                    );
                 }
 
                 // Progress duration
                 if ($ticket->started_at && $ticket->solved_at) {
-                    $minutes = $ticket->started_at->diffInMinutes($ticket->solved_at);
-                    $interval = CarbonInterval::minutes($minutes)->cascade();
-                    $progressDuration =
-                        ($interval->hours ? $interval->hours . 'h ' : '') .
-                        $interval->minutes . 'm';
+                    // $minutes = $ticket->started_at->diffInMinutes($ticket->solved_at);
+                    // $interval = CarbonInterval::minutes($minutes)->cascade();
+                    // $progressDuration =
+                    //     ($interval->hours ? $interval->hours . 'h ' : '') .
+                    //     $interval->minutes . 'm';
+                    $diff = $ticket->started_at->diff($ticket->solved_at);
+                    $progressDuration = sprintf(
+                        '%sd %sh %sm',
+                        $diff->d,
+                        $diff->h,
+                        $diff->i
+                    );
                 }
 
                 // Total duration
                 if ($ticket->solved_at) {
-                    $minutes = $ticket->created_at->diffInMinutes($ticket->solved_at);
-                    $interval = CarbonInterval::minutes($minutes)->cascade();
-                    $totalDuration =
-                        ($interval->hours ? $interval->hours . 'h ' : '') .
-                        $interval->minutes . 'm';
+                    // $minutes = $ticket->created_at->diffInMinutes($ticket->solved_at);
+                    // $interval = CarbonInterval::minutes($minutes)->cascade();
+                    // $totalDuration =
+                    //     ($interval->hours ? $interval->hours . 'h ' : '') .
+                    //     $interval->minutes . 'm';
+                    $diff = $ticket->created_at->diff($ticket->solved_at);
+                    $totalDuration = sprintf(
+                        '%sd %sh %sm',
+                        $diff->d,
+                        $diff->h,
+                        $diff->i
+                    );
                 }
 
                 \App\Models\DailyReportTicketSnapshot::create([
