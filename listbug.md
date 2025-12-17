@@ -24,6 +24,9 @@
 - [x] Bugs in daily reports when the ticket open yesterday and solve by today, the previous reports is not recorded but updated along with the ticket handle and status.
 - [x] Bugs in detail daily report -> tickets shows changes the data sources, as we do in pdf.
 - [x] Add durations and time in WITA at dashboard manager
+- [x] Confirm box in select priority by admin
+- [ ] Notes in daily report ticket snapsho modal, its not config first
+- [ ] Bugs in durations tickets calculations, the hours not calculate, its calcutate minuiete only.
 
 ## Unfinished Features
 
@@ -53,8 +56,9 @@
 - [x] Add more durations, tell apart between durations tickets open before handle by support and durations tickets solved by supports.
 - [x] Add note when the tickets is didn't closed todays, from admin or IT support.
 - [x] Paginate in monthly reports
-- [ ] Dashboard Total ticket, task, ect
+- [x] Dashboard Total ticket, task, ect
 - [x] Daily Report Show detail add the column in daily report ticket snapshot and refix the store func, ticketSnapshot, ect. "NEED MORE TESTING IN THE FUTURE"
+- [ ] Add edit in daily report before verif by admin.
 
 ## Other Notes
 

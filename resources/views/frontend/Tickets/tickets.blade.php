@@ -5,10 +5,10 @@
                 Pusat Laporan Masalah dan Permintaan Bantuan
             </h2>
             @can('create-ticket')
-                <button @click="$dispatch('open-create-modal')"
-                    class="mt-4 sm:mt-0 inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
-                    + Laportkan Masalah
-                </button>
+            <button @click="$dispatch('open-create-modal')"
+                class="mt-4 sm:mt-0 inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
+                + Laportkan Masalah
+            </button>
             @endcan
         </div>
     </x-slot>
@@ -205,266 +205,282 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             @forelse($tickets as $ticket)
-                                <tr class="hover:bg-gray-50 transition text-left">
-                                    {{-- Ticket ID --}}
-                                    <td class="px-6 py-4 font-semibold text-gray-800">
-                                        #{{ str_pad($ticket->id, 3, '0', STR_PAD_LEFT) }}
-                                    </td>
+                            <tr class="hover:bg-gray-50 transition text-left">
+                                {{-- Ticket ID --}}
+                                <td class="px-6 py-4 font-semibold text-gray-800">
+                                    #{{ str_pad($ticket->id, 3, '0', STR_PAD_LEFT) }}
+                                </td>
 
-                                    {{-- Subject --}}
-                                    <td class="px-6 py-4">
-                                        <div class="font-medium text-gray-900">{{ $ticket->title }}</div>
-                                        <p class="text-xs text-gray-500 mt-1">
-                                            Created: {{ $ticket->created_at->format('Y-m-d') }}
-                                        </p>
-                                    </td>
+                                {{-- Subject --}}
+                                <td class="px-6 py-4">
+                                    <div class="font-medium text-gray-900">{{ $ticket->title }}</div>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        Created: {{ $ticket->created_at->format('Y-m-d') }}
+                                    </p>
+                                </td>
 
-                                    {{-- User --}}
-                                    <td class="px-6 py-4 hidden md:table-cell">
-                                        <div class="flex items-center">
-                                            <div
-                                                class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center font-bold text-teal-600 mr-2">
-                                                {{ strtoupper(substr($ticket->user->name ?? 'U', 0, 2)) }}
-                                            </div>
-                                            <span>{{ $ticket->user->name ?? 'Unknown' }}</span>
+                                {{-- User --}}
+                                <td class="px-6 py-4 hidden md:table-cell">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center font-bold text-teal-600 mr-2">
+                                            {{ strtoupper(substr($ticket->user->name ?? 'U', 0, 2)) }}
                                         </div>
-                                    </td>
+                                        <span>{{ $ticket->user->name ?? 'Unknown' }}</span>
+                                    </div>
+                                </td>
 
-                                    {{-- Status --}}
-                                    <td class="px-6 py-4">
-                                        <span @class([
-                                            'px-3 py-1 text-xs font-semibold rounded-full',
-                                            'bg-red-100 text-red-600' => $ticket->status === 'Open',
-                                            'bg-yellow-100 text-yellow-700' => $ticket->status === 'In Progress',
-                                            'bg-green-100 text-green-700' => $ticket->status === 'Closed',
-                                            'bg-purple-100 text-purple-700' => $ticket->status === 'Escalated',
+                                {{-- Status --}}
+                                <td class="px-6 py-4">
+                                    <span @class([ 'px-3 py-1 text-xs font-semibold rounded-full' , 'bg-red-100 text-red-600'=> $ticket->status === 'Open',
+                                        'bg-yellow-100 text-yellow-700' => $ticket->status === 'In Progress',
+                                        'bg-green-100 text-green-700' => $ticket->status === 'Closed',
+                                        'bg-purple-100 text-purple-700' => $ticket->status === 'Escalated',
                                         ])>
-                                            {{ $ticket->status }}
-                                        </span>
-                                    </td>
+                                        {{ $ticket->status }}
+                                    </span>
+                                </td>
 
-                                    {{-- Priority --}}
-                                    <td class="px-6 py-4">
-                                        @can('set-ticket-priority')
-                                            @if ($ticket->status === 'Open')
-                                                {{-- ✅ ADMIN / MANAGER - BISA EDIT --}}
-                                                <div x-data="{
+                                {{-- Priority --}}
+                                <td class="px-6 py-4">
+                                    @can('set-ticket-priority')
+                                    @if ($ticket->status === 'Open')
+                                    {{-- ✅ ADMIN / MANAGER - BISA EDIT --}}
+                                    <div x-data="{
                                                     priority: '{{ $ticket->priority }}',
+                                                    previousPriority: '{{ $ticket->priority }}',
                                                     isUpdating: false,
                                                     async updatePriority(ticketId, newPriority) {
-                                                        this.isUpdating = true;
-                                                        try {
-                                                            const response = await fetch(`/tickets/${ticketId}/set-priority`, {
-                                                                method: 'PATCH',
-                                                                headers: {
-                                                                    'Content-Type': 'application/json',
-                                                                    'X-CSRF-TOKEN': document.querySelector('meta[name=\'csrf-token\']').content,
-                                                                    'Accept': 'application/json'
-                                                                },
-                                                                body: JSON.stringify({ priority: newPriority })
-                                                            });
+                                                        if (newPriority === this.previousPriority) return;
 
-                                                            const data = await response.json();
+                                                        const priorityLabels = {
+                                                            'High': 'Tinggi',
+                                                            'Medium': 'Sedang',
+                                                            'Low': 'Rendah',
+                                                            '': 'Tidak Ada'
+                                                        };
+                                                        const displayPriority = priorityLabels[newPriority] || newPriority || 'Tidak Ada';
 
-                                                            if (response.ok) {
-                                                                this.priority = newPriority;
-                                                                Swal.fire({
-                                                                    icon: 'success',
-                                                                    title: 'Success!',
-                                                                    text: 'Priority updated successfully.',
-                                                                    showConfirmButton: false,
-                                                                    timer: 1500
-                                                                });
-                                                            } else {
-                                                                Swal.fire({
-                                                                    icon: 'error',
-                                                                    title: 'Error!',
-                                                                    text: data.message || 'Failed to update priority.'
-                                                                });
+                                                        const result = await Swal.fire({
+                                                            title: 'Konfirmasi Perubahan Prioritas',
+                                                            html: `Apakah Anda yakin ingin mengubah prioritas menjadi <strong>${displayPriority}</strong>?`,
+                                                            icon: 'question',
+                                                            showCancelButton: true,
+                                                            confirmButtonColor: '#14b8a6',
+                                                            cancelButtonColor: '#6b7280',
+                                                            confirmButtonText: 'Ya, Ubah!',
+                                                            cancelButtonText: 'Batal',
+                                                            showLoaderOnConfirm: true,
+                                                            allowOutsideClick: () => !Swal.isLoading(),
+                                                            preConfirm: async () => {
+                                                                try {
+                                                                    const response = await fetch(`/tickets/${ticketId}/set-priority`, {
+                                                                        method: 'PATCH',
+                                                                        headers: {
+                                                                            'Content-Type': 'application/json',
+                                                                            'X-CSRF-TOKEN': document.querySelector('meta[name=\'csrf-token\']').content,
+                                                                            'Accept': 'application/json'
+                                                                        },
+                                                                        body: JSON.stringify({ priority: newPriority })
+                                                                    });
+
+                                                                    const data = await response.json();
+
+                                                                    if (!response.ok) {
+                                                                        throw new Error(data.message || 'Gagal mengubah prioritas.');
+                                                                    }
+
+                                                                    return data;
+                                                                } catch (error) {
+                                                                    Swal.showValidationMessage(error.message || 'Terjadi kesalahan.');
+                                                                    return false;
+                                                                }
                                                             }
-                                                        } catch (error) {
+                                                        });
+
+                                                        if (result.isConfirmed) {
+                                                            this.previousPriority = newPriority;
                                                             Swal.fire({
-                                                                icon: 'error',
-                                                                title: 'Error!',
-                                                                text: 'An unexpected error occurred.'
+                                                                icon: 'success',
+                                                                title: 'Berhasil!',
+                                                                text: 'Prioritas berhasil diubah.',
+                                                                showConfirmButton: false,
+                                                                timer: 1500
                                                             });
-                                                        } finally {
-                                                            this.isUpdating = false;
+                                                        } else {
+                                                            // User cancelled - revert to previous priority
+                                                            this.priority = this.previousPriority;
                                                         }
                                                     }
                                                 }">
-                                                    <select x-model="priority"
-                                                        @change="updatePriority({{ $ticket->id }}, $event.target.value)"
-                                                        :disabled="isUpdating"
-                                                        class="px-5 py-1 text-xs font-semibold rounded-full cursor-pointer transition"
-                                                        :class="{
+                                        <select x-model="priority"
+                                            @change="updatePriority({{ $ticket->id }}, $event.target.value)"
+                                            :disabled="isUpdating"
+                                            class="px-5 py-1 text-xs font-semibold rounded-full cursor-pointer transition"
+                                            :class="{
                                                             'bg-red-100 text-red-600': priority === 'High',
                                                             'bg-orange-100 text-orange-600': priority === 'Medium',
                                                             'bg-green-100 text-green-700': priority === 'Low',
                                                             'bg-gray-100 text-gray-500': !priority
                                                         }">
-                                                        <option value="">-</option>
-                                                        <option value="Low">Low</option>
-                                                        <option value="Medium">Medium</option>
-                                                        <option value="High">High</option>
-                                                    </select>
-                                                </div>
-                                            @else
-                                                {{-- admin --}}
-                                                <span @class([
-                                                    'px-3 py-1 text-xs font-semibold rounded-full',
-                                                    'bg-red-100 text-red-600' => $ticket->priority === 'High',
-                                                    'bg-orange-100 text-orange-600' => $ticket->priority === 'Medium',
-                                                    'bg-green-100 text-green-700' => $ticket->priority === 'Low',
-                                                    'bg-gray-100 text-gray-500' => !$ticket->priority,
-                                                ])>
-                                                    {{ $ticket->priority ?? '-' }}
-                                                </span>
-                                            @endif
-                                        @else
-                                            {{-- selain admin --}}
-                                            <span @class([
-                                                'px-3 py-1 text-xs font-semibold rounded-full',
-                                                'bg-red-100 text-red-600' => $ticket->priority === 'High',
-                                                'bg-orange-100 text-orange-600' => $ticket->priority === 'Medium',
-                                                'bg-green-100 text-green-700' => $ticket->priority === 'Low',
-                                                'bg-gray-100 text-gray-500' => !$ticket->priority,
-                                            ])>
-                                                {{ $ticket->priority ?? '-' }}
-                                            </span>
-                                        @endcan
-                                    </td>
+                                            <option value="">-</option>
+                                            <option value="Low">Low</option>
+                                            <option value="Medium">Medium</option>
+                                            <option value="High">High</option>
+                                        </select>
+                                    </div>
+                                    @else
+                                    {{-- admin --}}
+                                    <span @class([ 'px-3 py-1 text-xs font-semibold rounded-full' , 'bg-red-100 text-red-600'=> $ticket->priority === 'High',
+                                        'bg-orange-100 text-orange-600' => $ticket->priority === 'Medium',
+                                        'bg-green-100 text-green-700' => $ticket->priority === 'Low',
+                                        'bg-gray-100 text-gray-500' => !$ticket->priority,
+                                        ])>
+                                        {{ $ticket->priority ?? '-' }}
+                                    </span>
+                                    @endif
+                                    @else
+                                    {{-- selain admin --}}
+                                    <span @class([ 'px-3 py-1 text-xs font-semibold rounded-full' , 'bg-red-100 text-red-600'=> $ticket->priority === 'High',
+                                        'bg-orange-100 text-orange-600' => $ticket->priority === 'Medium',
+                                        'bg-green-100 text-green-700' => $ticket->priority === 'Low',
+                                        'bg-gray-100 text-gray-500' => !$ticket->priority,
+                                        ])>
+                                        {{ $ticket->priority ?? '-' }}
+                                    </span>
+                                    @endcan
+                                </td>
 
-                                    {{-- ACTIONS --}}
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center space-x-2">
+                                {{-- ACTIONS --}}
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center space-x-2">
 
-                                        {{-- View --}}
-                                        <button @click="openShowModal({{ $ticket->id }})" title="View Ticket"
-                                            class="text-gray-400 hover:text-indigo-600 p-2 rounded-lg transition">
-                                            <i class="fas fa-eye"></i>
+                                    {{-- View --}}
+                                    <button @click="openShowModal({{ $ticket->id }})" title="View Ticket"
+                                        class="text-gray-400 hover:text-indigo-600 p-2 rounded-lg transition">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+
+                                    {{-- ==== User ==== --}}
+                                    @can('edit-own-ticket', $ticket)
+                                    @if ($ticket->status === 'Open')
+                                    <button
+                                        @click="openEditModal({{ $ticket->id }}, '{{ addslashes($ticket->title) }}', '{{ addslashes($ticket->description) }}', {{ $ticket->category_id }}, {{ $ticket->location_id }})"
+                                        title="Edit Ticket"
+                                        class="text-gray-400 hover:text-blue-600 p-2 rounded-lg transition">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    @endif
+                                    @endcan
+
+                                    @can('delete-own-ticket', $ticket)
+                                    @if (in_array($ticket->status, ['Open']))
+                                    <form action="{{ route('tickets.destroy', $ticket->id) }}" method="POST"
+                                        class="inline delete-ticket-form">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" title="Delete Ticket"
+                                            class="delete-ticket-btn text-gray-400 hover:text-red-600 p-2 rounded-lg transition">
+                                            <i class="fas fa-trash-alt"></i>
                                         </button>
+                                    </form>
+                                    @endif
+                                    @endcan
 
-                                        {{-- ==== User ==== --}}
-                                        @can('edit-own-ticket', $ticket)
-                                            @if ($ticket->status === 'Open')
-                                                <button
-                                                    @click="openEditModal({{ $ticket->id }}, '{{ addslashes($ticket->title) }}', '{{ addslashes($ticket->description) }}', {{ $ticket->category_id }}, {{ $ticket->location_id }})"
-                                                    title="Edit Ticket"
-                                                    class="text-gray-400 hover:text-blue-600 p-2 rounded-lg transition">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                            @endif
-                                        @endcan
+                                    {{-- ==== Support ==== --}}
+                                    @can('handle-ticket')
+                                    @if ($ticket->status === 'Open' && !$ticket->assigned_to && $ticket->priority)
+                                    {{-- Handle Ticket --}}
+                                    <form action="{{ route('tickets.start', $ticket->id) }}" method="POST"
+                                        class="inline handle-ticket-form">
+                                        @csrf
+                                        <button type="button" title="Handle Ticket"
+                                            class="handle-ticket-btn text-gray-400 hover:text-yellow-600 p-2 rounded-lg transition">
+                                            <i class="fas fa-wrench mr-1"></i>
+                                        </button>
+                                    </form>
+                                    @elseif($ticket->status === 'In Progress' && $ticket->assigned_to === auth()->id())
+                                    {{-- Close Ticket --}}
+                                    @can('close-ticket')
+                                    <button type="button" title="Close Ticket"
+                                        class="close-ticket-btn text-gray-400 hover:text-green-600 p-2 rounded-lg transition"
+                                        data-action="{{ route('tickets.close', $ticket->id) }}">
+                                        <i class="fas fa-check mr-1"></i>
+                                    </button>
+                                    @endcan
 
-                                        @can('delete-own-ticket', $ticket)
-                                            @if (in_array($ticket->status, ['Open']))
-                                                <form action="{{ route('tickets.destroy', $ticket->id) }}" method="POST"
-                                                    class="inline delete-ticket-form">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="button" title="Delete Ticket"
-                                                        class="delete-ticket-btn text-gray-400 hover:text-red-600 p-2 rounded-lg transition">
-                                                        <i class="fas fa-trash-alt"></i>
-                                                    </button>
-                                                </form>
-                                            @endif
-                                        @endcan
+                                    {{-- Escalate --}}
+                                    @can('escalate-ticket')
+                                    <button type="button" title="Escalate Ticket"
+                                        class="escalate-ticket-btn text-gray-400 hover:text-purple-600 p-2 rounded-lg transition"
+                                        data-action="{{ route('tickets.escalate', $ticket->id) }}">
+                                        <i class="fas fa-level-up-alt mr-1"></i>
+                                    </button>
+                                    @endcan
 
-                                        {{-- ==== Support ==== --}}
-                                        @can('handle-ticket')
-                                            @if ($ticket->status === 'Open' && !$ticket->assigned_to && $ticket->priority)
-                                                {{-- Handle Ticket --}}
-                                                <form action="{{ route('tickets.start', $ticket->id) }}" method="POST"
-                                                    class="inline handle-ticket-form">
-                                                    @csrf
-                                                    <button type="button" title="Handle Ticket"
-                                                        class="handle-ticket-btn text-gray-400 hover:text-yellow-600 p-2 rounded-lg transition">
-                                                        <i class="fas fa-wrench mr-1"></i>
-                                                    </button>
-                                                </form>
-                                            @elseif($ticket->status === 'In Progress' && $ticket->assigned_to === auth()->id())
-                                                {{-- Close Ticket --}}
-                                                @can('close-ticket')
-                                                    <button type="button" title="Close Ticket"
-                                                        class="close-ticket-btn text-gray-400 hover:text-green-600 p-2 rounded-lg transition"
-                                                        data-action="{{ route('tickets.close', $ticket->id) }}">
-                                                        <i class="fas fa-check mr-1"></i>
-                                                    </button>
-                                                @endcan
+                                    {{-- 🟠 Cancel Ticket --}}
+                                    <form action="{{ route('tickets.cancel', $ticket->id) }}" method="POST"
+                                        class="inline cancel-ticket-form">
+                                        @csrf
+                                        <button type="button" title="Cancel Handling"
+                                            class="cancel-ticket-btn text-gray-400 hover:text-orange-600 p-2 rounded-lg transition"
+                                            data-ticket-id="{{ $ticket->id }}">
+                                            <i class="fas fa-ban mr-1"></i>
+                                        </button>
+                                    </form>
+                                    @elseif($ticket->status === 'In Progress' && $ticket->assigned_to !== auth()->id())
+                                    @can('take-over')
+                                    <form action="{{ route('tickets.takeOver', $ticket->id) }}"
+                                        method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" title="Take Over Ticket"
+                                            class="take-over-ticket-btn text-gray-400 hover:text-yellow-600 p-2 rounded-lg transition">
+                                            <i class="fas fa-hand-paper mr-1"></i>
+                                        </button>
+                                    </form>
+                                    @endcan
+                                    @endif
+                                    @endcan
 
-                                                {{-- Escalate --}}
-                                                @can('escalate-ticket')
-                                                    <button type="button" title="Escalate Ticket"
-                                                        class="escalate-ticket-btn text-gray-400 hover:text-purple-600 p-2 rounded-lg transition"
-                                                        data-action="{{ route('tickets.escalate', $ticket->id) }}">
-                                                        <i class="fas fa-level-up-alt mr-1"></i>
-                                                    </button>
-                                                @endcan
-
-                                                {{-- 🟠 Cancel Ticket --}}
-                                                <form action="{{ route('tickets.cancel', $ticket->id) }}" method="POST"
-                                                    class="inline cancel-ticket-form">
-                                                    @csrf
-                                                    <button type="button" title="Cancel Handling"
-                                                        class="cancel-ticket-btn text-gray-400 hover:text-orange-600 p-2 rounded-lg transition"
-                                                        data-ticket-id="{{ $ticket->id }}">
-                                                        <i class="fas fa-ban mr-1"></i>
-                                                    </button>
-                                                </form>
-                                            @elseif($ticket->status === 'In Progress' && $ticket->assigned_to !== auth()->id())
-                                                @can('take-over')
-                                                    <form action="{{ route('tickets.takeOver', $ticket->id) }}"
-                                                        method="POST" class="inline">
-                                                        @csrf
-                                                        <button type="submit" title="Take Over Ticket"
-                                                            class="take-over-ticket-btn text-gray-400 hover:text-yellow-600 p-2 rounded-lg transition">
-                                                            <i class="fas fa-hand-paper mr-1"></i>
-                                                        </button>
-                                                    </form>
-                                                @endcan
-                                            @endif
-                                        @endcan
-
-                                        {{-- ==== Admin ==== --}}
-                                        @can('handle-escalated-ticket')
-                                            @if (!$ticket->is_escalation && $ticket->status === 'In Progress' && $ticket->assigned_to === auth()->id())
-                                                @can('close-ticket')
-                                                    <button type="button" title="Close Ticket"
-                                                        class="close-ticket-btn text-gray-400 hover:text-green-600 p-2 rounded-lg transition"
-                                                        data-action="{{ route('tickets.close', $ticket->id) }}">
-                                                        <i class="fas fa-check mr-1"></i>
-                                                    </button>
-                                                @endcan
-                                                <form action="{{ route('tickets.cancel', $ticket->id) }}" method="POST"
-                                                    class="inline cancel-ticket-form">
-                                                    @csrf
-                                                    <button type="button" title="Cancel Handling"
-                                                        class="cancel-ticket-btn text-gray-400 hover:text-orange-600 p-2 rounded-lg transition"
-                                                        data-ticket-id="{{ $ticket->id }}">
-                                                        <i class="fas fa-ban mr-1"></i>
-                                                    </button>
-                                                </form>
-                                            @endif
-                                            @if ($ticket->is_escalation && $ticket->status === 'In Progress')
-                                                <form action="{{ route('tickets.handleEscalated', $ticket->id) }}"
-                                                    method="POST" class="inline">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <button type="submit" title="Handle Escalated Ticket"
-                                                        class="handle-escalated-ticket-btn text-gray-400 hover:text-blue-600 p-2 rounded-lg transition">
-                                                        <i class="fas fa-user-check mr-1"></i>
-                                                    </button>
-                                                </form>
-                                            @endif
-                                        @endcan
-                                    </td>
-                                </tr>
+                                    {{-- ==== Admin ==== --}}
+                                    @can('handle-escalated-ticket')
+                                    @if (!$ticket->is_escalation && $ticket->status === 'In Progress' && $ticket->assigned_to === auth()->id())
+                                    @can('close-ticket')
+                                    <button type="button" title="Close Ticket"
+                                        class="close-ticket-btn text-gray-400 hover:text-green-600 p-2 rounded-lg transition"
+                                        data-action="{{ route('tickets.close', $ticket->id) }}">
+                                        <i class="fas fa-check mr-1"></i>
+                                    </button>
+                                    @endcan
+                                    <form action="{{ route('tickets.cancel', $ticket->id) }}" method="POST"
+                                        class="inline cancel-ticket-form">
+                                        @csrf
+                                        <button type="button" title="Cancel Handling"
+                                            class="cancel-ticket-btn text-gray-400 hover:text-orange-600 p-2 rounded-lg transition"
+                                            data-ticket-id="{{ $ticket->id }}">
+                                            <i class="fas fa-ban mr-1"></i>
+                                        </button>
+                                    </form>
+                                    @endif
+                                    @if ($ticket->is_escalation && $ticket->status === 'In Progress')
+                                    <form action="{{ route('tickets.handleEscalated', $ticket->id) }}"
+                                        method="POST" class="inline">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit" title="Handle Escalated Ticket"
+                                            class="handle-escalated-ticket-btn text-gray-400 hover:text-blue-600 p-2 rounded-lg transition">
+                                            <i class="fas fa-user-check mr-1"></i>
+                                        </button>
+                                    </form>
+                                    @endif
+                                    @endcan
+                                </td>
+                            </tr>
                             @empty
-                                <tr>
-                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">No tickets found.
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td colspan="6" class="px-6 py-8 text-center text-gray-500">No tickets found.
+                                </td>
+                            </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -488,43 +504,43 @@
 
                             {{-- Previous --}}
                             @if ($tickets->onFirstPage())
-                                <span class="px-3 py-2 rounded-xl bg-gray-100 text-gray-400 cursor-not-allowed">
-                                    <i class="fas fa-chevron-left"></i>
-                                </span>
+                            <span class="px-3 py-2 rounded-xl bg-gray-100 text-gray-400 cursor-not-allowed">
+                                <i class="fas fa-chevron-left"></i>
+                            </span>
                             @else
-                                <a href="{{ $tickets->previousPageUrl() }}"
-                                    class="px-3 py-2 rounded-xl bg-white border border-gray-300
+                            <a href="{{ $tickets->previousPageUrl() }}"
+                                class="px-3 py-2 rounded-xl bg-white border border-gray-300
                       text-gray-600 hover:bg-gray-100 transition">
-                                    <i class="fas fa-chevron-left"></i>
-                                </a>
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
                             @endif
 
                             {{-- Page Numbers --}}
                             @foreach ($tickets->links()->elements[0] as $page => $url)
-                                @if ($page == $tickets->currentPage())
-                                    <span class="px-4 py-2 rounded-xl bg-teal-500 text-white font-semibold shadow">
-                                        {{ $page }}
-                                    </span>
-                                @else
-                                    <a href="{{ $url }}"
-                                        class="px-4 py-2 rounded-xl bg-white border border-gray-300
+                            @if ($page == $tickets->currentPage())
+                            <span class="px-4 py-2 rounded-xl bg-teal-500 text-white font-semibold shadow">
+                                {{ $page }}
+                            </span>
+                            @else
+                            <a href="{{ $url }}"
+                                class="px-4 py-2 rounded-xl bg-white border border-gray-300
                           text-gray-700 hover:bg-gray-100 transition">
-                                        {{ $page }}
-                                    </a>
-                                @endif
+                                {{ $page }}
+                            </a>
+                            @endif
                             @endforeach
 
                             {{-- Next --}}
                             @if ($tickets->hasMorePages())
-                                <a href="{{ $tickets->nextPageUrl() }}"
-                                    class="px-3 py-2 rounded-xl bg-white border border-gray-300
+                            <a href="{{ $tickets->nextPageUrl() }}"
+                                class="px-3 py-2 rounded-xl bg-white border border-gray-300
                       text-gray-600 hover:bg-gray-100 transition">
-                                    <i class="fas fa-chevron-right"></i>
-                                </a>
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
                             @else
-                                <span class="px-3 py-2 rounded-xl bg-gray-100 text-gray-400 cursor-not-allowed">
-                                    <i class="fas fa-chevron-right"></i>
-                                </span>
+                            <span class="px-3 py-2 rounded-xl bg-gray-100 text-gray-400 cursor-not-allowed">
+                                <i class="fas fa-chevron-right"></i>
+                            </span>
                             @endif
 
                         </div>
@@ -917,11 +933,11 @@
                                     @role('admin')
                                     <template x-if="showData.status === 'Open'">
                                         <button @click="addNote(showData.id)"
-                                        class="text-xs inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-teal-500 text-teal-600 hover:bg-teal-50 transition">
+                                            class="text-xs inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-teal-500 text-teal-600 hover:bg-teal-50 transition">
                                             <i class="fas fa-plus"></i>
-                                                Tambah
+                                            Tambah
                                         </button>
-                                    @endrole
+                                        @endrole
                                     </template>
                                 </div>
 
@@ -1291,15 +1307,16 @@
         document.addEventListener('DOMContentLoaded', function() {
 
             // ✅ Global Success Alert
-            @if (session('success'))
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: '{{ session('success') }}',
-                    showConfirmButton: false,
-                    timer: 2000,
-                    timerProgressBar: true
-                });
+            @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: '{{ session('
+                success ') }}',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+            });
             @endif
 
             // 🗑️ Delete
