@@ -11,7 +11,7 @@
             {{-- Header --}}
             <div class="bg-white shadow rounded-lg p-6">
                 <h1 class="text-4xl font-extrabold text-teal-600">Dashboard Manager</h1>
-                <p class="text-gray-600 mt-2">Laporan ringkas aktivitas IT Support & performa SLA</p>
+                <p class="text-gray-600 mt-2">Dashboard monitoring kinerja tim & penyelesaian tiket.</p>
             </div>
 
             {{-- Statistik Utama --}}
@@ -28,14 +28,15 @@
                 </div>
 
 
+
                 <div class="flex items-center gap-4 bg-white p-5 rounded-lg shadow hover:shadow-lg transition">
-                    <div class="p-3 rounded-lg bg-green-100 text-green-700 text-xl">
-                        ✅
+                    <div class="p-3 rounded-lg bg-red-100 text-red-700 text-xl">
+                        🔓
                     </div>
 
                     <div>
-                        <p class="text-sm text-gray-500">Selesai (Closed)</p>
-                        <p class="text-3xl font-bold text-green-600">{{ $closedTickets ?? 0 }}</p>
+                        <p class="text-sm text-gray-500">Belum Dikerjakan (Open)</p>
+                        <p class="text-3xl font-bold text-red-500">{{ $openTickets ?? 0 }}</p>
                     </div>
                 </div>
 
@@ -51,18 +52,18 @@
                     </div>
                 </div>
 
-
-
                 <div class="flex items-center gap-4 bg-white p-5 rounded-lg shadow hover:shadow-lg transition">
-                    <div class="p-3 rounded-lg bg-red-100 text-red-700 text-xl">
-                        🔓
+                    <div class="p-3 rounded-lg bg-green-100 text-green-700 text-xl">
+                        ✅
                     </div>
 
                     <div>
-                        <p class="text-sm text-gray-500">Belum Dikerjakan (Open)</p>
-                        <p class="text-3xl font-bold text-red-500">{{ $openTickets ?? 0 }}</p>
+                        <p class="text-sm text-gray-500">Selesai (Closed)</p>
+                        <p class="text-3xl font-bold text-green-600">{{ $closedTickets ?? 0 }}</p>
                     </div>
                 </div>
+
+
 
             </div>
 
@@ -90,7 +91,16 @@
 
             {{-- Daftar Tiket Terbaru --}}
             <div class="bg-white shadow rounded-lg p-6">
-                <h3 class="text-lg font-bold text-gray-700 mb-4">Tiket Terakhir</h3>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">
+                        Permintaan/Laporan Terakhir
+                    </h3>
+
+                    <a href="{{ route('tickets.index') }}"
+                        class="text-sm font-medium text-teal-600 hover:text-teal-700 transition">
+                            Lihat Semua →
+                    </a>
+            </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm text-left border border-gray-100">
                         <thead class="bg-gray-100">

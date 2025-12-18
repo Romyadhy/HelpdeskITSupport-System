@@ -22,12 +22,12 @@
             </div>
 
             <div class="flex items-center gap-4 border rounded-xl bg-white shadow-sm p-5">
-                <div class="p-3 rounded-lg bg-green-100 text-green-700 text-xl">
-                    ✅
+                <div class="p-3 rounded-lg bg-indigo-100 text-indigo-700 text-xl">
+                    🔓
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Closed Tickets</p>
-                    <h3 class="text-3xl font-semibold">{{ $closedTickets }}</h3>
+                    <p class="text-sm text-gray-500">Open Tickets</p>
+                    <h3 class="text-3xl font-semibold">{{ $openTickets }}</h3>
                 </div>
             </div>
 
@@ -42,14 +42,16 @@
             </div>
 
             <div class="flex items-center gap-4 border rounded-xl bg-white shadow-sm p-5">
-                <div class="p-3 rounded-lg bg-indigo-100 text-indigo-700 text-xl">
-                    🔓
+                <div class="p-3 rounded-lg bg-green-100 text-green-700 text-xl">
+                    ✅
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Open Tickets</p>
-                    <h3 class="text-3xl font-semibold">{{ $openTickets }}</h3>
+                    <p class="text-sm text-gray-500">Closed Tickets</p>
+                    <h3 class="text-3xl font-semibold">{{ $closedTickets }}</h3>
                 </div>
             </div>
+
+
 
             <div class="flex items-center gap-4 border rounded-xl bg-white shadow-sm p-5">
                 <div class="p-3 rounded-lg bg-purple-100 text-purple-700 text-xl">
@@ -109,7 +111,16 @@
         {{-- RECENT TICKETS TABLE --}}
         {{-- =========================== --}}
         <div class="border rounded-xl bg-white shadow-sm p-6">
-            <h3 class="text-lg font-semibold mb-4">Recent Tickets</h3>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">
+                    Permintaan/Masalah Terakhir
+                </h3>
+
+                <a href="{{ route('tickets.index') }}"
+                    class="text-sm font-medium text-teal-600 hover:text-teal-700 transition">
+                    Lihat Semua →
+                </a>
+            </div>
 
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">

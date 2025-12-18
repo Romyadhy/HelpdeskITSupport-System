@@ -7,7 +7,7 @@
             @can('create-ticket')
             <button @click="$dispatch('open-create-modal')"
                 class="mt-4 sm:mt-0 inline-flex items-center bg-teal-500 text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-teal-600 transition">
-                + Laportkan Masalah
+                + Laporkan Masalah Baru
             </button>
             @endcan
         </div>

@@ -122,10 +122,33 @@
                             </button>
                             {{-- detail report --}}
                             <a href="{{ route('reports.daily.show', $report->id) }}"
-                                class="rounded-md px-1.5 py-1.5 text-white bg-teal-500 hover:bg-teal-600 text-sm transition">Lihat
+                                class="rounded-md px-1.5 py-1.5 text-white bg-teal-500 hover:bg-teal-600 text-sm transition"><i class="fa-solid fa-circle-info"></i> Lihat
                                 Detail
                             </a>
+                            {{-- edit --}}
+                            @can('edit-daily-report')
+                                @if(auth()->id() === $report->user_id && is_null($report->verified_at))
+                                    <a href="{{ route('reports.daily.edit', $report->id) }}" class="px-1.5 py-1.5 text-white bg-yellow-500 hover:bg-yellow-600 text-sm transition rounded-md"><i class="fa-solid fa-pen-to-square"></i> Edit</a>
+                                @endif
+                            @endcan
+                            {{-- delete --}}
+                           @can('delete-daily-report')
+                            @if(auth()->id() === $report->user_id && is_null($report->verified_at))
+                                <form id="delete-report-form-{{ $report->id }}"
+                                    action="{{ route('reports.daily.destroy', $report) }}"
+                                    method="POST"
+                                    class="inline">
+                                    @csrf
+                                    @method('DELETE')
 
+                                    <button type="button"
+                                        onclick="confirmDeleteReport({{ $report->id }})"
+                                        class="px-1.5 py-1.5 text-white bg-red-500 hover:bg-red-600 text-sm transition rounded-md">
+                                    <i class="fa-solid fa-trash"></i> Hapus
+                                    </button>
+                                </form>
+                            @endif
+                        @endcan
                             {{-- Verifikasi --}}
                             @if (Auth::user()->hasRole('admin') && !$report->verified_at)
                                 <form id="verifyForm-{{ $report->id }}"
@@ -134,7 +157,7 @@
                                     @method('PUT')
 
                                     <button type="button" onclick="confirmVerify('verifyForm-{{ $report->id }}')"
-                                        class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow">
+                                        class="bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-1.5 py-1.5 rounded-md">
                                         <i class="fas fa-check mr-1"></i> Verify
                                     </button>
                                 </form>
@@ -267,6 +290,24 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     document.getElementById(formId).submit();
+                }
+            });
+        }
+
+        // delete
+        function confirmDeleteReport(reportId) {
+            Swal.fire({
+                title: 'Hapus Laporan?',
+                text: 'Laporan ini akan dihapus dan tidak bisa dikembalikan!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#9ca3af',
+                confirmButtonText: 'Ya, hapus',
+                cancelButtonText: 'Batal',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(`delete-report-form-${reportId}`).submit();
                 }
             });
         }

@@ -25,7 +25,7 @@
 - [x] Bugs in detail daily report -> tickets shows changes the data sources, as we do in pdf.
 - [x] Add durations and time in WITA at dashboard manager
 - [x] Confirm box in select priority by admin
-- [ ] Notes in daily report ticket snapsho modal, its not config first
+- [x] Notes in daily report ticket snapsho modal, its not config first
 - [x] Bugs in durations tickets calculations, the hours not calculate, its calcutate minuiete only.
 
 ## Unfinished Features
@@ -58,7 +58,7 @@
 - [x] Paginate in monthly reports
 - [x] Dashboard Total ticket, task, ect
 - [x] Daily Report Show detail add the column in daily report ticket snapshot and refix the store func, ticketSnapshot, ect. "NEED MORE TESTING IN THE FUTURE"
-- [ ] Add edit and delete in daily report before verif by admin.
+- [x] Add edit and delete in daily report before verif by admin.
 
 ## Other Notes
 

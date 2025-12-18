@@ -106,7 +106,7 @@ class DailyReportController extends Controller
     {
         $today = now()->toDateString();
 
-        // Warning if user try to create double reports
+        // if try to create double reports
         if (DailyReport::whereDate('report_date', $today)->exists()) {
             return redirect()->route('reports.daily')->with('warning', 'Daily report hari ini sudah dibuat.');
         }
@@ -293,6 +293,7 @@ class DailyReportController extends Controller
     {
         $snapshort = $report->ticketSnapshots()
             ->where('ticket_id', $ticket->id)
+            ->with(['ticket.notes.user'])
             ->firstOrFail();
 
         return response()->json([
@@ -313,8 +314,229 @@ class DailyReportController extends Controller
             'waiting_duration' => $snapshort->waiting_duration,
             'progress_duration' => $snapshort->progress_duration,
             'total_duration' => $snapshort->total_duration,
+
+            'notes' => $snapshort->ticket->notes->map(function ($note) {
+                return [
+                    'id' => $note->id,
+                    'note' => $note->note,
+                    'author' => $note->user?->name ?? '-',
+                    'created_at' => $note->created_at
+                        ->setTimezone('Asia/Makassar')
+                        ->translatedFormat('d m Y, H:i') . ' WITA',
+                ];
+            }),
         ]);
     }
+
+    //edit
+    public function edit(DailyReport $report)
+    {
+        $user = Auth::user();
+
+        // Block if verified
+        if ($report->verified_at) {
+            abort(403, 'Laporan sudah diverifikasi dan tidak bisa diedit.');
+        }
+
+        // Block if not owner
+        if ($report->user_id !== $user->id) {
+            abort(403, 'Anda tidak berhak mengedit laporan ini.');
+        }
+
+        $today = $report->report_date->toDateString();
+
+        // Same data source as create()
+        $tasksCompletedToday = Task::whereHas('completions', function ($q) use ($user, $today) {
+            $q->where('user_id', $user->id)->whereDate('created_at', $today);
+        })->orderBy('title')->get();
+
+        $ticketsClosedToday = Ticket::where('status', 'Closed')
+            ->whereDate('solved_at', $today)
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        $ticketsActiveToday = Ticket::whereIn('status', ['Open', 'In Progress'])
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        return view('frontend.Report.edit', compact(
+            'report',
+            'tasksCompletedToday',
+            'ticketsClosedToday',
+            'ticketsActiveToday'
+        ));
+    }
+
+    //update
+    public function update(Request $request, DailyReport $report)
+    {
+        $user = Auth::user();
+
+        if ($report->verified_at) {
+            abort(403);
+        }
+
+        if ($report->user_id !== $user->id) {
+            abort(403);
+        }
+
+        $request->validate([
+            'content' => 'required|string',
+            'task_ids' => 'array|nullable',
+            'ticket_ids' => 'array|nullable',
+        ]);
+
+        $oldData = [
+            'content' => $report->content,
+            'task_ids' => $report->tasks()->pluck('tasks.id')->toArray(),
+            'ticket_ids' => $report->tickets()->pluck('tickets.id')->toArray(),
+            'snapshots' => $report->ticketSnapshots()->get()->toArray(),
+        ];
+
+        // Update content
+        $report->update([
+            'content' => $request->content,
+        ]);
+
+        // Sync tasks
+        $report->tasks()->sync($request->task_ids ?? []);
+
+        // Sync tickets
+        $report->tickets()->sync($request->ticket_ids ?? []);
+
+        //delete snapshot first
+        $report->ticketSnapshots()->delete();
+
+        // Rebuild snapshots
+        // $tickets = Ticket::whereIn('id', $request->ticket_ids ?? [])->get();
+        //
+        // foreach ($tickets as $ticket) {
+        //     $report->ticketSnapshots()->create([
+        //         'ticket_id' => $ticket->id,
+        //         'title' => $ticket->title,
+        //         'status' => $ticket->status,
+        //         'priority' => $ticket->priority,
+        //         'created_by' => $ticket->user_id,
+        //         'created_by_name' => $ticket->user?->name,
+        //         'ticket_created_at' => $ticket->created_at,
+        //         'waiting_duration' => $ticket->waiting_duration_human,
+        //         'progress_duration' => $ticket->progress_duration_human,
+        //         'total_duration' => $ticket->total_duration_human,
+        //     ]);
+        // }
+
+        $ticketsToSnapshot = Ticket::with(['solver', 'user'])
+            ->leftJoin('ticket_categories', 'tickets.category_id', '=', 'ticket_categories.id')
+            ->leftJoin('ticket_locations', 'tickets.location_id', '=', 'ticket_locations.id')
+            ->select(
+                'tickets.*',
+                'ticket_categories.name as category_name',
+                'ticket_locations.name as location_name'
+            )
+            ->whereIn('tickets.id', $request->ticket_ids ?? [])
+            ->get();
+
+        foreach ($ticketsToSnapshot as $ticket) {
+            $report->ticketSnapshots()->create([
+                'ticket_id' => $ticket->id,
+                'title' => $ticket->title,
+                'description' => $ticket->description,
+                'status' => $ticket->status,
+                'priority' => $ticket->priority,
+                'solution' => $ticket->solution,
+
+                'solved_by' => $ticket->solved_by,
+                'solved_by_name' => $ticket->solver?->name,
+
+                'category_id' => $ticket->category_id,
+                'category_name' => $ticket->category_name,
+
+                'location_id' => $ticket->location_id,
+                'location_name' => $ticket->location_name,
+
+                'created_by' => $ticket->user_id,
+                'created_by_name' => $ticket->user?->name,
+
+                'ticket_created_at' => $ticket->created_at,
+                'ticket_started_at' => $ticket->started_at,
+                'ticket_solved_at' => $ticket->solved_at,
+
+                'waiting_duration' => $ticket->waiting_duration_human,
+                'progress_duration' => $ticket->progress_duration_human,
+                'total_duration' => $ticket->total_duration_human,
+            ]);
+        }
+
+        $newData = [
+            'content' => $report->fresh()->content,
+            'task_ids' => $report->tasks()->pluck('tasks.id')->toArray(),
+            'ticket_ids' => $report->tickets()->pluck('tickets.id')->toArray(),
+            'snapshots' => $report->ticketSnapshots()->get()->toArray(),
+        ];
+
+        // logActivity::add('daily_report', 'updated', $report, 'Laporan harian diperbarui');
+        logActivity::add(
+            'daily_report',
+            'updated',
+            $report,
+            'Laporan harian diperbarui',
+            [
+                'old' => $oldData,
+                'new' => $newData,
+                'updated_by' => $user->name,
+                'updated_at_wita' => now()->setTimezone('Asia/Makassar')->toDateTimeString(),
+            ]
+        );
+
+        return redirect()
+            ->route('reports.daily', $report)
+            ->with('success', 'Laporan berhasil diperbarui.');
+    }
+
+    //delete
+    public function destroy(DailyReport $report)
+    {
+        $user = Auth::user();
+
+        if ($report->verified_at) {
+            abort(403);
+        }
+
+        if ($report->user_id !== $user->id) {
+            abort(403);
+        }
+
+        $oldData = [
+            'report' => $report->toArray(),
+            'tasks' => $report->tasks()->pluck('tasks.id')->toArray(),
+            'tickets' => $report->tickets()->pluck('tickets.id')->toArray(),
+            'snapshots' => $report->ticketSnapshots()->get()->toArray(),
+        ];
+
+        $report->ticketSnapshots()->delete();
+        $report->tasks()->detach();
+        $report->tickets()->detach();
+        $report->delete();
+
+        // logActivity::add('daily_report', 'deleted', $report, 'Laporan harian dihapus');
+        logActivity::add(
+            'daily_report',
+            'deleted',
+            $report,
+            'Laporan harian dihapus',
+            [
+                'old' => $oldData,
+                'new' => null,
+                'deleted_by' => $user->name,
+                'deleted_at_wita' => now()->setTimezone('Asia/Makassar')->toDateTimeString(),
+            ]
+        );
+
+        return redirect()
+            ->route('reports.daily')
+            ->with('success', 'Laporan berhasil dihapus.');
+    }
+
 
     public function verify($id)
     {

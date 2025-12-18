@@ -14,7 +14,7 @@
                     Welcome, <span class="text-teal-600">{{ auth()->user()->name }}</span> 👋
                 </h1>
                 <p class="text-gray-500 mt-2 text-lg">
-                    Pantau status laporanmu & laporkan masalah baru kapan pun.
+                    Cek laporanmu di sini, atau laporkan masalah baru kapan saja.
                 </p>
             </div>
 
@@ -64,26 +64,26 @@
 
                     {{-- Total Tiket Dibuat --}}
                     <div class="p-4 bg-gray-50 rounded-xl border hover:bg-gray-100 transition">
-                        <p class="text-gray-500 text-sm">Total Pelaporan yang Dibuat</p>
+                        <p class="text-gray-500 text-sm">Total Pelaporan yang Sudah Dibuat</p>
                         <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ $userTickets->count() }}</h3>
                     </div>
 
                     {{-- Total Tiket Selesai --}}
                     <div class="p-4 bg-gray-50 rounded-xl border hover:bg-gray-100 transition">
-                        <p class="text-gray-500 text-sm">Masalah Selesai</p>
+                        <p class="text-gray-500 text-sm">Masalah yang Sudah Selesai</p>
                         <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ $closedTicketsCount }}</h3>
                     </div>
 
                     {{-- Rata-rata penyelesaian --}}
                     <div class="p-4 bg-gray-50 rounded-xl border hover:bg-gray-100 transition">
-                        <p class="text-gray-500 text-sm">Rata-rata Penyelesaian</p>
+                        <p class="text-gray-500 text-sm">Rata-rata Waktu Penyelesaian</p>
 
                         @php
                             $avg = $userTickets
                                 ->where('status', 'Closed')
                                 ->avg('duration');
 
-                            $avgFormatted = $avg ? round($avg, 2) . ' hrs' : 'N/A';
+                            $avgFormatted = $avg ? round($avg, 2) . ' jam' : 'N/A';
                         @endphp
 
                         <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ $avgFormatted }}</h3>
@@ -95,9 +95,10 @@
             {{-- RECENT TICKETS --}}
             <div class="bg-white rounded-2xl shadow p-4 mb-8">
                 <div class="flex justify-between items-center mb-5">
-                    <h3 class="text-lg font-semibold text-gray-800">Ticket Terakhir</h3>
+                    <h3 class="text-lg font-semibold text-gray-800">Pelaporan Terakhir</h3>
                     <a href="{{ route('tickets.index') }}"
-                        class="text-teal-600 text-sm hover:underline">View all</a>
+                        class="text-teal-600 text-sm hover:underline"> Lihat Semua →
+                    </a>
                 </div>
 
                 @forelse ($recentTickets as $ticket)
