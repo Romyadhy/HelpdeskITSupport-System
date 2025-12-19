@@ -37,7 +37,7 @@ class DashboardController extends Controller
                 ->get();
 
             $slaCategories = $slaData->map(fn($t) => $t->category->name ?? 'Unknown');
-            $slaDurations  = $slaData->map(fn($t) => round($t->avg_duration ?? 0, 2));
+            $slaDurations  = $slaData->map(fn($t) => round($t->avg_duration ?? 0));
 
             // Rata-rata SLA keseluruhan
             $avgSlaMinutes   = (int) round($slaDurations->avg() ?? 0);
@@ -99,7 +99,7 @@ class DashboardController extends Controller
                 ->get();
 
             $slaCategories = $slaData->map(fn($t) => $t->category->name ?? 'Unknown');
-            $slaDurations  = $slaData->map(fn($t) => round($t->avg_duration ?? 0, 2));
+            $slaDurations  = $slaData->map(fn($t) => round($t->avg_duration ?? 0));
 
             return view('frontend.Dashbord.menagerdashboard', compact(
                 'tickets',

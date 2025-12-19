@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\DateHelper;
 use App\Models\DailyReport;
 use App\Models\Task;
 use App\Models\Ticket;
@@ -15,42 +16,36 @@ use Carbon\CarbonInterval;
 
 class DailyReportController extends Controller
 {
+
     public function index()
     {
         $user = Auth::user();
-        $today = now()->toDateString();
 
-        //Check has report today
+        $today = DateHelper::todayWita();
+        [$startUtc, $endUtc] = DateHelper::todayWitaUtcRange();
+
+        // Check has report today (WITA-based)
         $hasReportToday = $user->hasRole('support')
             ? DailyReport::whereDate('report_date', $today)->exists()
             : false;
 
-        //Get latest report
         $dailyReports = DailyReport::with(['user', 'tasks', 'tickets', 'verifier'])
             ->latest()
             ->paginate(5);
 
-        // Total Laporan
-        $monthlyReportsCount = DailyReport::whereMonth('report_date', now()->month)
-            ->count();
+        $monthlyReportsCount = DailyReport::whereMonth('report_date', DateHelper::nowWita()->month)->count();
 
-        // Task done today
-        $tasksCompletedToday = Task::whereHas('completions', function ($q) use ($today) {
-            $q->whereDate('created_at', $today);
+        $tasksCompletedToday = Task::whereHas('completions', function ($q) use ($startUtc, $endUtc) {
+            $q->whereBetween('created_at', [$startUtc, $endUtc]);
         })->get();
 
-        // Tickets closeed per today
         $ticketsClosedToday = Ticket::where('status', 'Closed')
-            ->whereDate('solved_at', $today)
+            ->whereBetween('solved_at', [$startUtc, $endUtc])
             ->get();
 
-        // Tickets Open today
         $ticketsActiveToday = Ticket::whereIn('status', ['Open', 'In Progress'])
-            ->whereDate('updated_at', $today)
+            ->whereBetween('updated_at', [$startUtc, $endUtc])
             ->get();
-
-        $completedTasksCount = $tasksCompletedToday->count();
-        $handledTicketsCount = $ticketsClosedToday->count() + $ticketsActiveToday->count();
 
         return view('frontend.Report.daily', [
             'dailyReports' => $dailyReports,
@@ -59,34 +54,31 @@ class DailyReportController extends Controller
             'ticketsActiveToday' => $ticketsActiveToday,
             'hasReportToday' => $hasReportToday,
             'monthlyReportsCount' => $monthlyReportsCount,
-            'completedTasksCount' => $completedTasksCount,
-            'handledTicketsCount' => $handledTicketsCount,
+            'completedTasksCount' => $tasksCompletedToday->count(),
+            'handledTicketsCount' => $ticketsClosedToday->count() + $ticketsActiveToday->count(),
         ]);
     }
+
 
     public function create()
     {
         $user = Auth::user();
-        $today = now()->toDateString();
 
-        $dailyReports = DailyReport::with(['user', 'tasks', 'tickets', 'verifier'])
-            ->latest()
-            ->get();
+        $today = DateHelper::todayWita();
+        [$startUtc, $endUtc] = DateHelper::todayWitaUtcRange();
 
-        $existing = DailyReport::whereDate('report_date', $today)->first();
-
-        if ($existing) {
-            return redirect()->route('reports.daily')->with('warning', 'Anda sudah membuat laporan hari ini.');
+        if (DailyReport::whereDate('report_date', $today)->exists()) {
+            return redirect()->route('reports.daily')
+                ->with('warning', 'Anda sudah membuat laporan hari ini.');
         }
 
-        $tasksCompletedToday = Task::whereHas('completions', function ($q) use ($user, $today) {
-            $q->whereDate('created_at', $today);
-        })
-            ->orderBy('title')
-            ->get();
+        $tasksCompletedToday = Task::whereHas('completions', function ($q) use ($user, $startUtc, $endUtc) {
+            $q->where('user_id', $user->id)
+                ->whereBetween('created_at', [$startUtc, $endUtc]);
+        })->orderBy('title')->get();
 
         $ticketsClosedToday = Ticket::where('status', 'Closed')
-            ->whereDate('solved_at', $today)
+            ->whereBetween('solved_at', [$startUtc, $endUtc])
             ->orderBy('updated_at', 'desc')
             ->get();
 
@@ -94,21 +86,33 @@ class DailyReportController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
 
-        return view('frontend.Report.create', [
-            'dailyReports ' => $dailyReports,
-            'tasksCompletedToday' => $tasksCompletedToday,
-            'ticketsClosedToday' => $ticketsClosedToday,
-            'ticketsActiveToday' => $ticketsActiveToday,
-        ]);
+        return view('frontend.Report.create', compact(
+            'tasksCompletedToday',
+            'ticketsClosedToday',
+            'ticketsActiveToday'
+        ));
     }
+
 
     public function store(Request $request)
     {
-        $today = now()->toDateString();
+        // $today = now()->toDateString();
+
+        $today = DateHelper::todayWita();
+        [$startUtc, $endUtc] = DateHelper::todayWitaUtcRange();
+        $user = Auth::user();
 
         // if try to create double reports
-        if (DailyReport::whereDate('report_date', $today)->exists()) {
-            return redirect()->route('reports.daily')->with('warning', 'Daily report hari ini sudah dibuat.');
+        // if (DailyReport::whereDate('report_date', $today)->exists()) {
+        //     return redirect()->route('reports.daily')->with('warning', 'Daily report hari ini sudah dibuat.');
+        // }
+        if (DailyReport::where('user_id', $user->id)
+            ->whereDate('report_date', $today)
+            ->exists()
+        ) {
+            return redirect()
+                ->route('reports.daily')
+                ->with('warning', 'Daily report hari ini sudah dibuat.');
         }
 
         $request->validate([
@@ -118,43 +122,39 @@ class DailyReportController extends Controller
         ]);
 
         $report = DailyReport::create([
-            'user_id' => Auth::id(),
-            'report_date' => now(),
-            'content' => $request->input('content'),
+            'user_id' => $user->id,
+            'report_date' => $today, // WITA date
+            'content' => $request->content,
         ]);
 
         // Auto sync jika kosong
         $taskIds = $request->input('task_ids', []);
         $ticketIds = $request->input('ticket_ids', []);
 
-        $today = now()->toDateString();
-        $user = Auth::user();
+        // $today = now()->toDateString();
+        // $user = Auth::user();
 
         if (empty($taskIds)) {
-            $taskIds = Task::whereHas('completions', function ($q) use ($user, $today) {
-                $q->where('user_id', $user->id)->whereDate('created_at', $today);
-            })
-                ->pluck('id')
-                ->all();
+            $taskIds = Task::whereHas('completions', function ($q) use ($user, $startUtc, $endUtc) {
+                $q->where('user_id', $user->id)
+                    ->whereBetween('created_at', [$startUtc, $endUtc]);
+            })->pluck('id')->all();
         }
 
         if (empty($ticketIds)) {
-            $idsClosed = Ticket::where('status', 'Closed')
-                ->whereDate('solved_at', $today)
-                ->pluck('id');
-
-            $idsActive = Ticket::whereIn('status', ['Open', 'In Progress'])
-                ->whereDate('updated_at', $today)
-                ->pluck('id');
-
-            $ticketIds = $idsClosed->merge($idsActive)->unique()->values()->all();
+            $ticketIds = Ticket::whereIn('status', ['Open', 'In Progress', 'Closed'])
+                ->whereBetween('updated_at', [$startUtc, $endUtc])
+                ->pluck('id')
+                ->unique()
+                ->values()
+                ->all();
         }
+        $report->tasks()->sync($taskIds);
+        $report->tickets()->sync($ticketIds);
 
         if (!empty($taskIds)) {
             $report->tasks()->attach($taskIds);
         }
-
-
 
         if (!empty($ticketIds)) {
             $report->tickets()->attach($ticketIds);
@@ -261,7 +261,7 @@ class DailyReportController extends Controller
 
         $text = "📝 <b>Laporan Harian </b>\n"
             . 'Oleh : ' . Auth::user()->name . "\n"
-            . 'Tanggal: ' . now()->format('d-m-Y') . "\n"
+            . 'Tanggal: ' . DateHelper::nowWita()->format('d-m-Y') . "\n"
             . "Ringkasan:\n"
             . substr($report->content, 0, 200) . ' ...';
 
@@ -270,7 +270,8 @@ class DailyReportController extends Controller
         // Log
         logActivity::add('daily_report', 'created', $report, 'Laporan harian dibuat', [
             'new' => $report->toArray(),
-            'created_at_wita' => now()->setTimezone('Asia/Makassar')->toDateTimeString(),
+            // 'created_at_wita' => now()->setTimezone('Asia/Makassar')->toDateTimeString(),
+            'created_at_wita' => DateHelper::nowWita()->toDateTimeString(),
         ]);
 
         return redirect()->route('reports.daily')->with('success', 'Laporan harian berhasil dikirim.');
