@@ -28,6 +28,7 @@
 - [x] Notes in daily report ticket snapsho modal, its not config first
 - [x] Bugs in durations tickets calculations, the hours not calculate, its calcutate minuiete only.
 - [ ] Datetime didn't setup into WITA using own helper yet (there's missmatchs between this).
+- [x] User can set priority on tickets, before confrim by admin.
 
 ## Unfinished Features
 

@@ -199,6 +199,7 @@
                                 <th class="px-6 py-3 text-left font-semibold">Subject</th>
                                 <th class="px-6 py-3 text-left font-semibold hidden md:table-cell">User</th>
                                 <th class="px-6 py-3 text-left font-semibold">Status</th>
+                                {{-- <th class="px-6 py-3 text-left font-semibold">Request Prioritas</th> --}}
                                 <th class="px-6 py-3 text-left font-semibold">Prioritas</th>
                                 <th class="px-6 py-3 text-left font-semibold">Aksi</th>
                             </tr>
@@ -240,6 +241,12 @@
                                         {{ $ticket->status }}
                                     </span>
                                 </td>
+
+                                {{-- <td class="py-4 px-6"> --}}
+                                {{--     <span class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700"> --}}
+                                {{--        {{ $ticket->request_priority ?? '-' }} --}}
+                                {{--     </span> --}}
+                                {{-- </td> --}}
 
                                 {{-- Priority --}}
                                 <td class="px-6 py-4">
@@ -624,6 +631,20 @@
                                     <x-location-options :locations="$locations" />
                                 </select>
                             </div>
+
+                            {{-- Request Priority --}}
+                            <div class="mb-4">
+                                <label for="create-priority" class="block text-sm font-medium text-gray-700">Request Priority</label>
+
+                                <select x-model="createFormData.priority"
+                                        id="create-priority"
+                                        class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500" required>
+                                    <option value="">-- Select Priority --</option>
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
@@ -884,7 +905,7 @@
                                         </span>
                                     </div>
 
-                                    <!-- ✅ Informasi Durasi (Menyatu di Grid) -->
+                                    <!-- Grid informations -->
                                     <div class="border border-gray-200 rounded-lg p-3 bg-white shadow-sm">
                                         <div class="flex items-center justify-between mb-2">
                                             <h5 class="text-sm font-semibold text-gray-600 flex items-center gap-2">
@@ -1009,7 +1030,8 @@
                     title: '',
                     description: '',
                     category_id: '',
-                    location_id: ''
+                    location_id: '',
+                    priority: ''
                 },
 
                 editFormData: {

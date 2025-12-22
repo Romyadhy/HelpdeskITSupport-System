@@ -83,13 +83,14 @@ class TicketController extends Controller
                 'description' => 'required|string',
                 'category_id' => 'required|exists:ticket_categories,id',
                 'location_id' => 'required|exists:ticket_locations,id',
+                'priority' => 'required|in:Low,Medium,High',
             ]);
 
             $ticket = Ticket::create([
                 'user_id' => auth()->id(),
                 'title' => $validated['title'],
                 'description' => $validated['description'],
-                'priority' => null,
+                'priority' => $validated['priority'],
                 'category_id' => $validated['category_id'],
                 'location_id' => $validated['location_id'],
                 'status' => 'Open',
@@ -108,7 +109,13 @@ class TicketController extends Controller
             $ticket->load(['category', 'location']);
             $telegram = app(TelegramService::class);
 
-            $message = "📩 <b>Ticket Baru Masuk</b>\n" . "Judul     : {$ticket->title}\n" . "Prioritas : Belum ditentukan\n" . "Kategori  : {$ticket->category->name}\n" . "Lokasi    : {$ticket->location->name}\n" . 'Dari      : ' . auth()->user()->name . "\n\n" . '⚠️ Silakan admin menentukan prioritas ticket ini.';
+            $message = "📩 <b>Ticket Baru Masuk</b>\n" .
+                "Judul     : {$ticket->title}\n" .
+                "Prioritas Saat ini : {$ticket->priority}\n" .
+                "Kategori  : {$ticket->category->name}\n" .
+                "Lokasi    : {$ticket->location->name}\n" .
+                'Dari      : ' . auth()->user()->name . "\n\n" .
+                '⚠️ Silakan admin menentukan prioritas untuk ticket ini.';
 
             $telegram->sendMessage($message);
 
@@ -263,14 +270,14 @@ class TicketController extends Controller
                 'waiting_duration' => $waitingDuration,
                 'progress_duration' => $progressDuration,
                 'total_duration' => $totalDuration,
-                
+
                 'category' => $categoryName,
                 'location' => $locationName,
                 'user' => $ticket->user->name,
                 'assigned_to' => $ticket->assignee ? $ticket->assignee->name : null,
                 'closed_by' => $ticket->solver ? $ticket->solver->name : null,
                 'solution' => $ticket->solution,
-                
+
                 'notes' => $ticket->notes->map(function ($note) {
                     return [
                         'id' => $note->id,
@@ -554,7 +561,8 @@ class TicketController extends Controller
     }
 
 
-    public function storeNote(Request $request, Ticket $ticket){
+    public function storeNote(Request $request, Ticket $ticket)
+    {
         $user = Auth::user();
 
         // Hanya admin (atau role yang punya ability ini) yang boleh tambah note

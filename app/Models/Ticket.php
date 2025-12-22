@@ -13,7 +13,24 @@ class Ticket extends Model
     use HasFactory;
     // use LogsActivity;
 
-    protected $fillable = ['title', 'description', 'status', 'priority', 'user_id', 'solution', 'solved_by', 'started_at', 'solved_at', 'assigned_to', 'duration', 'category_id', 'location_id', 'is_escalation', 'escalated_at'];
+    protected $fillable = [
+        'title',
+        'description',
+        'status',
+        'priority',
+        'request_priority',
+        'user_id',
+        'solution',
+        'solved_by',
+        'started_at',
+        'solved_at',
+        'assigned_to',
+        'duration',
+        'category_id',
+        'location_id',
+        'is_escalation',
+        'escalated_at'
+    ];
 
     protected $casts = [
         'started_at' => 'datetime',
