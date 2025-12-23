@@ -997,7 +997,13 @@
                                     <i class="fas fa-tools mr-2"></i> Solusi dari Masalah
                                 </h5>
                                 <p class="text-gray-700 leading-relaxed"
-                                    x-text="showData.solution || 'Belum ada solusi yang tercatat.'"></p>
+                                    x-text="showData.solution || 'Belum ada solusi yang tercatat.'">
+                                </p>
+                                <template x-if="showData.solution_image_url">
+                                    <img :src="showData.solution_image_url"
+                                    class="rounded-lg max-h-60 cursor-pointer shadow"
+                                    @click="window.open(showData.solution_image_url, '_blank')">
+                                </template>
                             </div>
 
                             <!-- Assigned To -->
@@ -1387,34 +1393,60 @@
                     const actionUrl = button.dataset.action;
                     Swal.fire({
                         title: 'Finish Ticket',
-                        text: 'Please describe your solution before closing.',
-                        input: 'textarea',
-                        inputPlaceholder: 'Enter solution here...',
+                        html: `
+                            <textarea id="solution" class="swal2-textarea" placeholder="Enter solution..."></textarea>
+                            <input type="file" id="solution_image" class="swal2-file" accept="image/*">
+                        `,
+                        // text: 'Please describe your solution before closing.',
+                        // input: 'textarea',
+                        // inputPlaceholder: 'Enter solution here...',
                         showCancelButton: true,
                         confirmButtonText: 'Submit Solution',
                         confirmButtonColor: '#16a34a',
                         cancelButtonColor: '#6b7280',
-                        preConfirm: value => {
-                            if (!value.trim()) Swal.showValidationMessage(
-                                'Solution is required!');
-                            return value;
+                        preConfirm: () => {
+                            const solution = document.getElementById('solution').value;
+                            const image = document.getElementById('solution_image').files[0];
+
+                            if(!solution.trim()){
+                                Swal.showValidationMessage('Solution is required');
+                            }
+
+                            const formData = new FormData();
+                            formData.append('_token', '{{ csrf_token() }}');
+                            formData.append('solution', solution);
+                            if (image) formData.append('solution_image', image);
+
+                            return fetch(actionUrl, {
+                                method: 'POST',
+                                body: formData
+                            });
+
                         }
                     }).then(result => {
+                        // if (result.isConfirmed) {
+                        //     const form = document.createElement('form');
+                        //     form.method = 'POST';
+                        //     form.action = actionUrl;
+                        //     const token = document.createElement('input');
+                        //     token.type = 'hidden';
+                        //     token.name = '_token';
+                        //     token.value = '{{ csrf_token() }}';
+                        //     const solution = document.createElement('input');
+                        //     solution.type = 'hidden';
+                        //     solution.name = 'solution';
+                        //     solution.value = result.value;
+                        //     form.append(token, solution);
+                        //     document.body.append(form);
+                        //     form.submit();
+                        // }
                         if (result.isConfirmed) {
-                            const form = document.createElement('form');
-                            form.method = 'POST';
-                            form.action = actionUrl;
-                            const token = document.createElement('input');
-                            token.type = 'hidden';
-                            token.name = '_token';
-                            token.value = '{{ csrf_token() }}';
-                            const solution = document.createElement('input');
-                            solution.type = 'hidden';
-                            solution.name = 'solution';
-                            solution.value = result.value;
-                            form.append(token, solution);
-                            document.body.append(form);
-                            form.submit();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Ticket Closed',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => window.location.reload());
                         }
                     });
                 });

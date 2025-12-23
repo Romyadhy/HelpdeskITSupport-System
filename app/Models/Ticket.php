@@ -21,6 +21,7 @@ class Ticket extends Model
         'request_priority',
         'user_id',
         'solution',
+        'solution_image',
         'solved_by',
         'started_at',
         'solved_at',
@@ -39,23 +40,13 @@ class Ticket extends Model
         'is_escalation' => 'boolean',
     ];
 
-    // public function getDurationHumanAttribute(): string
-    // {
-    //     if (is_null($this->duration) || $this->duration < 0) {
-    //         return '-';
-    //     }
-    //     $ci = CarbonInterval::minutes($this->duration)->cascade();
-    //     $parts = [];
-    //     if ($ci->d) {
-    //         $parts[] = $ci->d . 'd';
-    //     }
-    //     if ($ci->h) {
-    //         $parts[] = $ci->h . 'h';
-    //     }
-    //     $parts[] = ($ci->i ?: 0) . 'm';
+    protected $appends = ['solution_image_url'];
 
-    //     return implode(' ', $parts);
-    // }
+    //image slutions
+    public function getSolutionImageUrlAttribute()
+    {
+        return $this->solution_image ? asset('storage/ticket-solutions/' . $this->solution_image) : null;
+    }
 
     //durasi ticket di buka dan di kerjakan
     public function getWaitingDurationHumanAttribute()

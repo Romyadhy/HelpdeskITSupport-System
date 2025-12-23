@@ -277,6 +277,7 @@ class TicketController extends Controller
                 'assigned_to' => $ticket->assignee ? $ticket->assignee->name : null,
                 'closed_by' => $ticket->solver ? $ticket->solver->name : null,
                 'solution' => $ticket->solution,
+                'solution_image_url' => $ticket->solution_image_url,
 
                 'notes' => $ticket->notes->map(function ($note) {
                     return [
@@ -381,13 +382,26 @@ class TicketController extends Controller
 
         $data = $request->validate([
             'solution' => 'required|string|min:1',
+            'solution_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
+
+        $imageName = null;
+
+        if ($request->hasFile('solution_image')) {
+            $imageName = uniqid() . '.' . $request->solution_image->extension();
+            $request->solution_image->storedAs(
+                'ticket-solution',
+                $imageName,
+                'public'
+            );
+        }
 
         $start = $ticket->started_at ?: $ticket->created_at;
         $duration = $start->diffInMinutes(now());
 
         $ticket->update([
             'solution' => $data['solution'],
+            'solution_image' => $imageName,
             'status' => 'Closed',
             'solved_by' => auth()->id(),
             'solved_at' => now(),
