@@ -45,7 +45,7 @@ class Ticket extends Model
     //image slutions
     public function getSolutionImageUrlAttribute()
     {
-        return $this->solution_image ? asset('storage/ticket-solutions/' . $this->solution_image) : null;
+        return $this->solution_image ? asset('storage/ticket-solution/' . $this->solution_image) : null;
     }
 
     //durasi ticket di buka dan di kerjakan

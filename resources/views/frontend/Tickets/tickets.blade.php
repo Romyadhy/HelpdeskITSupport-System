@@ -243,9 +243,9 @@
                                 </td>
 
                                 {{-- <td class="py-4 px-6"> --}}
-                                {{--     <span class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700"> --}}
-                                {{--        {{ $ticket->request_priority ?? '-' }} --}}
-                                {{--     </span> --}}
+                                {{-- <span class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700"> --}}
+                                {{-- {{ $ticket->request_priority ?? '-' }} --}}
+                                {{-- </span> --}}
                                 {{-- </td> --}}
 
                                 {{-- Priority --}}
@@ -259,7 +259,7 @@
                                                     isUpdating: false,
                                                     async updatePriority(ticketId, newPriority) {
                                                         if (newPriority === this.previousPriority) return;
-
+                                                
                                                         const priorityLabels = {
                                                             'High': 'Tinggi',
                                                             'Medium': 'Sedang',
@@ -267,7 +267,7 @@
                                                             '': 'Tidak Ada'
                                                         };
                                                         const displayPriority = priorityLabels[newPriority] || newPriority || 'Tidak Ada';
-
+                                                
                                                         const result = await Swal.fire({
                                                             title: 'Konfirmasi Perubahan Prioritas',
                                                             html: `Apakah Anda yakin ingin mengubah prioritas menjadi <strong>${displayPriority}</strong>?`,
@@ -290,13 +290,13 @@
                                                                         },
                                                                         body: JSON.stringify({ priority: newPriority })
                                                                     });
-
+                                                
                                                                     const data = await response.json();
-
+                                                
                                                                     if (!response.ok) {
                                                                         throw new Error(data.message || 'Gagal mengubah prioritas.');
                                                                     }
-
+                                                
                                                                     return data;
                                                                 } catch (error) {
                                                                     Swal.showValidationMessage(error.message || 'Terjadi kesalahan.');
@@ -304,7 +304,7 @@
                                                                 }
                                                             }
                                                         });
-
+                                                
                                                         if (result.isConfirmed) {
                                                             this.previousPriority = newPriority;
                                                             Swal.fire({
@@ -409,9 +409,9 @@
                                     @elseif($ticket->status === 'In Progress' && $ticket->assigned_to === auth()->id())
                                     {{-- Close Ticket --}}
                                     @can('close-ticket')
-                                    <button type="button" title="Close Ticket"
-                                        class="close-ticket-btn text-gray-400 hover:text-green-600 p-2 rounded-lg transition"
-                                        data-action="{{ route('tickets.close', $ticket->id) }}">
+                                    <button type="button" title="Finish Ticket"
+                                        @click="openFinishModal({{ $ticket->id }})"
+                                        class="text-gray-400 hover:text-green-600 p-2 rounded-lg transition">
                                         <i class="fas fa-check mr-1"></i>
                                     </button>
                                     @endcan
@@ -634,11 +634,12 @@
 
                             {{-- Request Priority --}}
                             <div class="mb-4">
-                                <label for="create-priority" class="block text-sm font-medium text-gray-700">Request Priority</label>
+                                <label for="create-priority" class="block text-sm font-medium text-gray-700">Request
+                                    Priority</label>
 
-                                <select x-model="createFormData.priority"
-                                        id="create-priority"
-                                        class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500" required>
+                                <select x-model="createFormData.priority" id="create-priority"
+                                    class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                                    required>
                                     <option value="">-- Select Priority --</option>
                                     <option value="Low">Low</option>
                                     <option value="Medium">Medium</option>
@@ -770,16 +771,138 @@
             </div>
         </div>
 
+
+        <!-- Finish Ticket Modal -->
+        <div x-show="showFinishModal" x-cloak x-transition.opacity class="fixed inset-0 z-50"
+            @keydown.escape.window="closeFinishModal()">
+            <!-- Backdrop (click outside closes) -->
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="closeFinishModal()"></div>
+
+            <!-- Modal Wrapper -->
+            <div class="relative flex min-h-screen items-center justify-center p-4 sm:p-6">
+                <!-- Modal Card -->
+                <div class="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl border border-gray-200 overflow-hidden"
+                    @click.stop>
+                    <!-- Header -->
+                    <div class="px-6 py-4 border-b flex items-start justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Finish Ticket</h3>
+                            <p class="text-sm text-gray-500">
+                                Dokumentasikan solusi sebelum menutup ticket
+                            </p>
+                        </div>
+
+                        <button type="button" @click="closeFinishModal()"
+                            class="shrink-0 rounded-lg p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition"
+                            aria-label="Close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <!-- Body (scrollable area) -->
+                    <form @submit.prevent="submitFinishTicket()" class="flex flex-col">
+                        <div class="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
+                            <!-- Solution Text -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                                    Solusi
+                                </label>
+                                <textarea x-model="finishForm.solution" rows="5"
+                                    placeholder="Jelaskan langkah penyelesaian masalah secara jelas dan singkat..."
+                                    class="w-full rounded-xl border-gray-300 shadow-sm
+                                        focus:border-teal-500 focus:ring-2 focus:ring-teal-500
+                                        resize-none"
+                                    required></textarea>
+                            </div>
+
+                            <!-- Image Upload -->
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-sm font-semibold text-gray-700">
+                                        Lampiran (Opsional)
+                                    </label>
+
+                                    <!-- Replace button (only if preview exists) -->
+                                    <button type="button" x-show="finishForm.preview" @click="triggerFilePicker()"
+                                        class="text-xs font-semibold text-teal-600 hover:text-teal-700 underline">
+                                        Replace
+                                    </button>
+                                </div>
+
+                                <!-- Upload box (hidden when preview exists) -->
+                                <div x-show="!finishForm.preview">
+                                    <label
+                                        class="flex flex-col items-center justify-center
+                                            border-2 border-dashed border-gray-300
+                                            rounded-xl p-6 cursor-pointer
+                                            hover:border-teal-500 transition">
+                                        <i class="fas fa-image text-3xl text-gray-400 mb-2"></i>
+                                        <span class="text-sm text-gray-500">
+                                            Klik untuk upload gambar solusi
+                                        </span>
+
+                                        <input x-ref="finishFile" type="file" class="hidden" accept="image/*"
+                                            @change="previewImage">
+                                    </label>
+                                </div>
+
+                                <!-- Preview block -->
+                                <div x-show="finishForm.preview" class="mt-4">
+                                    <div class="relative w-full overflow-hidden rounded-xl border bg-gray-50">
+                                        <!-- Remove (X) -->
+                                        <button type="button" @click="clearImage()"
+                                            class="absolute top-2 right-2 z-10 rounded-full bg-white/90 p-2 shadow hover:bg-white transition"
+                                            aria-label="Remove image">
+                                            <i class="fas fa-times text-gray-700"></i>
+                                        </button>
+
+                                        <!-- Image -->
+                                        <img :src="finishForm.preview" alt="Preview"
+                                            class="block w-full max-h-[320px] object-contain">
+
+                                        <!-- Click to open full -->
+                                        <button type="button"
+                                            class="w-full text-center py-2 text-xs text-gray-500 hover:text-gray-700 border-t bg-white"
+                                            @click="window.open(finishForm.preview, '_blank')">
+                                            Click to open full image
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden file input for replacing -->
+                                    <input x-ref="finishFileReplace" type="file" class="hidden" accept="image/*"
+                                        @change="previewImage">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer (sticky-ish, always visible) -->
+                        <div class="px-6 py-4 border-t bg-white flex justify-end gap-3">
+                            <button type="button" @click="closeFinishModal()"
+                                class="px-4 py-2 rounded-xl border border-gray-300
+                                    text-gray-700 hover:bg-gray-100 transition">
+                                Cancel
+                            </button>
+
+                            <button type="submit"
+                                class="px-5 py-2 rounded-xl bg-teal-600 text-white
+                                    font-semibold hover:bg-teal-700 shadow transition">
+                                Submit & Close Ticket
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         {{-- Show Ticket Modal (Detail View) --}}
-        <div x-show="showShowModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" role="dialog"
-            aria-modal="true">
+        <div x-show="showShowModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <!-- Background overlay -->
                 <div x-show="showShowModal" x-transition:enter="ease-out duration-300"
                     x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                     x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100"
-                    x-transition:leave-end="opacity-0"
-                    class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeModals()"></div>
+                    x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                    @click="closeModals()"></div>
 
                 <!-- Modal panel -->
                 <div x-show="showShowModal" x-transition:enter="ease-out duration-300"
@@ -820,10 +943,10 @@
                                 </h4>
                                 <span class="mt-2 md:mt-0 px-4 py-1.5 text-sm font-semibold rounded-full shadow-sm"
                                     :class="{
-                                        'bg-blue-100 text-blue-800': showData.status === 'Open',
-                                        'bg-yellow-100 text-yellow-800': showData.status === 'In Progress',
-                                        'bg-green-100 text-green-800': showData.status === 'Closed',
-                                    }"
+                                    'bg-blue-100 text-blue-800': showData.status === 'Open',
+                                    'bg-yellow-100 text-yellow-800': showData.status === 'In Progress',
+                                    'bg-green-100 text-green-800': showData.status === 'Closed',
+                                }"
                                     x-text="showData.status"></span>
                             </div>
 
@@ -841,8 +964,7 @@
                                 <!-- Left Column -->
                                 <div class="space-y-3">
 
-                                    <div
-                                        class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                    <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
                                         <i class="fas fa-layer-group text-teal-500 w-5"></i>
                                         <div>
                                             <p class="text-xs text-gray-500">Category</p>
@@ -851,8 +973,7 @@
                                         </div>
                                     </div>
 
-                                    <div
-                                        class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                    <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
                                         <i class="fas fa-map-marker-alt text-teal-500 w-5"></i>
                                         <div>
                                             <p class="text-xs text-gray-500">Location</p>
@@ -861,13 +982,12 @@
                                         </div>
                                     </div>
 
-                                    <div
-                                        class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                    <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
                                         <i class="fas fa-user text-teal-500 w-5"></i>
                                         <div>
                                             <p class="text-xs text-gray-500">Created By</p>
-                                            <p class="font-semibold text-gray-800"
-                                                x-text="showData.user || 'Unknown'"></p>
+                                            <p class="font-semibold text-gray-800" x-text="showData.user || 'Unknown'">
+                                            </p>
                                         </div>
                                     </div>
 
@@ -876,8 +996,7 @@
                                 <!-- Right Column -->
                                 <div class="space-y-3">
 
-                                    <div
-                                        class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                    <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
                                         <i class="fas fa-calendar text-teal-500 w-5"></i>
                                         <div>
                                             <p class="text-xs text-gray-500">Created At</p>
@@ -897,10 +1016,10 @@
 
                                         <span class="px-2 py-0.5 rounded text-xs font-medium"
                                             :class="{
-                                                'bg-yellow-100 text-yellow-800': showData.priority === 'Low',
-                                                'bg-orange-100 text-orange-800': showData.priority === 'Medium',
-                                                'bg-red-100 text-red-800': showData.priority === 'High'
-                                            }">
+                                            'bg-yellow-100 text-yellow-800': showData.priority === 'Low',
+                                            'bg-orange-100 text-orange-800': showData.priority === 'Medium',
+                                            'bg-red-100 text-red-800': showData.priority === 'High'
+                                        }">
                                             <span x-text="showData.priority"></span>
                                         </span>
                                     </div>
@@ -980,8 +1099,7 @@
                                                     <i class="fas fa-user-shield mr-1"></i>
                                                     <span x-text="note.author"></span>
                                                 </span>
-                                                <span class="text-[10px] text-gray-400"
-                                                    x-text="note.created_at"></span>
+                                                <span class="text-[10px] text-gray-400" x-text="note.created_at"></span>
                                             </div>
                                         </div>
                                     </template>
@@ -1001,8 +1119,8 @@
                                 </p>
                                 <template x-if="showData.solution_image_url">
                                     <img :src="showData.solution_image_url"
-                                    class="rounded-lg max-h-60 cursor-pointer shadow"
-                                    @click="window.open(showData.solution_image_url, '_blank')">
+                                        class="rounded-lg max-h-60 cursor-pointer shadow"
+                                        @click="window.open(showData.solution_image_url, '_blank')">
                                 </template>
                             </div>
 
@@ -1020,6 +1138,10 @@
             </div>
         </div>
     </div>
+    </div>
+
+
+    </div>
 
     {{-- Ticket Management Modals --}}
     <script>
@@ -1030,6 +1152,7 @@
                 showCreateModal: false,
                 showEditModal: false,
                 showShowModal: false,
+                showFinishModal: false,
 
                 // Form data
                 createFormData: {
@@ -1046,6 +1169,14 @@
                     description: '',
                     category_id: '',
                     location_id: ''
+                },
+
+
+                finishTicketId: null,
+                finishForm: {
+                    solution: '',
+                    image: null,
+                    preview: null
                 },
 
                 showData: {
@@ -1077,6 +1208,107 @@
                     };
                     this.errors = {};
                     this.showEditModal = true;
+                },
+
+                openFinishModal(ticketId) {
+                    this.finishTicketId = ticketId;
+
+                    // reset (and revoke old preview if exists)
+                    if (this.finishForm?.preview) {
+                        URL.revokeObjectURL(this.finishForm.preview);
+                    }
+
+                    this.finishForm = {
+                        solution: '',
+                        image: null,
+                        preview: null
+                    };
+                    this.showFinishModal = true;
+
+                    this.lockBodyScroll(true);
+                },
+
+                closeFinishModal() {
+                    // revoke preview to avoid memory leak
+                    if (this.finishForm?.preview) {
+                        URL.revokeObjectURL(this.finishForm.preview);
+                    }
+
+                    this.showFinishModal = false;
+                    this.lockBodyScroll(false);
+                },
+
+                previewImage(e) {
+                    const file = e.target.files && e.target.files[0];
+                    if (!file) return;
+
+                    if (!file.type.startsWith('image/')) {
+                        Swal.fire('Invalid File', 'Please select an image file.', 'warning');
+                        e.target.value = '';
+                        return;
+                    }
+
+                    if (this.finishForm.preview) {
+                        URL.revokeObjectURL(this.finishForm.preview);
+                    }
+
+                    this.finishForm.image = file;
+                    this.finishForm.preview = URL.createObjectURL(file);
+                    e.target.value = '';
+                },
+
+                clearImage() {
+                    if (this.finishForm.preview) {
+                        URL.revokeObjectURL(this.finishForm.preview);
+                    }
+
+                    this.finishForm.image = null;
+                    this.finishForm.preview = null;
+
+                    if (this.$refs.finishFile) this.$refs.finishFile.value = '';
+                    if (this.$refs.finishFileReplace) this.$refs.finishFileReplace.value = '';
+                },
+
+                triggerFilePicker() {
+                    if (this.finishForm.preview) {
+                        this.$refs.finishFileReplace?.click();
+                    } else {
+                        this.$refs.finishFile?.click();
+                    }
+                },
+
+                lockBodyScroll(isLocked) {
+                    document.body.style.overflow = isLocked ? 'hidden' : '';
+                },
+
+
+                async submitFinishTicket() {
+                    const formData = new FormData();
+                    formData.append('_token', '{{ csrf_token() }}');
+                    formData.append('solution', this.finishForm.solution);
+
+                    if (this.finishForm.image) {
+                        formData.append('solution_image', this.finishForm.image);
+                    }
+
+                    const response = await fetch(
+                        `/tickets/${this.finishTicketId}/close`, {
+                            method: 'POST',
+                            body: formData
+                        }
+                    );
+
+                    if (!response.ok) {
+                        Swal.fire('Error', 'Failed to close ticket', 'error');
+                        return;
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Ticket Closed',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => window.location.reload());
                 },
 
                 async openShowModal(ticketId) {
@@ -1386,71 +1618,83 @@
                 });
             });
 
-            // ✅ Close Ticket (solution input)
-            document.querySelectorAll('.close-ticket-btn').forEach(button => {
-                button.addEventListener('click', e => {
-                    e.preventDefault();
-                    const actionUrl = button.dataset.action;
-                    Swal.fire({
-                        title: 'Finish Ticket',
-                        html: `
-                            <textarea id="solution" class="swal2-textarea" placeholder="Enter solution..."></textarea>
-                            <input type="file" id="solution_image" class="swal2-file" accept="image/*">
-                        `,
-                        // text: 'Please describe your solution before closing.',
-                        // input: 'textarea',
-                        // inputPlaceholder: 'Enter solution here...',
-                        showCancelButton: true,
-                        confirmButtonText: 'Submit Solution',
-                        confirmButtonColor: '#16a34a',
-                        cancelButtonColor: '#6b7280',
-                        preConfirm: () => {
-                            const solution = document.getElementById('solution').value;
-                            const image = document.getElementById('solution_image').files[0];
-
-                            if(!solution.trim()){
-                                Swal.showValidationMessage('Solution is required');
-                            }
-
-                            const formData = new FormData();
-                            formData.append('_token', '{{ csrf_token() }}');
-                            formData.append('solution', solution);
-                            if (image) formData.append('solution_image', image);
-
-                            return fetch(actionUrl, {
-                                method: 'POST',
-                                body: formData
-                            });
-
-                        }
-                    }).then(result => {
-                        // if (result.isConfirmed) {
-                        //     const form = document.createElement('form');
-                        //     form.method = 'POST';
-                        //     form.action = actionUrl;
-                        //     const token = document.createElement('input');
-                        //     token.type = 'hidden';
-                        //     token.name = '_token';
-                        //     token.value = '{{ csrf_token() }}';
-                        //     const solution = document.createElement('input');
-                        //     solution.type = 'hidden';
-                        //     solution.name = 'solution';
-                        //     solution.value = result.value;
-                        //     form.append(token, solution);
-                        //     document.body.append(form);
-                        //     form.submit();
-                        // }
-                        if (result.isConfirmed) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Ticket Closed',
-                                timer: 1500,
-                                showConfirmButton: false
-                            }).then(() => window.location.reload());
-                        }
-                    });
-                });
-            });
+            //  Close Ticket (solution input)
+            // document.querySelectorAll('.close-ticket-btn').forEach(button => {
+            //     button.addEventListener('click', e => {
+            //         // const button = e.target.closest('.close-ticket-btn');
+            //         // if (!button) return;
+            //
+            //         e.preventDefault();
+            //
+            //         const actionUrl = button.dataset.action;
+            //
+            //         Swal.fire({
+            //             title: 'Finish Ticket',
+            //             html: `
+            //                 <textarea id="solution" class="swal2-textarea" placeholder="Enter solution..."></textarea>
+            //                 <input type="file" id="solution_image" class="swal2-file" accept="image/*">
+            //             `,
+            //             // text: 'Please describe your solution before closing.',
+            //             // input: 'textarea',
+            //             // inputPlaceholder: 'Enter solution here...',
+            //             showCancelButton: true,
+            //             confirmButtonText: 'Submit Solution',
+            //             confirmButtonColor: '#16a34a',
+            //             cancelButtonColor: '#6b7280',
+            //             preConfirm: () => {
+            //                 const solution = document.getElementById('solution').value;
+            //                 const image = document.getElementById('solution_image').files[0];
+            //
+            //                 if(!solution.trim()){
+            //                     Swal.showValidationMessage('Solution is required');
+            //                     return false;
+            //                 }
+            //
+            //                 const formData = new FormData();
+            //                 formData.append('_token', '{{ csrf_token() }}');
+            //                 formData.append('solution', solution);
+            //                 if (image) formData.append('solution_image', image);
+            //
+            //                 return fetch(actionUrl, {
+            //                     method: 'POST',
+            //                     body: formData
+            //                 });
+            //
+            //                 if(!response.ok){
+            //                     throw new Error('Failed to close ticket');
+            //                 }
+            //
+            //                 return response;
+            //
+            //             }
+            //         }).then(result => {
+            //             // if (result.isConfirmed) {
+            //             //     const form = document.createElement('form');
+            //             //     form.method = 'POST';
+            //             //     form.action = actionUrl;
+            //             //     const token = document.createElement('input');
+            //             //     token.type = 'hidden';
+            //             //     token.name = '_token';
+            //             //     token.value = '{{ csrf_token() }}';
+            //             //     const solution = document.createElement('input');
+            //             //     solution.type = 'hidden';
+            //             //     solution.name = 'solution';
+            //             //     solution.value = result.value;
+            //             //     form.append(token, solution);
+            //             //     document.body.append(form);
+            //             //     form.submit();
+            //             // }
+            //             if (result.isConfirmed) {
+            //                 Swal.fire({
+            //                     icon: 'success',
+            //                     title: 'Ticket Closed',
+            //                     timer: 1500,
+            //                     showConfirmButton: false
+            //                 }).then(() => window.location.reload());
+            //             }
+            //         });
+            //     });
+            // });
 
             // ⬆️ Escalate
             document.querySelectorAll('.escalate-ticket-btn').forEach(button => {

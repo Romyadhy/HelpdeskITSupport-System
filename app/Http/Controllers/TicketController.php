@@ -389,7 +389,7 @@ class TicketController extends Controller
 
         if ($request->hasFile('solution_image')) {
             $imageName = uniqid() . '.' . $request->solution_image->extension();
-            $request->solution_image->storedAs(
+            $request->solution_image->storeAs(
                 'ticket-solution',
                 $imageName,
                 'public'

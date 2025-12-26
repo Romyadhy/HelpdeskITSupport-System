@@ -29,6 +29,7 @@
 - [x] Bugs in durations tickets calculations, the hours not calculate, its calcutate minuiete only.
 - [ ] Datetime didn't setup into WITA using own helper yet (there's missmatchs between this).
 - [x] User can set priority on tickets, before confrim by admin.
+- [x] Bug in img solutions.
 
 ## Unfinished Features
 
@@ -61,6 +62,11 @@
 - [x] Dashboard Total ticket, task, ect
 - [x] Daily Report Show detail add the column in daily report ticket snapshot and refix the store func, ticketSnapshot, ect. "NEED MORE TESTING IN THE FUTURE"
 - [x] Add edit and delete in daily report before verif by admin.
+- [x] Add img solutions
+- [x] Add priority input by users and validated it by admin.
+- [ ] Add feature when user login they not set the locations again.
+- [ ] Paginate in daily reports
+- [ ] Add Divisions.
 
 ## Other Notes
 
