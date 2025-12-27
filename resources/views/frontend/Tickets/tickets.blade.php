@@ -1081,13 +1081,13 @@
                                     </template>
                                 </div>
 
-                                <!-- ✅ JIKA NOTES KOSONG -->
+                                <!-- JIKA NOTES KOSONG -->
                                 <div x-show="!showData.notes || showData.notes.length === 0"
                                     class="text-xs text-gray-400 italic text-center py-2">
                                     Tidak Ada Catatan Admin
                                 </div>
 
-                                <!-- ✅ LIST NOTES -->
+                                <!-- LIST NOTES -->
                                 <div x-show="showData.notes && showData.notes.length"
                                     class="space-y-2 max-h-40 overflow-y-auto pr-1">
 
@@ -1696,7 +1696,7 @@
             //     });
             // });
 
-            // ⬆️ Escalate
+            // ⬆Escalate
             document.querySelectorAll('.escalate-ticket-btn').forEach(button => {
                 button.addEventListener('click', e => {
                     e.preventDefault();
@@ -1726,7 +1726,7 @@
                 });
             });
 
-            // 🟠 Cancel Ticket (new polish)
+            // Cancel Ticket (new polish)
             document.querySelectorAll('.cancel-ticket-btn').forEach(button => {
                 button.addEventListener('click', e => {
                     e.preventDefault();

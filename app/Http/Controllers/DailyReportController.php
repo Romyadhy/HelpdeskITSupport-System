@@ -17,7 +17,7 @@ use Carbon\CarbonInterval;
 class DailyReportController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
@@ -29,9 +29,48 @@ class DailyReportController extends Controller
             ? DailyReport::whereDate('report_date', $today)->exists()
             : false;
 
-        $dailyReports = DailyReport::with(['user', 'tasks', 'tickets', 'verifier'])
-            ->latest()
-            ->paginate(5);
+        // Build query with filters
+        $query = DailyReport::with(['user', 'tasks', 'tickets', 'verifier']);
+
+        // Search filter (by content or user name)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('content', 'like', "%$search%")
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'like', "%$search%");
+                    });
+            });
+        }
+
+        // Date filter
+        if ($request->filled('date')) {
+            $query->whereDate('report_date', $request->date);
+        }
+
+        // Verification status filter
+        if ($request->filled('status')) {
+            if ($request->status === 'verified') {
+                $query->whereNotNull('verified_at');
+            } elseif ($request->status === 'pending') {
+                $query->whereNull('verified_at');
+            }
+        }
+
+        // User filter (for admin/manager)
+        if ($request->filled('user_id') && ($user->hasRole('admin') || $user->hasRole('manager'))) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        // Sort
+        if ($request->sort === 'oldest') {
+            $query->orderBy('report_date', 'asc');
+        } else {
+            $query->orderBy('report_date', 'desc');
+        }
+
+        $dailyReports = $query->paginate(5);
+        $dailyReports->appends($request->query());
 
         $monthlyReportsCount = DailyReport::whereMonth('report_date', DateHelper::nowWita()->month)->count();
 
@@ -47,6 +86,14 @@ class DailyReportController extends Controller
             ->whereBetween('updated_at', [$startUtc, $endUtc])
             ->get();
 
+        // Get users for filter dropdown (admin/manager only)
+        $users = [];
+        if ($user->hasRole('admin') || $user->hasRole('manager')) {
+            $users = \App\Models\User::whereHas('roles', function ($q) {
+                $q->whereIn('name', ['support', 'admin']);
+            })->orderBy('name')->get(['id', 'name']);
+        }
+
         return view('frontend.Report.daily', [
             'dailyReports' => $dailyReports,
             'tasksCompletedToday' => $tasksCompletedToday,
@@ -56,8 +103,11 @@ class DailyReportController extends Controller
             'monthlyReportsCount' => $monthlyReportsCount,
             'completedTasksCount' => $tasksCompletedToday->count(),
             'handledTicketsCount' => $ticketsClosedToday->count() + $ticketsActiveToday->count(),
+            'users' => $users,
+            'filters' => $request->only(['search', 'date', 'status', 'user_id', 'sort']),
         ]);
     }
+
 
 
     public function create()
@@ -306,6 +356,7 @@ class DailyReportController extends Controller
             'location' => $snapshort->location_name,
             'category' => $snapshort->category_name,
             'solution' => $snapshort->solution,
+            'solution_image_url' => $snapshort->ticket?->solution_image_url,
             'assigned_to' => $snapshort->solved_by_name,
             'user' => $snapshort->created_by_name,
             'created_at' => $snapshort->ticket_created_at

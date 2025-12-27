@@ -30,6 +30,7 @@
 - [ ] Datetime didn't setup into WITA using own helper yet (there's missmatchs between this).
 - [x] User can set priority on tickets, before confrim by admin.
 - [x] Bug in img solutions.
+- [x] Add img in show detail daily reports.
 
 ## Unfinished Features
 
@@ -65,7 +66,7 @@
 - [x] Add img solutions
 - [x] Add priority input by users and validated it by admin.
 - [ ] Add feature when user login they not set the locations again.
-- [ ] Paginate in daily reports
+- [x] Add Filters in daily reports.
 - [ ] Add Divisions.
 
 ## Other Notes

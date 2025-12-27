@@ -160,7 +160,13 @@
                         <i class="fas fa-tools mr-2"></i> Solusi dari Masalah
                     </h5>
                     <p class="text-gray-700 leading-relaxed"
-                        x-text="showData.solution || 'Belum ada solusi yang tercatat.'"></p>
+                        x-text="showData.solution || 'Belum ada solusi yang tercatat.'">
+                    </p>
+                    <template x-if="showData.solution_image_url">
+                        <img :src="showData.solution_image_url"
+                            class="mt-3 rounded-lg max-h-60 cursor-pointer shadow"
+                            @click="window.open(showData.solution_image_url, '_blank')">
+                    </template>
                 </div>
 
                 <!-- Assigned To -->
