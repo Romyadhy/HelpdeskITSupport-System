@@ -259,7 +259,7 @@
                                                     isUpdating: false,
                                                     async updatePriority(ticketId, newPriority) {
                                                         if (newPriority === this.previousPriority) return;
-                                                
+
                                                         const priorityLabels = {
                                                             'High': 'Tinggi',
                                                             'Medium': 'Sedang',
@@ -267,7 +267,7 @@
                                                             '': 'Tidak Ada'
                                                         };
                                                         const displayPriority = priorityLabels[newPriority] || newPriority || 'Tidak Ada';
-                                                
+
                                                         const result = await Swal.fire({
                                                             title: 'Konfirmasi Perubahan Prioritas',
                                                             html: `Apakah Anda yakin ingin mengubah prioritas menjadi <strong>${displayPriority}</strong>?`,
@@ -290,13 +290,13 @@
                                                                         },
                                                                         body: JSON.stringify({ priority: newPriority })
                                                                     });
-                                                
+
                                                                     const data = await response.json();
-                                                
+
                                                                     if (!response.ok) {
                                                                         throw new Error(data.message || 'Gagal mengubah prioritas.');
                                                                     }
-                                                
+
                                                                     return data;
                                                                 } catch (error) {
                                                                     Swal.showValidationMessage(error.message || 'Terjadi kesalahan.');
@@ -304,7 +304,7 @@
                                                                 }
                                                             }
                                                         });
-                                                
+
                                                         if (result.isConfirmed) {
                                                             this.previousPriority = newPriority;
                                                             Swal.fire({
@@ -1138,10 +1138,6 @@
             </div>
         </div>
     </div>
-    </div>
-
-
-    </div>
 
     {{-- Ticket Management Modals --}}
     <script>
@@ -1159,7 +1155,8 @@
                     title: '',
                     description: '',
                     category_id: '',
-                    location_id: '',
+                    location_id: '{{ auth()->user()->location_id ?? '
+                    ' }}',
                     priority: ''
                 },
 
@@ -1192,7 +1189,8 @@
                         title: '',
                         description: '',
                         category_id: '',
-                        location_id: ''
+                        location_id: '{{ auth()->user()->location_id ?? '
+                        ' }}'
                     };
                     this.errors = {};
                     this.showCreateModal = true;

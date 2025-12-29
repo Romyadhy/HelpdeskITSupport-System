@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\TicketLocation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -15,9 +16,10 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with('roles')->latest()->paginate(10);
+        $users = User::with(['roles', 'location'])->latest()->paginate(10);
         $roles = Role::pluck('name', 'name')->all();
-        return view('admin.users.index', compact('users', 'roles'));
+        $locations = TicketLocation::where('is_active', true)->get();
+        return view('admin.users.index', compact('users', 'roles', 'locations'));
     }
 
     // store
@@ -28,6 +30,7 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'exists:roles,name'],
+            'location_id' => ['nullable', 'exists:ticket_locations,id'],
         ]);
 
         $user = User::create([
@@ -35,18 +38,26 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
+            'location_id' => $request->location_id,
         ]);
 
         $user->assignRole($request->role);
 
         // Log
-        logActivity::add('user', 'created', $user, 'User dibuat',
-            ['new' => [
-                'role' => $request->role,
-                'name' => $request->name,
-                'email' => $request->email,
+        logActivity::add(
+            'user',
+            'created',
+            $user,
+            'User dibuat',
+            [
+                'new' => [
+                    'role' => $request->role,
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'location_id' => $request->location_id,
+                ]
             ]
-        ]);
+        );
 
         // Return JSON for AJAX requests
         if ($request->expectsJson()) {
@@ -68,10 +79,12 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'role' => ['required', 'exists:roles,name'],
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+            'location_id' => ['nullable', 'exists:ticket_locations,id'],
         ]);
 
         $input = $request->only(['name', 'email']);
         $input['role'] = $request->role;
+        $input['location_id'] = $request->location_id;
 
         if (!empty($request->password)) {
             $input['password'] = Hash::make($request->password);
@@ -87,12 +100,14 @@ class UserController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => $request->password,
+                'location_id' => $request->location_id,
             ],
             'old' => [
                 'role' => $user->role,
                 'name' => $user->name,
                 'email' => $user->email,
                 'password' => $user->password,
+                'location_id' => $user->location_id,
             ]
         ]);
 
@@ -126,6 +141,7 @@ class UserController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'password' => $user->password,
+                'location_id' => $user->location_id,
             ]
         ]);
 

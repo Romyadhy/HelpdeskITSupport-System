@@ -12,11 +12,11 @@
                 <div class="p-6 text-gray-900">
                     <div class="flex justify-between items-center mb-4">
                         <div class="flex flex-col py-1.5">
-                            <h3 class="text-lg font-medium pb-1">Locations List</h3>
+                            <h3 class="text-lg font-medium pb-1">Daftar Lokasi</h3>
                             <p class="font-thin text-sm text-gray-500">Berikut adalah daftar lokasi pada ticket/pelaporan maslah</p>
                         </div>
                         <button @click="openCreateModal()" class="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded">
-                            Create New Location
+                            Tambahkan Lokasi Baru
                         </button>
                     </div>
 

@@ -280,7 +280,7 @@
                        {{ request()->routeIs('admin.locations.*')
                             ? 'bg-emerald-50 text-emerald-700'
                             : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
-                        Lokasi Masalah
+                        Daftar Lokasi
                     </a>
                 </div>
             </div>

@@ -31,6 +31,9 @@
 - [x] User can set priority on tickets, before confrim by admin.
 - [x] Bug in img solutions.
 - [x] Add img in show detail daily reports.
+- [x] Fix bug layouts.
+- [ ] Bug when set the priority on tickets select by admin.
+- [ ] Submit tickets need loading things.
 
 ## Unfinished Features
 
@@ -65,7 +68,7 @@
 - [x] Add edit and delete in daily report before verif by admin.
 - [x] Add img solutions
 - [x] Add priority input by users and validated it by admin.
-- [ ] Add feature when user login they not set the locations again.
+- [x] Add feature when user login they not set the locations again.
 - [x] Add Filters in daily reports.
 - [ ] Add Divisions.
 

@@ -27,37 +27,47 @@
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach ($users as $user)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $user->name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $user->email }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            @if(!empty($user->getRoleNames()))
-                                                @foreach($user->getRoleNames() as $v)
-                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                        {{ $v }}
-                                                    </span>
-                                                @endforeach
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $user->created_at->format('Y-m-d') }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <button @click="openEditModal({{ $user->id }}, '{{ $user->name }}', '{{ $user->email }}', '{{ $user->getRoleNames()->first() }}')" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $user->name }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $user->email }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        @if(!empty($user->getRoleNames()))
+                                        @foreach($user->getRoleNames() as $v)
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            {{ $v }}
+                                        </span>
+                                        @endforeach
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        @if($user->location)
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            {{ $user->location->name }}
+                                        </span>
+                                        @else
+                                        <span class="text-gray-400 italic">Not assigned</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $user->created_at->format('Y-m-d') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button @click="openEditModal({{ $user->id }}, '{{ $user->name }}', '{{ $user->email }}', '{{ $user->getRoleNames()->first() }}', {{ $user->location_id ?? 'null' }})" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
 
-                                            @if(auth()->id() !== $user->id)
-                                                <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline-block delete-user-form">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="button" class="text-red-600 hover:text-red-900 delete-user-btn">Delete</button>
-                                                </form>
-                                            @endif
-                                        </td>
-                                    </tr>
+                                        @if(auth()->id() !== $user->id)
+                                        <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline-block delete-user-form">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="text-red-600 hover:text-red-900 delete-user-btn">Delete</button>
+                                        </form>
+                                        @endif
+                                    </td>
+                                </tr>
                                 @endforeach
                             </tbody>
                         </table>
@@ -71,37 +81,37 @@
         </div>
 
         <!-- Create User Modal -->
-        <div x-show="showCreateModal" 
-             x-cloak
-             class="fixed inset-0 z-50 overflow-y-auto" 
-             aria-labelledby="modal-title" 
-             role="dialog" 
-             aria-modal="true">
+        <div x-show="showCreateModal"
+            x-cloak
+            class="fixed inset-0 z-50 overflow-y-auto"
+            aria-labelledby="modal-title"
+            role="dialog"
+            aria-modal="true">
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <!-- Background overlay -->
-                <div x-show="showCreateModal" 
-                     x-transition:enter="ease-out duration-300"
-                     x-transition:enter-start="opacity-0"
-                     x-transition:enter-end="opacity-100"
-                     x-transition:leave="ease-in duration-200"
-                     x-transition:leave-start="opacity-100"
-                     x-transition:leave-end="opacity-0"
-                     class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
-                     @click="closeModals()"></div>
+                <div x-show="showCreateModal"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                    @click="closeModals()"></div>
 
                 <!-- Modal panel -->
                 <div x-show="showCreateModal"
-                     x-transition:enter="ease-out duration-300"
-                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave="ease-in duration-200"
-                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                     class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <form @submit.prevent="submitCreate()">
                         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Create New User</h3>
-                            
+
                             <!-- Error Display -->
                             <div x-show="Object.keys(errors).length > 0" class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
                                 <strong>Whoops!</strong> There were some problems with your input.<br><br>
@@ -164,9 +174,21 @@
                                 <select x-model="formData.role" id="create-role" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
                                     <option value="">Select Role</option>
                                     @foreach ($roles as $role)
-                                        <option value="{{ $role }}">{{ $role }}</option>
+                                    <option value="{{ $role }}">{{ $role }}</option>
                                     @endforeach
                                 </select>
+                            </div>
+
+                            <!-- Location -->
+                            <div class="mb-4">
+                                <label for="create-location" class="block text-sm font-medium text-gray-700">Location <span class="text-gray-400 text-xs">(Optional)</span></label>
+                                <select x-model="formData.location_id" id="create-location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="">No Location Assigned</option>
+                                    @foreach ($locations as $location)
+                                    <option value="{{ $location->id }}">{{ $location->name }}</option>
+                                    @endforeach
+                                </select>
+                                <p class="mt-1 text-xs text-gray-500">If assigned, this location will auto-populate when creating tickets.</p>
                             </div>
                         </div>
 
@@ -184,37 +206,37 @@
         </div>
 
         <!-- Edit User Modal -->
-        <div x-show="showEditModal" 
-             x-cloak
-             class="fixed inset-0 z-50 overflow-y-auto" 
-             aria-labelledby="modal-title" 
-             role="dialog" 
-             aria-modal="true">
+        <div x-show="showEditModal"
+            x-cloak
+            class="fixed inset-0 z-50 overflow-y-auto"
+            aria-labelledby="modal-title"
+            role="dialog"
+            aria-modal="true">
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <!-- Background overlay -->
-                <div x-show="showEditModal" 
-                     x-transition:enter="ease-out duration-300"
-                     x-transition:enter-start="opacity-0"
-                     x-transition:enter-end="opacity-100"
-                     x-transition:leave="ease-in duration-200"
-                     x-transition:leave-start="opacity-100"
-                     x-transition:leave-end="opacity-0"
-                     class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
-                     @click="closeModals()"></div>
+                <div x-show="showEditModal"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                    @click="closeModals()"></div>
 
                 <!-- Modal panel -->
                 <div x-show="showEditModal"
-                     x-transition:enter="ease-out duration-300"
-                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave="ease-in duration-200"
-                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                     class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <form @submit.prevent="submitEdit()">
                         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Edit User</h3>
-                            
+
                             <!-- Error Display -->
                             <div x-show="Object.keys(errors).length > 0" class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
                                 <strong>Whoops!</strong> There were some problems with your input.<br><br>
@@ -276,9 +298,21 @@
                                 <label for="edit-role" class="block text-sm font-medium text-gray-700">Role</label>
                                 <select x-model="editingUser.role" id="edit-role" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
                                     @foreach ($roles as $role)
-                                        <option value="{{ $role }}">{{ $role }}</option>
+                                    <option value="{{ $role }}">{{ $role }}</option>
                                     @endforeach
                                 </select>
+                            </div>
+
+                            <!-- Location -->
+                            <div class="mb-4">
+                                <label for="edit-location" class="block text-sm font-medium text-gray-700">Location <span class="text-gray-400 text-xs">(Optional)</span></label>
+                                <select x-model="editingUser.location_id" id="edit-location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="">No Location Assigned</option>
+                                    @foreach ($locations as $location)
+                                    <option value="{{ $location->id }}">{{ $location->name }}</option>
+                                    @endforeach
+                                </select>
+                                <p class="mt-1 text-xs text-gray-500">If assigned, this location will auto-populate when creating tickets.</p>
                             </div>
                         </div>
 
@@ -307,7 +341,8 @@
                     email: '',
                     password: '',
                     password_confirmation: '',
-                    role: ''
+                    role: '',
+                    location_id: ''
                 },
                 editingUser: {
                     id: null,
@@ -315,7 +350,8 @@
                     email: '',
                     password: '',
                     password_confirmation: '',
-                    role: ''
+                    role: '',
+                    location_id: ''
                 },
                 errors: {},
 
@@ -325,20 +361,22 @@
                         email: '',
                         password: '',
                         password_confirmation: '',
-                        role: ''
+                        role: '',
+                        location_id: ''
                     };
                     this.errors = {};
                     this.showCreateModal = true;
                 },
 
-                openEditModal(id, name, email, role) {
+                openEditModal(id, name, email, role, locationId) {
                     this.editingUser = {
                         id: id,
                         name: name,
                         email: email,
                         password: '',
                         password_confirmation: '',
-                        role: role
+                        role: role,
+                        location_id: locationId || ''
                     };
                     this.errors = {};
                     this.showEditModal = true;
@@ -352,7 +390,7 @@
 
                 async submitCreate() {
                     this.errors = {};
-                    
+
                     try {
                         const response = await fetch('{{ route("admin.users.store") }}', {
                             method: 'POST',
@@ -399,7 +437,7 @@
 
                 async submitEdit() {
                     this.errors = {};
-                    
+
                     try {
                         const response = await fetch(`/admin/users/${this.editingUser.id}`, {
                             method: 'PUT',
@@ -413,7 +451,8 @@
                                 email: this.editingUser.email,
                                 password: this.editingUser.password,
                                 password_confirmation: this.editingUser.password_confirmation,
-                                role: this.editingUser.role
+                                role: this.editingUser.role,
+                                location_id: this.editingUser.location_id
                             })
                         });
 
@@ -456,21 +495,23 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Success/Error messages from session
             @if(session('success'))
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: '{{ session('success') }}',
-                    showConfirmButton: false,
-                    timer: 2000
-                });
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: '{{ session('
+                success ') }}',
+                showConfirmButton: false,
+                timer: 2000
+            });
             @endif
 
             @if(session('error'))
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: '{{ session('error') }}'
-                });
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: '{{ session('
+                error ') }}'
+            });
             @endif
 
             // Delete user confirmation
@@ -495,6 +536,8 @@
     </script>
 
     <style>
-        [x-cloak] { display: none !important; }
+        [x-cloak] {
+            display: none !important;
+        }
     </style>
 </x-app-layout>
