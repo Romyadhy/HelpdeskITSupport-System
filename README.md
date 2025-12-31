@@ -58,6 +58,3 @@ This project is built using the following technologies:
     -   [SweetAlert2](https://sweetalert2.github.io/) (Interactive Alerts)
     -   [Chart.js](https://www.chartjs.org/) (Dashboard Analytics)
 
-## 📄 License
-
-This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
